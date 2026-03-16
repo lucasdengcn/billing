@@ -15,6 +15,9 @@ public class CustomerResponse {
     @Schema(description = "Customer's full name", example = "John Doe")
     private String name;
 
+    @Schema(description = "Unique customer number", example = "CUST-2026-001")
+    private String customerNo;
+
     @Schema(description = "WeChat ID", example = "wx_12345")
     private String wechatId;
 

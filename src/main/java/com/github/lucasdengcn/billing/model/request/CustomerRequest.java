@@ -14,6 +14,10 @@ public class CustomerRequest {
   @Schema(description = "Customer's full name", example = "John Doe")
   private String name;
 
+  @Schema(description = "Unique customer number", example = "CUST-2026-001")
+  @Size(max = 50, message = "Customer number cannot exceed 50 characters")
+  private String customerNo;
+
   @Schema(description = "WeChat ID for communication", example = "wx_12345")
   @Size(max = 255, message = "WeChat ID cannot exceed 255 characters")
   private String wechatId;

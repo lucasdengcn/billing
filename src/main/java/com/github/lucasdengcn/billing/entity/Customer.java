@@ -23,6 +23,9 @@ public class Customer {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "customer_no", unique = true, length = 50)
+    private String customerNo;
+
     @Column(name = "wechat_id", unique = true)
     private String wechatId;
 

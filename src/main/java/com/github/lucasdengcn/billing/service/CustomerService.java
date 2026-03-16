@@ -9,6 +9,8 @@ public interface CustomerService {
 
   Customer findById(Long id);
 
+  Customer findByCustomerNo(String customerNo);
+
   Customer findByWechatId(String wechatId);
 
   Customer findByMobileNo(String mobileNo);
