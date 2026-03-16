@@ -9,11 +9,14 @@ import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.mapper.DeviceMapper;
+import com.github.lucasdengcn.billing.model.request.DeviceRequest;
 import com.github.lucasdengcn.billing.repository.DeviceRepository;
 import com.github.lucasdengcn.billing.service.DeviceService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.github.lucasdengcn.billing.service.CustomerService;
 
 @Slf4j
 @Service
@@ -22,11 +25,67 @@ import lombok.extern.slf4j.Slf4j;
 public class DeviceServiceImpl implements DeviceService {
 
     private final DeviceRepository deviceRepository;
+    private final CustomerService customerService;
+    private final DeviceMapper deviceMapper;
 
     @Override
     public Device save(Device device) {
         log.info("Saving device: {} (No: {})", device.getDeviceName(), device.getDeviceNo());
         return deviceRepository.save(device);
+    }
+
+    @Override
+    @Transactional
+    public Device registerDevice(DeviceRequest request) {
+        log.info("Registering device: {} for customer info provided", request.getDeviceNo());
+        Customer customer = resolveCustomer(request);
+        Device device = deviceMapper.toEntity(request);
+        device.setCustomer(customer);
+        return deviceRepository.save(device);
+    }
+
+    private Customer resolveCustomer(DeviceRequest request) {
+        DeviceRequest.CustomerInfo info = request.getCustomer();
+        if (info == null) {
+            throw new IllegalArgumentException("Customer information is required to register a device");
+        }
+
+        // 1. Try by customerId
+        if (info.getId() != null) {
+            return customerService.findById(info.getId());
+        }
+
+        // 2. Try by customerNo
+        if (info.getCustomerNo() != null && !info.getCustomerNo().isBlank()) {
+            try {
+                return customerService.findByCustomerNo(info.getCustomerNo());
+            } catch (ResourceNotFoundException e) {
+                // Not found, will try to create if name is provided
+            }
+        }
+
+        // 3. Try by mobileNo
+        if (info.getMobileNo() != null && !info.getMobileNo().isBlank()) {
+            try {
+                return customerService.findByMobileNo(info.getMobileNo());
+            } catch (ResourceNotFoundException e) {
+                // Not found
+            }
+        }
+
+        // 4. Create new customer if name is provided
+        if (info.getName() != null && !info.getName().isBlank()) {
+            log.info("Creating new customer inline: {}", info);
+            Customer newCustomer = Customer.builder()
+                    .customerNo(info.getCustomerNo())
+                    .name(info.getName())
+                    .wechatId(info.getWechatId())
+                    .mobileNo(info.getMobileNo())
+                    .build();
+            return customerService.save(newCustomer);
+        }
+
+        throw new IllegalArgumentException("Could not resolve or create customer from provided information");
     }
 
     @Override
