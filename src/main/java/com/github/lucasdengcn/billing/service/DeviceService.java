@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public interface DeviceService {
     Device save(Device device);
-    Optional<Device> findById(Long id);
-    Optional<Device> findByDeviceNo(String deviceNo);
+    Device findById(Long id);
+    Device findByDeviceNo(String deviceNo);
     List<Device> findByCustomer(Customer customer);
     List<Device> findByStatus(DeviceStatus status);
     List<Device> findAll();

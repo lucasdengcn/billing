@@ -1,17 +1,22 @@
 package com.github.lucasdengcn.billing.service.impl;
 
-import com.github.lucasdengcn.billing.entity.*;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.github.lucasdengcn.billing.entity.Customer;
+import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.entity.SubscriptionFeature;
+import com.github.lucasdengcn.billing.entity.SubscriptionRenewal;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
+import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.repository.SubscriptionFeatureRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRenewalRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRepository;
 import com.github.lucasdengcn.billing.service.SubscriptionService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Subscription> findSubscriptionById(Long id) {
-        return subscriptionRepository.findById(id);
+    public Subscription findSubscriptionById(Long id) {
+        return subscriptionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found with id: " + id));
     }
 
     @Override

@@ -28,8 +28,7 @@ public class BillController {
 
         @PostMapping
         public ResponseEntity<BillResponse> createBill(@Valid @RequestBody BillRequest request) {
-                Customer customer = customerService.findById(request.getCustomerId())
-                                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                Customer customer = customerService.findById(request.getCustomerId());
 
                 Bill bill = billMapper.toEntity(request);
                 bill.setCustomer(customer);
@@ -39,15 +38,13 @@ public class BillController {
 
         @GetMapping("/{id}")
         public ResponseEntity<BillResponse> getBill(@PathVariable Long id) {
-                return billingService.findBillById(id)
-                                .map(bill -> ResponseEntity.ok(billMapper.toResponse(bill)))
-                                .orElse(ResponseEntity.notFound().build());
+                Bill bill = billingService.findBillById(id);
+                return ResponseEntity.ok(billMapper.toResponse(bill));
         }
 
         @GetMapping("/customer/{customerId}")
         public ResponseEntity<List<BillResponse>> getCustomerBills(@PathVariable Long customerId) {
-                Customer customer = customerService.findById(customerId)
-                                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                Customer customer = customerService.findById(customerId);
                 List<BillResponse> responses = billingService.findBillsByCustomer(customer).stream()
                                 .map(billMapper::toResponse)
                                 .collect(Collectors.toList());

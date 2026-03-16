@@ -1,17 +1,19 @@
 package com.github.lucasdengcn.billing.api;
 
-import com.github.lucasdengcn.billing.entity.Customer;
-import com.github.lucasdengcn.billing.mapper.CustomerMapper;
-import com.github.lucasdengcn.billing.model.request.CustomerRequest;
-import com.github.lucasdengcn.billing.model.response.CustomerResponse;
-import com.github.lucasdengcn.billing.service.CustomerService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.github.lucasdengcn.billing.entity.Customer;
+import com.github.lucasdengcn.billing.mapper.CustomerMapper;
+import com.github.lucasdengcn.billing.model.response.CustomerResponse;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import com.github.lucasdengcn.billing.model.request.CustomerRequest;
+import com.github.lucasdengcn.billing.service.CustomerService;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -30,9 +32,8 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponse> getCustomer(@PathVariable Long id) {
-        return customerService.findById(id)
-                .map(customer -> ResponseEntity.ok(customerMapper.toResponse(customer)))
-                .orElse(ResponseEntity.notFound().build());
+        Customer customer = customerService.findById(id);
+        return ResponseEntity.ok(customerMapper.toResponse(customer));
     }
 
     @GetMapping

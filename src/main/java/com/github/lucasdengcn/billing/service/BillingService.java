@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface BillingService {
     Bill saveBill(Bill bill);
-    Optional<Bill> findBillById(Long id);
+    Bill findBillById(Long id);
     List<Bill> findBillsByCustomer(Customer customer);
     List<Bill> findBillsByPaymentStatus(PaymentStatus status);
     List<Bill> findBillsByPeriod(LocalDate start, LocalDate end);

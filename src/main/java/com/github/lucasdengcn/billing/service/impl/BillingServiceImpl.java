@@ -1,19 +1,21 @@
 package com.github.lucasdengcn.billing.service.impl;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.github.lucasdengcn.billing.entity.Bill;
 import com.github.lucasdengcn.billing.entity.BillDetail;
 import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.entity.enums.PaymentStatus;
+import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.repository.BillDetailRepository;
 import com.github.lucasdengcn.billing.repository.BillRepository;
 import com.github.lucasdengcn.billing.service.BillingService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +32,9 @@ public class BillingServiceImpl implements BillingService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Bill> findBillById(Long id) {
-        return billRepository.findById(id);
+    public Bill findBillById(Long id) {
+        return billRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bill not found with id: " + id));
     }
 
     @Override

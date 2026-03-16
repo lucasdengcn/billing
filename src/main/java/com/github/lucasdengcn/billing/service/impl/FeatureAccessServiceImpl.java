@@ -1,17 +1,22 @@
 package com.github.lucasdengcn.billing.service.impl;
 
-import com.github.lucasdengcn.billing.entity.*;
-import com.github.lucasdengcn.billing.repository.FeatureAccessLogRepository;
-import com.github.lucasdengcn.billing.repository.SubscriptionUsageStatsRepository;
-import com.github.lucasdengcn.billing.service.FeatureAccessService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import com.github.lucasdengcn.billing.entity.FeatureAccessLog;
+import com.github.lucasdengcn.billing.entity.ProductFeature;
+import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.entity.SubscriptionUsageStats;
+import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.repository.FeatureAccessLogRepository;
+import com.github.lucasdengcn.billing.repository.SubscriptionUsageStatsRepository;
+import com.github.lucasdengcn.billing.service.FeatureAccessService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +44,10 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<SubscriptionUsageStats> findStatsBySubscriptionAndFeature(Subscription subscription, ProductFeature feature) {
-        return statsRepository.findBySubscriptionAndProductFeature(subscription, feature);
+    public SubscriptionUsageStats findStatsBySubscriptionAndFeature(Subscription subscription, ProductFeature feature) {
+        return statsRepository.findBySubscriptionAndProductFeature(subscription, feature)
+                .orElseThrow(() -> new ResourceNotFoundException("Usage stats not found for subscription: "
+                        + subscription.getId() + " and feature: " + feature.getId()));
     }
 
     @Override

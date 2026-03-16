@@ -1,16 +1,18 @@
 package com.github.lucasdengcn.billing.service.impl;
 
-import com.github.lucasdengcn.billing.entity.Customer;
-import com.github.lucasdengcn.billing.entity.Device;
-import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
-import com.github.lucasdengcn.billing.repository.DeviceRepository;
-import com.github.lucasdengcn.billing.service.DeviceService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import com.github.lucasdengcn.billing.entity.Customer;
+import com.github.lucasdengcn.billing.entity.Device;
+import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
+import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.repository.DeviceRepository;
+import com.github.lucasdengcn.billing.service.DeviceService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +28,16 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Device> findById(Long id) {
-        return deviceRepository.findById(id);
+    public Device findById(Long id) {
+        return deviceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Device not found with id: " + id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Device> findByDeviceNo(String deviceNo) {
-        return deviceRepository.findByDeviceNo(deviceNo);
+    public Device findByDeviceNo(String deviceNo) {
+        return deviceRepository.findByDeviceNo(deviceNo)
+                .orElseThrow(() -> new ResourceNotFoundException("Device not found with deviceNo: " + deviceNo));
     }
 
     @Override

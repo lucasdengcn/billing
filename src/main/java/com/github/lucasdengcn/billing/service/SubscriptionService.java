@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface SubscriptionService {
     Subscription saveSubscription(Subscription subscription);
-    Optional<Subscription> findSubscriptionById(Long id);
+    Subscription findSubscriptionById(Long id);
     List<Subscription> findSubscriptionsByCustomer(Customer customer);
     List<Subscription> findSubscriptionsByStatus(SubscriptionStatus status);
     void deleteSubscriptionById(Long id);

@@ -12,6 +12,6 @@ public interface FeatureAccessService {
     Page<FeatureAccessLog> findLogsBySubscription(Subscription subscription, Pageable pageable);
 
     SubscriptionUsageStats updateUsageStats(SubscriptionUsageStats stats);
-    Optional<SubscriptionUsageStats> findStatsBySubscriptionAndFeature(Subscription subscription, ProductFeature feature);
+    SubscriptionUsageStats findStatsBySubscriptionAndFeature(Subscription subscription, ProductFeature feature);
     List<SubscriptionUsageStats> findStatsBySubscription(Subscription subscription);
 }

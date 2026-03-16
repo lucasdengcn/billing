@@ -28,8 +28,7 @@ public class DeviceController {
 
     @PostMapping
     public ResponseEntity<DeviceResponse> createDevice(@Valid @RequestBody DeviceRequest request) {
-        Customer customer = customerService.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        Customer customer = customerService.findById(request.getCustomerId());
 
         Device device = deviceMapper.toEntity(request);
         device.setCustomer(customer);
@@ -39,9 +38,8 @@ public class DeviceController {
 
     @GetMapping("/{id}")
     public ResponseEntity<DeviceResponse> getDevice(@PathVariable Long id) {
-        return deviceService.findById(id)
-                .map(device -> ResponseEntity.ok(deviceMapper.toResponse(device)))
-                .orElse(ResponseEntity.notFound().build());
+        Device device = deviceService.findById(id);
+        return ResponseEntity.ok(deviceMapper.toResponse(device));
     }
 
     @GetMapping

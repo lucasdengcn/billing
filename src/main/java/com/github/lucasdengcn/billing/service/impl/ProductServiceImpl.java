@@ -1,17 +1,19 @@
 package com.github.lucasdengcn.billing.service.impl;
 
-import com.github.lucasdengcn.billing.entity.Product;
-import com.github.lucasdengcn.billing.entity.ProductFeature;
-import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
-import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
-import com.github.lucasdengcn.billing.repository.ProductRepository;
-import com.github.lucasdengcn.billing.service.ProductService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import com.github.lucasdengcn.billing.entity.Product;
+import com.github.lucasdengcn.billing.entity.ProductFeature;
+import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
+import com.github.lucasdengcn.billing.repository.ProductRepository;
+import com.github.lucasdengcn.billing.service.ProductService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +30,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Product> findProductById(Long id) {
-        return productRepository.findById(id);
+    public Product findProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
     @Override
@@ -56,8 +59,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<ProductFeature> findFeatureById(Long id) {
-        return productFeatureRepository.findById(id);
+    public ProductFeature findFeatureById(Long id) {
+        return productFeatureRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ProductFeature not found with id: " + id));
     }
 
     @Override

@@ -1,17 +1,20 @@
 package com.github.lucasdengcn.billing.api;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.github.lucasdengcn.billing.entity.Product;
+import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.mapper.ProductMapper;
 import com.github.lucasdengcn.billing.model.request.ProductRequest;
 import com.github.lucasdengcn.billing.model.response.ProductResponse;
 import com.github.lucasdengcn.billing.service.ProductService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -30,9 +33,8 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
-        return productService.findProductById(id)
-                .map(product -> ResponseEntity.ok(productMapper.toResponse(product)))
-                .orElse(ResponseEntity.notFound().build());
+        Product product = productService.findProductById(id);
+        return ResponseEntity.ok(productMapper.toResponse(product));
     }
 
     @GetMapping
