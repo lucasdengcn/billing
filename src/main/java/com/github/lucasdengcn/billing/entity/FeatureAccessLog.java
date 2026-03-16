@@ -1,0 +1,57 @@
+package com.github.lucasdengcn.billing.entity;
+
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.github.lucasdengcn.billing.entity.enums.AccessDetailType;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "feature_access_logs")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class FeatureAccessLog {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subscription_id", nullable = false)
+    @ToString.Exclude
+    private Subscription subscription;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_feature_id", nullable = false)
+    @ToString.Exclude
+    private ProductFeature productFeature;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id")
+    @ToString.Exclude
+    private Device device;
+
+    @Column(name = "usage_amount", nullable = false)
+    @Builder.Default
+    private Integer usageAmount = 1;
+
+    @Column(name = "access_time", nullable = false)
+    @Builder.Default
+    private OffsetDateTime accessTime = OffsetDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "detail_type", length = 100)
+    private AccessDetailType detailType;
+
+    @Column(name = "detail_value", columnDefinition = "TEXT")
+    private String detailValue;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private OffsetDateTime createdAt;
+}
