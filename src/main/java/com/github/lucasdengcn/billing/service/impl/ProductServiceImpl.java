@@ -61,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductFeature saveFeature(ProductFeature feature) {
-        log.info("Saving product feature: {}", feature.getFeatureName());
+        log.info("Saving product feature: {}", feature);
         return productFeatureRepository.save(feature);
     }
 

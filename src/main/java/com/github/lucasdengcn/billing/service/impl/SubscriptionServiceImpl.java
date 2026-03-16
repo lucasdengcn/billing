@@ -66,7 +66,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public SubscriptionFeature saveSubscriptionFeature(SubscriptionFeature feature) {
-        log.info("Saving subscription feature: {}", feature.getFeatureName());
+        log.info("Saving subscription feature: {}", feature);
         return subscriptionFeatureRepository.save(feature);
     }
 
