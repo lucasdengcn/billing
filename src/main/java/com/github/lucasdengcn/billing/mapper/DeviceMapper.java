@@ -1,13 +1,14 @@
 package com.github.lucasdengcn.billing.mapper;
 
-import com.github.lucasdengcn.billing.entity.Device;
-import com.github.lucasdengcn.billing.model.request.DeviceRequest;
-import com.github.lucasdengcn.billing.model.response.DeviceResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+import com.github.lucasdengcn.billing.entity.Device;
+import com.github.lucasdengcn.billing.model.request.DeviceRequest;
+import com.github.lucasdengcn.billing.model.response.DeviceResponse;
+
+@Mapper(componentModel = "spring", uses = { CustomerMapper.class })
 public interface DeviceMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "customer", ignore = true)
@@ -21,7 +22,6 @@ public interface DeviceMapper {
     @Mapping(target = "usageStats", ignore = true)
     Device toEntity(DeviceRequest request);
 
-    @Mapping(target = "customerId", source = "customer.id")
     DeviceResponse toResponse(Device device);
 
     @Mapping(target = "id", ignore = true)

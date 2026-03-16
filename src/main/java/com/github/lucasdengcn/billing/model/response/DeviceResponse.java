@@ -1,20 +1,26 @@
 package com.github.lucasdengcn.billing.model.response;
 
+import java.time.OffsetDateTime;
+
 import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import java.time.OffsetDateTime;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "Response model representing a registered device")
 public class DeviceResponse {
     @Schema(description = "Unique database identifier for the device", example = "1")
     private Long id;
 
-    @Schema(description = "ID of the customer who owns the device", example = "1")
-    private Long customerId;
+    @Schema(description = "Customer information for the device owner")
+    private CustomerResponse customer;
 
     @Schema(description = "Friendly name for the device", example = "iPhone 15 Pro")
     private String deviceName;
