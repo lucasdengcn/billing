@@ -4,6 +4,7 @@ import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
 import com.github.lucasdengcn.billing.service.CustomerService;
@@ -27,6 +28,7 @@ public class SubscriptionController {
     private final CustomerService customerService;
     private final DeviceService deviceService;
     private final ProductService productService;
+    private final SubscriptionMapper subscriptionMapper;
 
     @PostMapping
     public ResponseEntity<SubscriptionResponse> createSubscription(@Valid @RequestBody SubscriptionRequest request) {
@@ -40,25 +42,18 @@ public class SubscriptionController {
                     .orElseThrow(() -> new RuntimeException("Device not found"));
         }
 
-        Subscription subscription = Subscription.builder()
-                .customer(customer)
-                .device(device)
-                .product(product)
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .periodDays(request.getPeriodDays())
-                .baseFee(request.getBaseFee())
-                .discountRate(request.getDiscountRate())
-                .status(request.getStatus())
-                .build();
+        Subscription subscription = subscriptionMapper.toEntity(request);
+        subscription.setCustomer(customer);
+        subscription.setProduct(product);
+        subscription.setDevice(device);
         Subscription saved = subscriptionService.saveSubscription(subscription);
-        return ResponseEntity.ok(mapToResponse(saved));
+        return ResponseEntity.ok(subscriptionMapper.toResponse(saved));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<SubscriptionResponse> getSubscription(@PathVariable Long id) {
         return subscriptionService.findSubscriptionById(id)
-                .map(subscription -> ResponseEntity.ok(mapToResponse(subscription)))
+                .map(subscription -> ResponseEntity.ok(subscriptionMapper.toResponse(subscription)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -67,24 +62,8 @@ public class SubscriptionController {
         Customer customer = customerService.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
         List<SubscriptionResponse> responses = subscriptionService.findSubscriptionsByCustomer(customer).stream()
-                .map(this::mapToResponse)
+                .map(subscriptionMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
-    }
-
-    private SubscriptionResponse mapToResponse(Subscription subscription) {
-        return SubscriptionResponse.builder()
-                .id(subscription.getId())
-                .customerId(subscription.getCustomer().getId())
-                .deviceId(subscription.getDevice() != null ? subscription.getDevice().getId() : null)
-                .productId(subscription.getProduct().getId())
-                .startDate(subscription.getStartDate())
-                .endDate(subscription.getEndDate())
-                .periodDays(subscription.getPeriodDays())
-                .baseFee(subscription.getBaseFee())
-                .discountRate(subscription.getDiscountRate())
-                .totalFee(subscription.getTotalFee())
-                .status(subscription.getStatus())
-                .build();
     }
 }

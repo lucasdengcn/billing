@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.api;
 
 import com.github.lucasdengcn.billing.entity.Product;
+import com.github.lucasdengcn.billing.mapper.ProductMapper;
 import com.github.lucasdengcn.billing.model.request.ProductRequest;
 import com.github.lucasdengcn.billing.model.response.ProductResponse;
 import com.github.lucasdengcn.billing.service.ProductService;
@@ -18,44 +19,27 @@ import java.util.stream.Collectors;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
-        Product product = Product.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .baseMonthlyFee(request.getBaseMonthlyFee())
-                .discountRate(request.getDiscountRate())
-                .discountStatus(request.getDiscountStatus())
-                .build();
+        Product product = productMapper.toEntity(request);
         Product saved = productService.saveProduct(product);
-        return ResponseEntity.ok(mapToResponse(saved));
+        return ResponseEntity.ok(productMapper.toResponse(saved));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
         return productService.findProductById(id)
-                .map(product -> ResponseEntity.ok(mapToResponse(product)))
+                .map(product -> ResponseEntity.ok(productMapper.toResponse(product)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
         List<ProductResponse> responses = productService.findAllProducts().stream()
-                .map(this::mapToResponse)
+                .map(productMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
-    }
-
-    private ProductResponse mapToResponse(Product product) {
-        return ProductResponse.builder()
-                .id(product.getId())
-                .title(product.getTitle())
-                .description(product.getDescription())
-                .baseMonthlyFee(product.getBaseMonthlyFee())
-                .discountRate(product.getDiscountRate())
-                .discountStatus(product.getDiscountStatus())
-                .createdAt(product.getCreatedAt())
-                .build();
     }
 }

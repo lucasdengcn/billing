@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.api;
 
 import com.github.lucasdengcn.billing.entity.Customer;
+import com.github.lucasdengcn.billing.mapper.CustomerMapper;
 import com.github.lucasdengcn.billing.model.request.CustomerRequest;
 import com.github.lucasdengcn.billing.model.response.CustomerResponse;
 import com.github.lucasdengcn.billing.service.CustomerService;
@@ -18,29 +19,26 @@ import java.util.stream.Collectors;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final CustomerMapper customerMapper;
 
     @PostMapping
     public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
-        Customer customer = Customer.builder()
-                .name(request.getName())
-                .wechatId(request.getWechatId())
-                .mobileNo(request.getMobileNo())
-                .build();
+        Customer customer = customerMapper.toEntity(request);
         Customer saved = customerService.save(customer);
-        return ResponseEntity.ok(mapToResponse(saved));
+        return ResponseEntity.ok(customerMapper.toResponse(saved));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponse> getCustomer(@PathVariable Long id) {
         return customerService.findById(id)
-                .map(customer -> ResponseEntity.ok(mapToResponse(customer)))
+                .map(customer -> ResponseEntity.ok(customerMapper.toResponse(customer)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
         List<CustomerResponse> responses = customerService.findAll().stream()
-                .map(this::mapToResponse)
+                .map(customerMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
@@ -49,16 +47,5 @@ public class CustomerController {
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         customerService.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private CustomerResponse mapToResponse(Customer customer) {
-        return CustomerResponse.builder()
-                .id(customer.getId())
-                .name(customer.getName())
-                .wechatId(customer.getWechatId())
-                .mobileNo(customer.getMobileNo())
-                .createdAt(customer.getCreatedAt())
-                .updatedAt(customer.getUpdatedAt())
-                .build();
     }
 }
