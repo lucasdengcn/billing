@@ -15,6 +15,8 @@ public interface DeviceService {
 
     Device updateDevice(Long id, DeviceUpdateRequest request);
 
+    Device activateDeviceByNo(String deviceNo);
+
     Device findById(Long id);
 
     Device findByDeviceNo(String deviceNo);

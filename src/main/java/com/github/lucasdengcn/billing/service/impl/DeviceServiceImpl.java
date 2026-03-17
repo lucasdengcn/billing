@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.service.impl;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
@@ -54,6 +55,16 @@ public class DeviceServiceImpl implements DeviceService {
         // Update device fields
         deviceMapper.updateEntity(request, device);
 
+        return deviceRepository.save(device);
+    }
+
+    @Override
+    @Transactional
+    public Device activateDeviceByNo(String deviceNo) {
+        log.info("Activating device with No: {}", deviceNo);
+        Device device = findByDeviceNo(deviceNo);
+        device.setStatus(DeviceStatus.ACTIVE);
+        device.setLastActivityAt(OffsetDateTime.now());
         return deviceRepository.save(device);
     }
 

@@ -55,6 +55,15 @@ public class DeviceController {
         return ResponseEntity.ok(deviceMapper.toResponse(updated));
     }
 
+    @PostMapping("/activate/{deviceNo}")
+    @Operation(summary = "Activate a device by number", description = "Activates a device and updates its last activity timestamp using its unique hardware number")
+    @ApiResponse(responseCode = "200", description = "Device activated successfully")
+    @ApiResponse(responseCode = "404", description = "Device not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<DeviceResponse> activateDevice(@PathVariable String deviceNo) {
+        Device activated = deviceService.activateDeviceByNo(deviceNo);
+        return ResponseEntity.ok(deviceMapper.toResponse(activated));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get device by ID", description = "Retrieves a single device's details by its unique database ID")
     @ApiResponse(responseCode = "200", description = "Device found")
