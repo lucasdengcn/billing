@@ -83,7 +83,15 @@ public class DeviceServiceImpl implements DeviceService {
         log.info("Activating device with No: {}", deviceNo);
         Device device = findByDeviceNo(deviceNo);
         device.setStatus(DeviceStatus.ACTIVE);
-        device.setLastActivityAt(OffsetDateTime.now());
+        return deviceRepository.save(device);
+    }
+
+    @Override
+    @Transactional
+    public Device deactivateDeviceByNo(String deviceNo) {
+        log.info("Deactivating device with No: {}", deviceNo);
+        Device device = findByDeviceNo(deviceNo);
+        device.setStatus(DeviceStatus.DEACTIVATED);
         return deviceRepository.save(device);
     }
 

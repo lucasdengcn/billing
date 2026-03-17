@@ -79,12 +79,21 @@ public class DeviceController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get device by ID", description = "Retrieves a single device's details by its unique database ID")
+    @Operation(summary = "Get device by ID", description = "Retrieves a device by its database identifier")
     @ApiResponse(responseCode = "200", description = "Device found")
     @ApiResponse(responseCode = "404", description = "Device not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<DeviceResponse> getDevice(@PathVariable Long id) {
+    public ResponseEntity<DeviceResponse> getDeviceById(@PathVariable Long id) {
         Device device = deviceService.findById(id);
         return ResponseEntity.ok(deviceMapper.toResponse(device));
+    }
+
+    @PatchMapping("/deactivate/{deviceNo}")
+    @Operation(summary = "Deactivate device by device number", description = "Deactivates a device using its unique device number")
+    @ApiResponse(responseCode = "200", description = "Device deactivated successfully")
+    @ApiResponse(responseCode = "404", description = "Device not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<DeviceResponse> deactivateDeviceByNo(@PathVariable String deviceNo) {
+        Device deactivatedDevice = deviceService.deactivateDeviceByNo(deviceNo);
+        return ResponseEntity.ok(deviceMapper.toResponse(deactivatedDevice));
     }
 
     @GetMapping("/customer/{customerId}")

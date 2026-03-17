@@ -20,6 +20,8 @@ public interface DeviceService {
 
     Device activateDeviceByNo(String deviceNo);
 
+    Device deactivateDeviceByNo(String deviceNo);
+
     Device findById(Long id);
 
     Device findByDeviceNo(String deviceNo);
