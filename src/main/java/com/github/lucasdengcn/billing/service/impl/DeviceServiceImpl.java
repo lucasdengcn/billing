@@ -2,6 +2,7 @@ package com.github.lucasdengcn.billing.service.impl;
 
 import java.util.List;
 
+import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,7 +11,6 @@ import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.mapper.DeviceMapper;
-import com.github.lucasdengcn.billing.model.request.DeviceRequest;
 import com.github.lucasdengcn.billing.repository.DeviceRepository;
 import com.github.lucasdengcn.billing.service.DeviceService;
 
@@ -36,7 +36,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     @Transactional
-    public Device registerDevice(DeviceRequest request) {
+    public Device registerDevice(DeviceRegisterRequest request) {
         log.info("Registering device: {} for customer info provided", request.getDeviceNo());
         Customer customer = resolveCustomer(request);
         Device device = deviceMapper.toEntity(request);
@@ -44,8 +44,8 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceRepository.save(device);
     }
 
-    private Customer resolveCustomer(DeviceRequest request) {
-        DeviceRequest.CustomerInfo info = request.getCustomer();
+    private Customer resolveCustomer(DeviceRegisterRequest request) {
+        DeviceRegisterRequest.CustomerInfo info = request.getCustomer();
         if (info == null) {
             throw new IllegalArgumentException("Customer information is required to register a device");
         }

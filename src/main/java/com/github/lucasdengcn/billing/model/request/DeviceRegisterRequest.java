@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Data
 @Schema(description = "Request model for registering or updating a device")
-public class DeviceRequest {
+public class DeviceRegisterRequest {
     @Valid
     @Schema(description = "Customer information for lookup or creation")
     private CustomerInfo customer;

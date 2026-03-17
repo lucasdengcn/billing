@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.mapper.DeviceMapper;
-import com.github.lucasdengcn.billing.model.request.DeviceRequest;
+import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
 import com.github.lucasdengcn.billing.model.response.DeviceResponse;
 import com.github.lucasdengcn.billing.model.response.ErrorResponse;
 import com.github.lucasdengcn.billing.model.response.ValidationErrorResponse;
@@ -37,7 +37,7 @@ public class DeviceController {
     @Operation(summary = "Register a new device", description = "Registers a hardware device and optionally creates/resolves its owner")
     @ApiResponse(responseCode = "200", description = "Device registered successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request or customer data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
-    public ResponseEntity<DeviceResponse> createDevice(@Valid @RequestBody DeviceRequest request) {
+    public ResponseEntity<DeviceResponse> createDevice(@Valid @RequestBody DeviceRegisterRequest request) {
         Device saved = deviceService.registerDevice(request);
         return ResponseEntity.ok(deviceMapper.toResponse(saved));
     }
