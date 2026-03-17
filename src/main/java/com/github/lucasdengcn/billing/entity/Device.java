@@ -40,7 +40,7 @@ public class Device {
     @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false)
     @Builder.Default
-    private DeviceStatus status = DeviceStatus.ACTIVE;
+    private DeviceStatus status = DeviceStatus.INACTIVE;
 
     @Column(name = "last_activity_at")
     private OffsetDateTime lastActivityAt;
