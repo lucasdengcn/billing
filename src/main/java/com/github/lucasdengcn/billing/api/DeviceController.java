@@ -3,7 +3,6 @@ package com.github.lucasdengcn.billing.api;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.lucasdengcn.billing.model.request.DeviceUpdateRequest;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.mapper.DeviceMapper;
+import com.github.lucasdengcn.billing.model.request.DeviceBatchRegisterRequest;
 import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
+import com.github.lucasdengcn.billing.model.request.DeviceUpdateRequest;
 import com.github.lucasdengcn.billing.model.response.DeviceResponse;
 import com.github.lucasdengcn.billing.model.response.ErrorResponse;
 import com.github.lucasdengcn.billing.model.response.ValidationErrorResponse;
@@ -42,6 +43,19 @@ public class DeviceController {
     public ResponseEntity<DeviceResponse> createDevice(@Valid @RequestBody DeviceRegisterRequest request) {
         Device saved = deviceService.registerDevice(request);
         return ResponseEntity.ok(deviceMapper.toResponse(saved));
+    }
+
+    @PostMapping("/batch")
+    @Operation(summary = "Batch register devices", description = "Registers multiple devices for a single customer (new or existing)")
+    @ApiResponse(responseCode = "200", description = "Devices registered successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request or customer data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    public ResponseEntity<List<DeviceResponse>> batchCreateDevices(
+            @Valid @RequestBody DeviceBatchRegisterRequest request) {
+        List<Device> saved = deviceService.registerDevices(request);
+        List<DeviceResponse> responses = saved.stream()
+                .map(deviceMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     @PutMapping("/{id}")

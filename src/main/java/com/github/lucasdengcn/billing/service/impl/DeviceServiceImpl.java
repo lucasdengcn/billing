@@ -3,6 +3,8 @@ package com.github.lucasdengcn.billing.service.impl;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import com.github.lucasdengcn.billing.model.request.CustomerInfo;
+import com.github.lucasdengcn.billing.model.request.DeviceBatchRegisterRequest;
 import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
 import com.github.lucasdengcn.billing.model.request.DeviceUpdateRequest;
 import org.springframework.stereotype.Service;
@@ -40,10 +42,27 @@ public class DeviceServiceImpl implements DeviceService {
     @Transactional
     public Device registerDevice(DeviceRegisterRequest request) {
         log.info("Registering device: {} for customer info provided", request.getDeviceNo());
-        Customer customer = resolveCustomer(request);
+        Customer customer = resolveCustomer(request.getCustomer());
         Device device = deviceMapper.toEntity(request);
         device.setCustomer(customer);
         return deviceRepository.save(device);
+    }
+
+    @Override
+    @Transactional
+    public List<Device> registerDevices(DeviceBatchRegisterRequest request) {
+        log.info("Batch registering {} devices for customer info provided", request.getDevices().size());
+        Customer customer = resolveCustomer(request.getCustomer());
+
+        List<Device> devices = request.getDevices().stream()
+                .map(deviceReq -> {
+                    Device device = deviceMapper.toEntity(deviceReq);
+                    device.setCustomer(customer);
+                    return device;
+                })
+                .toList();
+
+        return deviceRepository.saveAll(devices);
     }
 
     @Override
@@ -68,8 +87,7 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceRepository.save(device);
     }
 
-    private Customer resolveCustomer(DeviceRegisterRequest request) {
-        DeviceRegisterRequest.CustomerInfo info = request.getCustomer();
+    private Customer resolveCustomer(CustomerInfo info) {
         if (info == null) {
             throw new IllegalArgumentException("Customer information is required to register a device");
         }

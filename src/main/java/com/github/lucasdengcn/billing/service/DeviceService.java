@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.service;
 import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
+import com.github.lucasdengcn.billing.model.request.DeviceBatchRegisterRequest;
 import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
 import com.github.lucasdengcn.billing.model.request.DeviceUpdateRequest;
 
@@ -12,6 +13,8 @@ public interface DeviceService {
     Device save(Device device);
 
     Device registerDevice(DeviceRegisterRequest request);
+
+    List<Device> registerDevices(DeviceBatchRegisterRequest request);
 
     Device updateDevice(Long id, DeviceUpdateRequest request);
 
