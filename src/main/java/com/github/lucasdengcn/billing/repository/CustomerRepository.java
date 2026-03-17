@@ -9,8 +9,6 @@ import com.github.lucasdengcn.billing.entity.Customer;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-  Optional<Customer> findByCustomerNo(String customerNo);
-
   Optional<Customer> findByWechatId(String wechatId);
 
   Optional<Customer> findByMobileNo(String mobileNo);

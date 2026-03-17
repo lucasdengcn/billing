@@ -21,8 +21,6 @@ public interface DeviceMapper {
     @Mapping(target = "featureAccessLogs", ignore = true)
     @Mapping(target = "usageStats", ignore = true)
     Device toEntity(DeviceRegisterRequest request);
-
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "lastActivityAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
