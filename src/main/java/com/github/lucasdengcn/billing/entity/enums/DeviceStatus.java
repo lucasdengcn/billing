@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum DeviceStatus {
     DEACTIVATED(0),
-    ACTIVE(1);
+    ACTIVE(1),
+    SUSPENDED(2);
 
     private final int value;
 
