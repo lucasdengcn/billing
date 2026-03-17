@@ -19,9 +19,6 @@ public class DeviceResponse {
     @Schema(description = "Unique database identifier for the device", example = "1")
     private Long id;
 
-    @Schema(description = "Customer information for the device owner")
-    private CustomerResponse customer;
-
     @Schema(description = "Friendly name for the device", example = "iPhone 15 Pro")
     private String deviceName;
 

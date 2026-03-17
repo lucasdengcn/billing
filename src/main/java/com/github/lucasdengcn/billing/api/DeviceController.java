@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.mapper.DeviceMapper;
 import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
@@ -61,6 +62,18 @@ public class DeviceController {
     public ResponseEntity<DeviceResponse> getDevice(@PathVariable Long id) {
         Device device = deviceService.findById(id);
         return ResponseEntity.ok(deviceMapper.toResponse(device));
+    }
+
+    @GetMapping("/customer/{customerId}")
+    @Operation(summary = "List customer devices", description = "Retrieves all devices associated with a specific customer")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved devices")
+    @ApiResponse(responseCode = "404", description = "Customer not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<List<DeviceResponse>> getCustomerDevices(@PathVariable Long customerId) {
+        Customer customer = customerService.findById(customerId);
+        List<DeviceResponse> responses = deviceService.findByCustomer(customer).stream()
+                .map(deviceMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping
