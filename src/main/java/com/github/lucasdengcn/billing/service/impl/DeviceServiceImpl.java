@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.service.impl;
 import java.util.List;
 
 import com.github.lucasdengcn.billing.model.request.DeviceRegisterRequest;
+import com.github.lucasdengcn.billing.model.request.DeviceUpdateRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,18 @@ public class DeviceServiceImpl implements DeviceService {
         Customer customer = resolveCustomer(request);
         Device device = deviceMapper.toEntity(request);
         device.setCustomer(customer);
+        return deviceRepository.save(device);
+    }
+
+    @Override
+    @Transactional
+    public Device updateDevice(Long id, DeviceUpdateRequest request) {
+        log.info("Updating device with ID: {}", id);
+        Device device = findById(id);
+
+        // Update device fields
+        deviceMapper.updateEntity(request, device);
+
         return deviceRepository.save(device);
     }
 

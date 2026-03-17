@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.api;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.lucasdengcn.billing.model.request.DeviceUpdateRequest;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,17 @@ public class DeviceController {
     public ResponseEntity<DeviceResponse> createDevice(@Valid @RequestBody DeviceRegisterRequest request) {
         Device saved = deviceService.registerDevice(request);
         return ResponseEntity.ok(deviceMapper.toResponse(saved));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update an existing device", description = "Updates device details such as name, type, and status")
+    @ApiResponse(responseCode = "200", description = "Device updated successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Device not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<DeviceResponse> updateDevice(@PathVariable Long id,
+            @Valid @RequestBody DeviceUpdateRequest request) {
+        Device updated = deviceService.updateDevice(id, request);
+        return ResponseEntity.ok(deviceMapper.toResponse(updated));
     }
 
     @GetMapping("/{id}")

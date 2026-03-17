@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-@Schema(description = "Request model for registering or updating a device")
+@Schema(description = "Request model for registering a device")
 public class DeviceRegisterRequest {
     @Valid
     @Schema(description = "Customer information for lookup or creation")
