@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:testdb",
+        "spring.datasource.url=jdbc:h2:mem:device-test-db",
         "spring.datasource.driver-class-name=org.h2.Driver",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.show-sql=true"

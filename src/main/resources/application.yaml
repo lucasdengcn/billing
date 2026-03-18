@@ -1,7 +1,15 @@
 spring:
   application:
     name: billing-service
-
+  jackson:
+    # use-jackson2-defaults: true
+    serialization:
+      fail-on-empty-beans: false
+      #write-dates-as-timestamps: false
+      indent-output: false
+    deserialization:
+      fail-on-unknown-properties: false      # Ignore unknown JSON fields
+      accept-empty-string-as-null-object: true  # Treat "" as null
   # Database Configuration
 #  datasource:
 #    url: jdbc:postgresql://localhost:5432/billing

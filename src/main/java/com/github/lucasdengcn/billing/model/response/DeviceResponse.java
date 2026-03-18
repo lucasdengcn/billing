@@ -33,4 +33,10 @@ public class DeviceResponse {
 
     @Schema(description = "Timestamp of the last recorded activity from this device")
     private OffsetDateTime lastActivityAt;
+
+    @Schema(description = "Timestamp when the device was last updated")
+    private OffsetDateTime updatedAt;
+
+    @Schema(description = "Timestamp when the device was created")
+    private OffsetDateTime createdAt;
 }

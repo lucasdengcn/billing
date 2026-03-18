@@ -73,7 +73,6 @@ public class DeviceServiceImpl implements DeviceService {
 
         // Update device fields
         deviceMapper.updateEntity(request, device);
-
         return deviceRepository.save(device);
     }
 

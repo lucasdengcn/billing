@@ -5,6 +5,7 @@ import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class DeviceRegisterRequest {
 
     @NotBlank(message = "Device number is required")
     @Size(max = 255, message = "Device number cannot exceed 255 characters")
+    @Pattern(regexp = "^[A-Z]{2,4}-\\d{6,12}$", message = "Device number must follow the format: XX-123456 or XXX-12345678 (2-4 letters, hyphen, 6-12 digits)")
     @Schema(description = "Unique identifier for the hardware device", example = "HW-12345678")
     private String deviceNo;
 
@@ -30,5 +32,6 @@ public class DeviceRegisterRequest {
     private String deviceType;
 
     @Schema(description = "Current status of the device", example = "ACTIVE")
+    @NotNull(message = "Device status is required")
     private DeviceStatus status;
 }
