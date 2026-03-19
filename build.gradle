@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
 }
 
 group = 'com.github.lucasdengcn.billing'
@@ -72,4 +73,71 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
 }
+
+// JaCoCo Configuration
+jacoco {
+	toolVersion = "0.8.11"
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
+	executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+	
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+				'**/BillingApplication.class',
+				'**/entity/**',
+				'**/model/**',
+				'**/exception/**',
+				'**/config/**',
+				'**/*MapperImpl.class',
+				'**/*$*.class'
+			])
+		}))
+	}
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.80 // 80% coverage required
+			}
+		}
+		rule {
+			element = 'CLASS'
+			includes = ['com.github.lucasdengcn.billing.service.*']
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.70 // 70% coverage for service classes
+			}
+		}
+		rule {
+			element = 'CLASS'
+			includes = ['com.github.lucasdengcn.billing.api.*']
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.80 // 80% coverage for controller classes
+			}
+		}
+	}
+}
+
+// Create a task to run both test and coverage verification
+task testWithCoverage {
+	dependsOn test, jacocoTestReport, jacocoTestCoverageVerification
+	description = 'Run tests with coverage report and verification'
+}
+
+// Make sure coverage verification runs after report generation
+jacocoTestCoverageVerification.dependsOn jacocoTestReport
