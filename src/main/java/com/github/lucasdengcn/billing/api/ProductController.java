@@ -3,6 +3,9 @@ package com.github.lucasdengcn.billing.api;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.lucasdengcn.billing.entity.ProductFeature;
+import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
+import com.github.lucasdengcn.billing.model.response.ProductFeatureResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
@@ -58,5 +61,59 @@ public class ProductController {
                 .map(productMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update a product", description = "Updates an existing product in the catalog")
+    @ApiResponse(responseCode = "200", description = "Product updated successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid product data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
+        Product updatedProduct = productService.updateProduct(id, request);
+        return ResponseEntity.ok(productMapper.toResponse(updatedProduct));
+    }
+
+    @PostMapping("/{productId}/features/bulk")
+    @Operation(summary = "Add multiple features to product", description = "Adds a list of new features to an existing product")
+    @ApiResponse(responseCode = "200", description = "Features added successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid feature data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<List<ProductFeatureResponse>> addFeaturesToProduct(@PathVariable Long productId, @Valid @RequestBody List<@Valid ProductFeatureRequest> requests) {
+        List<ProductFeature> features = productService.addFeaturesToProduct(productId, requests);
+        List<ProductFeatureResponse> responses = features.stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/{productId}/features")
+    @Operation(summary = "Get features of a product", description = "Retrieves all features associated with a specific product")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved product features")
+    @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<List<ProductFeatureResponse>> getProductFeatures(@PathVariable Long productId) {
+        List<ProductFeature> features = productService.findFeaturesByProduct(productId);
+        List<ProductFeatureResponse> responses = features.stream()
+                .map(productMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @PutMapping("/features/{featureId}")
+    @Operation(summary = "Update a product feature", description = "Updates an existing product feature")
+    @ApiResponse(responseCode = "200", description = "Feature updated successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid feature data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<ProductFeatureResponse> updateProductFeature(@PathVariable Long featureId, @Valid @RequestBody ProductFeatureRequest request) {
+        ProductFeature updatedFeature = productService.updateProductFeature(featureId, request);
+        return ResponseEntity.ok(productMapper.toResponse(updatedFeature));
+    }
+
+    @DeleteMapping("/features/{featureId}")
+    @Operation(summary = "Delete a product feature", description = "Deletes an existing product feature")
+    @ApiResponse(responseCode = "204", description = "Feature deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Void> deleteProductFeature(@PathVariable Long featureId) {
+        productService.deleteProductFeature(featureId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,7 +1,9 @@
 package com.github.lucasdengcn.billing.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +11,8 @@ import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.ProductFeature;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.mapper.ProductMapper;
+import com.github.lucasdengcn.billing.model.request.ProductRequest;
 import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
 import com.github.lucasdengcn.billing.repository.ProductRepository;
 import com.github.lucasdengcn.billing.service.ProductService;
@@ -24,6 +28,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductFeatureRepository productFeatureRepository;
+    private final ProductMapper productMapper;
 
     @Override
     public Product saveProduct(Product product) {
@@ -60,9 +65,71 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Product updateProduct(Long id, ProductRequest request) {
+        log.info("Updating product with ID: {}", id);
+        Product existingProduct = findProductById(id);
+        productMapper.updateEntity(request, existingProduct);
+        return productRepository.save(existingProduct);
+    }
+
+    @Override
     public ProductFeature saveFeature(ProductFeature feature) {
         log.info("Saving product feature: {}", feature);
         return productFeatureRepository.save(feature);
+    }
+
+    @Override
+    public List<ProductFeature> addFeaturesToProduct(Long productId, List<ProductFeatureRequest> requests) {
+        log.info("Adding {} features to product with ID: {}", requests.size(), productId);
+        
+        // Find the product
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+        
+        // Convert requests to entities and set the product
+        List<ProductFeature> features = requests.stream()
+                .map(request -> {
+                    ProductFeature feature = productMapper.toEntity(request);
+                    feature.setProduct(product);
+                    return feature;
+                })
+                .collect(Collectors.toList());
+        
+        return productFeatureRepository.saveAll(features);
+    }
+
+    @Override
+    public List<ProductFeature> findFeaturesByProduct(Long productId) {
+        log.debug("Finding features for product with ID: {}", productId);
+        
+        // Find the product
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+        
+        return productFeatureRepository.findByProduct(product);
+    }
+
+    @Override
+    public ProductFeature updateProductFeature(Long featureId, ProductFeatureRequest request) {
+        log.info("Updating product feature with ID: {}", featureId);
+        // Find the existing feature
+        ProductFeature existingFeature = findFeatureById(featureId);
+        // Update the feature properties
+        existingFeature.setTitle(request.getTitle());
+        existingFeature.setDescription(request.getDescription());
+        existingFeature.setQuota(request.getQuota());
+        return productFeatureRepository.save(existingFeature);
+    }
+
+    @Override
+    public void deleteProductFeature(Long featureId) {
+        log.info("Deleting product feature with ID: {}", featureId);
+        
+        // Check if the feature exists
+        findFeatureById(featureId);
+        
+        // Delete the feature
+        productFeatureRepository.deleteById(featureId);
     }
 
     @Override
