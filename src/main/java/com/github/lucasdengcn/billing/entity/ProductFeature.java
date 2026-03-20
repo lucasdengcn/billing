@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity;
 
+import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -30,6 +31,10 @@ public class ProductFeature {
 
     @Column(columnDefinition = "json")
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "feature_type", length = 50)
+    private FeatureType featureType;
 
     @Column(nullable = false)
     @Builder.Default

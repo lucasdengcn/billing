@@ -1,0 +1,1402 @@
+openapi: 3.1.0
+info:
+  contact:
+    email: dev@example.com
+    name: Development Team
+  description: RESTful API for billing service
+  title: Billing Service API
+  version: "1.0"
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+tags:
+  - description: APIs for managing customer product subscriptions
+    name: Subscription Management
+  - description: APIs for registering and managing customer devices
+    name: Device Management
+  - description: APIs for generating and managing customer bills
+    name: Billing Management
+  - description: Monitor and interact
+    externalDocs:
+      description: Spring Boot Actuator Web API Documentation
+      url: https://docs.spring.io/spring-boot/docs/current/actuator-api/html/
+    name: Actuator
+  - description: APIs for managing customers and their profiles
+    name: Customer Management
+  - description: APIs for managing the service and product catalog
+    name: Product Catalog
+paths:
+  /actuator:
+    get:
+      operationId: links
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/Link'
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/Link'
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/Link'
+          description: OK
+      summary: Actuator root web endpoint
+      tags:
+        - Actuator
+  /actuator/health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+          description: OK
+      summary: Actuator web endpoint 'health'
+      tags:
+        - Actuator
+  /api/bills:
+    post:
+      description: Generates a new billing record for a customer and period
+      operationId: createBill
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BillResponse'
+          description: Bill created successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid billing data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Customer not found
+      summary: Create a new bill
+      tags:
+        - Billing Management
+  /api/bills/customer/{customerId}:
+    get:
+      description: Retrieves all bills associated with a specific customer
+      operationId: getCustomerBills
+      parameters:
+        - in: path
+          name: customerId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillResponse'
+          description: Successfully retrieved bills
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Customer not found
+      summary: List customer bills
+      tags:
+        - Billing Management
+  /api/bills/{id}:
+    get:
+      description: Retrieves details of a specific bill
+      operationId: getBill
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BillResponse'
+          description: Bill found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bill not found
+      summary: Get bill by ID
+      tags:
+        - Billing Management
+  /api/customers:
+    get:
+      description: Retrieves a complete list of all registered customers
+      operationId: getAllCustomers
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponse'
+          description: Successfully retrieved list
+      summary: List all customers
+      tags:
+        - Customer Management
+    post:
+      description: Registers a new customer in the system
+      operationId: createCustomer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+          description: Customer created successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request data
+      summary: Create a new customer
+      tags:
+        - Customer Management
+  /api/customers/{id}:
+    delete:
+      description: Removes a customer's record from the system
+      operationId: deleteCustomer
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Customer deleted successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Customer not found
+      summary: Delete a customer
+      tags:
+        - Customer Management
+    get:
+      description: Retrieves a single customer's details by their unique database ID
+      operationId: getCustomer
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+          description: Customer found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Customer not found
+      summary: Get customer by ID
+      tags:
+        - Customer Management
+  /api/devices:
+    get:
+      description: Retrieves a complete list of all registered devices
+      operationId: getAllDevices
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceResponse'
+          description: Successfully retrieved list
+      summary: List all devices
+      tags:
+        - Device Management
+    post:
+      description: Registers a hardware device and optionally creates/resolves its owner
+      operationId: createDevice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegisterRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+          description: Device registered successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request or customer data
+      summary: Register a new device
+      tags:
+        - Device Management
+  /api/devices/activate/{deviceNo}:
+    post:
+      description: Activates a device and updates its last activity timestamp using its unique hardware number
+      operationId: activateDevice
+      parameters:
+        - in: path
+          name: deviceNo
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+          description: Device activated successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Device not found
+      summary: Activate a device by number
+      tags:
+        - Device Management
+  /api/devices/batch:
+    post:
+      description: Registers multiple devices for a single customer (new or existing)
+      operationId: batchCreateDevices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceBatchRegisterRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceResponse'
+          description: Devices registered successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request or customer data
+      summary: Batch register devices
+      tags:
+        - Device Management
+  /api/devices/customer/{customerId}:
+    get:
+      description: Retrieves all devices associated with a specific customer
+      operationId: getCustomerDevices
+      parameters:
+        - in: path
+          name: customerId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceResponse'
+          description: Successfully retrieved devices
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Customer not found
+      summary: List customer devices
+      tags:
+        - Device Management
+  /api/devices/deactivate/{deviceNo}:
+    patch:
+      description: Deactivates a device using its unique device number
+      operationId: deactivateDeviceByNo
+      parameters:
+        - in: path
+          name: deviceNo
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+          description: Device deactivated successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Device not found
+      summary: Deactivate device by device number
+      tags:
+        - Device Management
+  /api/devices/{id}:
+    get:
+      description: Retrieves a device by its database identifier
+      operationId: getDeviceById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+          description: Device found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Device not found
+      summary: Get device by ID
+      tags:
+        - Device Management
+    put:
+      description: Updates device details such as name, type, and status
+      operationId: updateDevice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdateRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+          description: Device updated successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Device not found
+      summary: Update an existing device
+      tags:
+        - Device Management
+  /api/products:
+    get:
+      description: Retrieves all products available in the catalog
+      operationId: getAllProducts
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+          description: Successfully retrieved catalog
+      summary: List all products
+      tags:
+        - Product Catalog
+    post:
+      description: Adds a new product or service plan to the catalog
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+          description: Product created successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid product data
+      summary: Create a new product
+      tags:
+        - Product Catalog
+  /api/products/features/{featureId}:
+    delete:
+      description: Deletes an existing product feature
+      operationId: deleteProductFeature
+      parameters:
+        - in: path
+          name: featureId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Feature deleted successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Feature not found
+      summary: Delete a product feature
+      tags:
+        - Product Catalog
+    put:
+      description: Updates an existing product feature
+      operationId: updateProductFeature
+      parameters:
+        - in: path
+          name: featureId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductFeatureRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductFeatureResponse'
+          description: Feature updated successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid feature data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Feature not found
+      summary: Update a product feature
+      tags:
+        - Product Catalog
+  /api/products/{id}:
+    get:
+      description: Retrieves details of a specific product by its ID
+      operationId: getProduct
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+          description: Product found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Product not found
+      summary: Get product by ID
+      tags:
+        - Product Catalog
+    put:
+      description: Updates an existing product in the catalog
+      operationId: updateProduct
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+          description: Product updated successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid product data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Product not found
+      summary: Update a product
+      tags:
+        - Product Catalog
+  /api/products/{productId}/features:
+    get:
+      description: Retrieves all features associated with a specific product
+      operationId: getProductFeatures
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductFeatureResponse'
+          description: Successfully retrieved product features
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Product not found
+      summary: Get features of a product
+      tags:
+        - Product Catalog
+  /api/products/{productId}/features/bulk:
+    post:
+      description: Adds a list of new features to an existing product
+      operationId: addFeaturesToProduct
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductFeatureRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductFeatureResponse'
+          description: Features added successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid feature data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Product not found
+      summary: Add multiple features to product
+      tags:
+        - Product Catalog
+  /api/subscriptions:
+    post:
+      description: Subscribes a customer to a specific product, optionally linked to a device
+      operationId: createSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+          description: Subscription created successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Customer, Product, or Device not found
+      summary: Create a subscription
+      tags:
+        - Subscription Management
+  /api/subscriptions/customer/{customerId}:
+    get:
+      description: Retrieves all subscriptions for a specific customer
+      operationId: getCustomerSubscriptions
+      parameters:
+        - in: path
+          name: customerId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionResponse'
+          description: Successfully retrieved subscriptions
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Customer not found
+      summary: List customer subscriptions
+      tags:
+        - Subscription Management
+  /api/subscriptions/{id}:
+    get:
+      description: Retrieves details of a specific subscription
+      operationId: getSubscription
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+          description: Subscription found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Subscription not found
+      summary: Get subscription by ID
+      tags:
+        - Subscription Management
+components:
+  schemas:
+    BillRequest:
+      type: object
+      description: Request model for generating or updating a bill
+      properties:
+        baseFees:
+          type: number
+          description: Total base subscription fees for the period
+          example: "29.99"
+          minimum: 0.0
+        billingPeriodEnd:
+          type: string
+          format: date
+          description: End date of the billing period
+          example: "2026-03-31"
+        billingPeriodStart:
+          type: string
+          format: date
+          description: Start date of the billing period
+          example: "2026-03-01"
+        customerId:
+          type: integer
+          format: int64
+          description: ID of the customer being billed
+          example: 1
+        paymentStatus:
+          type: string
+          description: Current payment state of the bill
+          enum:
+            - PENDING
+            - PAID
+            - OVERDUE
+            - PARTIALLY_PAID
+          example: PENDING
+        usageFees:
+          type: number
+          description: Variable usage-based fees for the period
+          example: "5.50"
+          minimum: 0.0
+      required:
+        - billingPeriodEnd
+        - billingPeriodStart
+        - customerId
+    BillResponse:
+      type: object
+      description: Response model representing a generated bill
+      properties:
+        baseFees:
+          type: number
+          description: Total base subscription fees
+          example: "29.99"
+        billingPeriodEnd:
+          type: string
+          format: date
+          description: End date of the billing period
+          example: "2026-03-31"
+        billingPeriodStart:
+          type: string
+          format: date
+          description: Start date of the billing period
+          example: "2026-03-01"
+        customerId:
+          type: integer
+          format: int64
+          description: ID of the customer
+          example: 1
+        id:
+          type: integer
+          format: int64
+          description: Unique database identifier for the bill
+          example: 1
+        paidAt:
+          type: string
+          format: date-time
+          description: Timestamp when the bill was fully paid
+        paymentStatus:
+          type: string
+          description: Current payment state
+          enum:
+            - PENDING
+            - PAID
+            - OVERDUE
+            - PARTIALLY_PAID
+          example: PAID
+        totalFees:
+          type: number
+          description: Sum of base and usage fees
+          example: "35.49"
+        usageFees:
+          type: number
+          description: Total usage-based variable fees
+          example: "5.50"
+    CustomerInfo:
+      type: object
+      description: Customer information for lookup or creation within a request
+      properties:
+        customerNo:
+          type: string
+          description: Customer business number
+          example: CUST-001
+          maxLength: 50
+          minLength: 0
+          pattern: ^[A-Z]{2,4}-\d{6,12}$
+        id:
+          type: integer
+          format: int64
+          description: ID of an existing customer
+          example: 1
+        mobileNo:
+          type: string
+          description: Customer mobile number
+          example: "+8613800000000"
+          pattern: ^\+?[1-9]\d{1,14}$
+        name:
+          type: string
+          description: Customer name (required for new customers)
+          example: John Doe
+          maxLength: 255
+          minLength: 0
+        wechatId:
+          type: string
+          description: Customer WeChat ID
+          example: wx_john
+          maxLength: 255
+          minLength: 0
+    CustomerRequest:
+      type: object
+      description: Request model for creating or updating a customer
+      properties:
+        customerNo:
+          type: string
+          description: Unique customer number
+          example: CUST-2026-001
+          maxLength: 50
+          minLength: 0
+          pattern: ^[A-Z]{2,4}-\d{6,12}$
+        mobileNo:
+          type: string
+          description: Mobile number for contact
+          example: "+8613800000000"
+          pattern: ^\+?[1-9]\d{1,14}$
+        name:
+          type: string
+          description: Customer's full name
+          example: John Doe
+          maxLength: 255
+          minLength: 2
+        wechatId:
+          type: string
+          description: WeChat ID for communication
+          example: wx_12345
+          maxLength: 255
+          minLength: 0
+      required:
+        - name
+    CustomerResponse:
+      type: object
+      description: Response model representing a customer's details
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the record was created
+        customerNo:
+          type: string
+          description: Unique customer number
+          example: CUST-2026-001
+        id:
+          type: integer
+          format: int64
+          description: Unique database identifier for the customer
+          example: 1
+        mobileNo:
+          type: string
+          description: Mobile number
+          example: "+8613800000000"
+        name:
+          type: string
+          description: Customer's full name
+          example: John Doe
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the record was last updated
+        wechatId:
+          type: string
+          description: WeChat ID
+          example: wx_12345
+    DeviceBatchRegisterRequest:
+      type: object
+      description: Request model for registering multiple devices for a single customer
+      properties:
+        customer:
+          $ref: '#/components/schemas/CustomerInfo'
+          description: Customer information for lookup or creation
+        devices:
+          type: array
+          description: List of devices to be registered for the customer
+          items:
+            $ref: '#/components/schemas/DeviceUpdateRequest'
+          minItems: 1
+      required:
+        - customer
+        - devices
+    DeviceRegisterRequest:
+      type: object
+      description: Request model for registering a new device
+      properties:
+        customer:
+          $ref: '#/components/schemas/CustomerInfo'
+          description: Customer information for lookup or creation
+        deviceName:
+          type: string
+          description: Friendly name for the device
+          example: iPhone 15 Pro
+          maxLength: 255
+          minLength: 0
+        deviceNo:
+          type: string
+          description: Unique identifier for the hardware device
+          example: HW-12345678
+          maxLength: 255
+          minLength: 0
+          pattern: ^[A-Z]{2,4}-\d{6,12}$
+        deviceType:
+          type: string
+          description: Type of device
+          example: MOBILE
+          maxLength: 50
+          minLength: 0
+        status:
+          type: string
+          description: Current status of the device
+          enum:
+            - INACTIVE
+            - DEACTIVATED
+            - ACTIVE
+            - SUSPENDED
+          example: ACTIVE
+      required:
+        - deviceNo
+        - status
+    DeviceResponse:
+      type: object
+      description: Response model representing a registered device
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the device was created
+        deviceName:
+          type: string
+          description: Friendly name for the device
+          example: iPhone 15 Pro
+        deviceNo:
+          type: string
+          description: Unique hardware identifier
+          example: HW-12345678
+        deviceType:
+          type: string
+          description: Device hardware or platform type
+          example: MOBILE
+        id:
+          type: integer
+          format: int64
+          description: Unique database identifier for the device
+          example: 1
+        lastActivityAt:
+          type: string
+          format: date-time
+          description: Timestamp of the last recorded activity from this device
+        status:
+          type: string
+          description: Current activation status of the device
+          enum:
+            - INACTIVE
+            - DEACTIVATED
+            - ACTIVE
+            - SUSPENDED
+          example: ACTIVE
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the device was last updated
+    DeviceUpdateRequest:
+      type: object
+      description: Request model for updating an existing device
+      properties:
+        deviceName:
+          type: string
+          description: Friendly name for the device
+          example: iPhone 15 Pro
+          maxLength: 255
+          minLength: 0
+        deviceNo:
+          type: string
+          description: Unique identifier for the hardware device
+          example: HW-12345678
+          maxLength: 255
+          minLength: 0
+          pattern: ^[A-Z]{2,4}-\d{6,12}$
+        deviceType:
+          type: string
+          description: Type of device
+          example: MOBILE
+          maxLength: 50
+          minLength: 0
+        status:
+          type: string
+          description: Current status of the device
+          enum:
+            - INACTIVE
+            - DEACTIVATED
+            - ACTIVE
+            - SUSPENDED
+          example: ACTIVE
+      required:
+        - deviceNo
+        - status
+    ErrorResponse:
+      type: object
+      description: Response model for general API errors (e.g., 404, 500)
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: Resource not found
+        path:
+          type: string
+          description: Path where the error occurred
+          example: /api/customers/999
+        status:
+          type: integer
+          format: int32
+          description: HTTP Status code
+          example: 404
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the error
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        templated:
+          type: boolean
+    ProductFeatureRequest:
+      type: object
+      properties:
+        description:
+          type: string
+        productId:
+          type: integer
+          format: int64
+        quota:
+          type: integer
+          format: int32
+        title:
+          type: string
+          minLength: 1
+      required:
+        - productId
+        - quota
+        - title
+    ProductFeatureResponse:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+        id:
+          type: integer
+          format: int64
+        productId:
+          type: integer
+          format: int64
+        quota:
+          type: integer
+          format: int32
+        title:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    ProductRequest:
+      type: object
+      description: Request model for creating or updating a product
+      properties:
+        baseMonthlyFee:
+          type: number
+          description: Standard monthly cost before any discounts
+          example: "29.99"
+          minimum: 0.0
+        description:
+          type: string
+          description: JSON description of the product
+          example:
+            tier: premium
+            support: 24/7
+        discountRate:
+          type: number
+          description: Discount rate applied to base fee (1.0 = no discount)
+          example: "0.90"
+          minimum: 0.0
+        discountStatus:
+          type: string
+          description: Whether a discount is currently active for this product
+          enum:
+            - INACTIVE
+            - ACTIVE
+          example: ACTIVE
+        title:
+          type: string
+          description: Title of the service/product
+          example: Premium Plan
+          maxLength: 255
+          minLength: 2
+      required:
+        - baseMonthlyFee
+        - title
+    ProductResponse:
+      type: object
+      description: Response model representing a service or product
+      properties:
+        baseMonthlyFee:
+          type: number
+          description: Base monthly fee amount
+          example: "29.99"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the product was added to the catalog
+        description:
+          type: string
+          description: Product metadata and description in JSON
+          example:
+            tier: premium
+        discountRate:
+          type: number
+          description: Active discount rate
+          example: "0.90"
+        discountStatus:
+          type: string
+          description: Whether a discount is active
+          enum:
+            - INACTIVE
+            - ACTIVE
+          example: ACTIVE
+        id:
+          type: integer
+          format: int64
+          description: Unique database identifier for the product
+          example: 1
+        title:
+          type: string
+          description: Product title
+          example: Premium Plan
+    SubscriptionRequest:
+      type: object
+      description: Request model for creating a new subscription
+      properties:
+        baseFee:
+          type: number
+          description: Base fee at time of subscription
+          example: "29.99"
+          minimum: 0.0
+        customerId:
+          type: integer
+          format: int64
+          description: ID of the subscribing customer
+          example: 1
+        deviceId:
+          type: integer
+          format: int64
+          description: Optional ID of the primary device for this subscription
+          example: 1
+        discountRate:
+          type: number
+          description: Applied discount rate
+          example: "0.90"
+          minimum: 0.0
+        endDate:
+          type: string
+          format: date-time
+          description: When the subscription expires
+          example: "2027-03-16T00:00:00Z"
+        periodDays:
+          type: integer
+          format: int32
+          description: Duration of the subscription in days
+          example: 365
+          minimum: 1
+        productId:
+          type: integer
+          format: int64
+          description: ID of the product to subscribe to
+          example: 1
+        startDate:
+          type: string
+          format: date-time
+          description: When the subscription begins
+          example: "2026-03-16T00:00:00Z"
+        status:
+          type: string
+          description: Current state of the subscription
+          enum:
+            - PENDING
+            - ACTIVE
+            - CANCELLED
+            - EXPIRED
+          example: ACTIVE
+      required:
+        - customerId
+        - periodDays
+        - productId
+        - startDate
+    SubscriptionResponse:
+      type: object
+      description: Response model representing a customer's subscription
+      properties:
+        baseFee:
+          type: number
+          description: Base fee at subscription time
+          example: "29.99"
+        customerId:
+          type: integer
+          format: int64
+          description: ID of the customer
+          example: 1
+        deviceId:
+          type: integer
+          format: int64
+          description: ID of the primary device (if any)
+          example: 1
+        discountRate:
+          type: number
+          description: Locked-in discount rate
+          example: "0.90"
+        endDate:
+          type: string
+          format: date-time
+          description: Expiry date
+        id:
+          type: integer
+          format: int64
+          description: Unique database identifier for the subscription
+          example: 1
+        periodDays:
+          type: integer
+          format: int32
+          description: Subscription period in days
+          example: 365
+        productId:
+          type: integer
+          format: int64
+          description: ID of the subscribed product
+          example: 1
+        startDate:
+          type: string
+          format: date-time
+          description: Activation date
+        status:
+          type: string
+          description: Current lifecycle status of the subscription
+          enum:
+            - PENDING
+            - ACTIVE
+            - CANCELLED
+            - EXPIRED
+          example: ACTIVE
+        totalFee:
+          type: number
+          description: Total fee (baseFee * discountRate)
+          example: "26.99"
+    ValidationErrorResponse:
+      type: object
+      description: Response model for validation errors (400 Bad Request)
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+          description: Detailed field-level validation errors
+        message:
+          type: string
+          description: Overall error message
+          example: Validation failed
+        path:
+          type: string
+          description: Path where the error occurred
+          example: /api/customers
+        status:
+          type: integer
+          format: int32
+          description: HTTP Status code
+          example: 400
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the error

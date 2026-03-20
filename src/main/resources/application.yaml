@@ -11,6 +11,12 @@ spring:
       fail-on-unknown-properties: false      # Ignore unknown JSON fields
       accept-empty-string-as-null-object: true  # Treat "" as null
   # Database Configuration
+  datasource:
+    # H2 Database Configuration
+    url: jdbc:h2:mem:local-db
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
 #  datasource:
 #    url: jdbc:postgresql://localhost:5432/billing
 #    username: postgres
@@ -35,3 +41,16 @@ logging:
     com.github.lucasdengcn.billing: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    deep-linking: true
+    display-request-duration: true
+    doc-expansion: full
+  api-docs:
+    path: /v3/api-docs
+  # Additional configurations
+  writer-with-order-by-keys: true
+  show-actuator: true

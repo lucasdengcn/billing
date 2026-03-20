@@ -17,6 +17,8 @@ public enum FeatureType {
     SECURITY("security"),
     BACKUP("backup"),
     MONITORING("monitoring"),
+    TOKEN("token"),
+    CREDIT("credit"),
     OTHER("other");
     
     private final String value;

@@ -3,12 +3,14 @@ package com.github.lucasdengcn.billing.service;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.ProductFeature;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.mapper.ProductMapper;
 import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
 import com.github.lucasdengcn.billing.model.request.ProductRequest;
 import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
 import com.github.lucasdengcn.billing.repository.ProductRepository;
+import com.github.lucasdengcn.billing.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,6 +66,7 @@ class ProductServiceTest {
                 .id(10L)
                 .title("API Access")
                 .description("{\"type\":\"api\"}")
+                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS)
                 .quota(1000)
                 .build();
         
@@ -77,6 +80,7 @@ class ProductServiceTest {
                 .productId(1L)
                 .title("New Feature")
                 .description("New feature description")
+                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.STORAGE_SPACE)
                 .quota(500)
                 .build();
     }
@@ -122,7 +126,7 @@ class ProductServiceTest {
     @Test
     void findProductsByDiscountStatus_ShouldReturnMatchingProducts() {
         // Given
-        List<Product> products = Arrays.asList(sampleProduct);
+        List<Product> products = Collections.singletonList(sampleProduct);
         when(productRepository.findByDiscountStatus(DiscountStatus.ACTIVE)).thenReturn(products);
         
         // When
@@ -136,7 +140,7 @@ class ProductServiceTest {
     @Test
     void findAllProducts_ShouldReturnAllProducts() {
         // Given
-        List<Product> products = Arrays.asList(sampleProduct);
+        List<Product> products = Collections.singletonList(sampleProduct);
         when(productRepository.findAll()).thenReturn(products);
         
         // When
@@ -160,7 +164,6 @@ class ProductServiceTest {
     void updateProduct_WhenProductExists_ShouldUpdateAndReturnProduct() {
         // Given
         when(productRepository.findById(1L)).thenReturn(Optional.of(sampleProduct));
-        when(productMapper.updateEntity(any(ProductRequest.class), any(Product.class))).thenReturn(sampleProduct);
         when(productRepository.save(any(Product.class))).thenReturn(sampleProduct);
         
         // When
@@ -202,8 +205,8 @@ class ProductServiceTest {
     void addFeaturesToProduct_WhenProductExists_ShouldAddFeatures() {
         // Given
         Product product = sampleProduct;
-        List<ProductFeatureRequest> requests = Arrays.asList(featureRequest);
-        List<ProductFeature> features = Arrays.asList(sampleFeature);
+        List<ProductFeatureRequest> requests = Collections.singletonList(featureRequest);
+        List<ProductFeature> features = Collections.singletonList(sampleFeature);
         
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productMapper.toEntity(any(ProductFeatureRequest.class))).thenReturn(sampleFeature);
@@ -222,7 +225,7 @@ class ProductServiceTest {
     @Test
     void addFeaturesToProduct_WhenProductDoesNotExist_ShouldThrowResourceNotFoundException() {
         // Given
-        List<ProductFeatureRequest> requests = Arrays.asList(featureRequest);
+        List<ProductFeatureRequest> requests = Collections.singletonList(featureRequest);
         when(productRepository.findById(999L)).thenReturn(Optional.empty());
         
         // When & Then
@@ -235,7 +238,7 @@ class ProductServiceTest {
     @Test
     void findFeaturesByProduct_WhenProductIdExists_ShouldReturnFeatures() {
         // Given
-        List<ProductFeature> features = Arrays.asList(sampleFeature);
+        List<ProductFeature> features = Collections.singletonList(sampleFeature);
         when(productRepository.findById(1L)).thenReturn(Optional.of(sampleProduct));
         when(productFeatureRepository.findByProduct(sampleProduct)).thenReturn(features);
         
@@ -278,7 +281,7 @@ class ProductServiceTest {
         // Verify that the feature was updated with values from the request
         ArgumentCaptor<ProductFeature> captor = ArgumentCaptor.forClass(ProductFeature.class);
         verify(productFeatureRepository).save(captor.capture());
-        Product capturedFeature = captor.getValue();
+        ProductFeature capturedFeature = captor.getValue();
         assertThat(capturedFeature.getTitle()).isEqualTo(featureRequest.getTitle());
         assertThat(capturedFeature.getDescription()).isEqualTo(featureRequest.getDescription());
         assertThat(capturedFeature.getQuota()).isEqualTo(featureRequest.getQuota());
@@ -349,7 +352,7 @@ class ProductServiceTest {
     @Test
     void findFeaturesByProductEntity_WhenProductHasFeatures_ShouldReturnFeatures() {
         // Given
-        List<ProductFeature> features = Arrays.asList(sampleFeature);
+        List<ProductFeature> features = Collections.singletonList(sampleFeature);
         when(productFeatureRepository.findByProduct(sampleProduct)).thenReturn(features);
         
         // When
@@ -371,5 +374,41 @@ class ProductServiceTest {
         // Then
         assertThat(result).isEmpty();
         verify(productFeatureRepository, times(1)).findByProduct(sampleProduct);
+    }
+
+    @Test
+    void addFeaturesToProduct_WithFeatureType_ShouldPersistFeatureType() {
+        // Given
+        Product product = sampleProduct;
+        ProductFeatureRequest requestWithFeatureType = ProductFeatureRequest.builder()
+                .productId(1L)
+                .title("Storage Feature")
+                .description("Storage space feature")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(5000)
+                .build();
+        List<ProductFeatureRequest> requests = Collections.singletonList(requestWithFeatureType);
+        
+        ProductFeature expectedFeature = ProductFeature.builder()
+                .title("Storage Feature")
+                .description("Storage space feature")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(5000)
+                .product(product)
+                .build();
+        
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productMapper.toEntity(any(ProductFeatureRequest.class))).thenReturn(expectedFeature);
+        when(productFeatureRepository.saveAll(any(List.class))).thenReturn(Arrays.asList(expectedFeature));
+        
+        // When
+        List<ProductFeature> result = productService.addFeaturesToProduct(1L, requests);
+        
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getFeatureType()).isEqualTo(FeatureType.STORAGE_SPACE);
+        verify(productRepository, times(1)).findById(1L);
+        verify(productMapper, times(1)).toEntity(any(ProductFeatureRequest.class));
+        verify(productFeatureRepository, times(1)).saveAll(any(List.class));
     }
 }

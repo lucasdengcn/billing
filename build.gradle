@@ -33,20 +33,22 @@ repositories {
 
 dependencies {
 	// implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.3')
-	implementation 'org.springframework.boot:spring-boot-micrometer-tracing'
+	// implementation 'org.springframework.boot:spring-boot-micrometer-tracing'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	// implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-flyway'
 	// implementation 'org.springframework.boot:spring-boot-starter-graphql'
-	implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
+	// implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	//
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
 	implementation 'org.mapstruct:mapstruct:1.6.3'
+	// Dependencies for OpenAPI YAML generation
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
 	//
-	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	//implementation 'io.micrometer:micrometer-tracing-bridge-brave'
 	implementation 'org.flywaydb:flyway-database-postgresql'
 	//
 	compileOnly 'org.projectlombok:lombok'
@@ -58,14 +60,14 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 	//
-	testRuntimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-micrometer-tracing-test'
+	// testImplementation 'org.springframework.boot:spring-boot-micrometer-tracing-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
 	// testImplementation 'org.springframework.boot:spring-boot-starter-graphql-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-opentelemetry-test'
+	// testImplementation 'org.springframework.boot:spring-boot-starter-opentelemetry-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

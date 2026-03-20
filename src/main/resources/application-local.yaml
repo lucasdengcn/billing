@@ -1,0 +1,8 @@
+spring:
+  # Database Configuration
+  datasource:
+    # H2 Database Configuration
+    url: jdbc:h2:mem:local-db
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
