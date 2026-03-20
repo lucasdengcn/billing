@@ -50,6 +50,7 @@ public interface ProductMapper {
     @Mapping(target = "features", ignore = true)
     @Mapping(target = "subscriptions", ignore = true)
     @Mapping(target = "billDetails", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(ProductRequest request, @MappingTarget Product product);
 
     // ProductFeature mappings

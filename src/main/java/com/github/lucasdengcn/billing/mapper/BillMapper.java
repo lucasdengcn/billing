@@ -6,9 +6,16 @@ import com.github.lucasdengcn.billing.model.response.BillResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ObjectFactory;
 
 @Mapper(componentModel = "spring")
 public interface BillMapper {
+    
+    @ObjectFactory
+    default Bill createBill() {
+        return Bill.builder().build();
+    }
+    
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "totalFees", ignore = true)

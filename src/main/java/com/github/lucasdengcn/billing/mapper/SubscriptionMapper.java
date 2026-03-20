@@ -6,9 +6,16 @@ import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ObjectFactory;
 
 @Mapper(componentModel = "spring")
 public interface SubscriptionMapper {
+    
+    @ObjectFactory
+    default Subscription createSubscription() {
+        return Subscription.builder().build();
+    }
+    
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "device", ignore = true)
