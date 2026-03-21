@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("SubscriptionServiceImpl createSubscription Unit Tests")
-class SubscriptionServiceImplTest {
+class SubscriptionCreateSubscriptionTest {
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
