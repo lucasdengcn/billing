@@ -46,7 +46,7 @@ class ProductRepositoryTest {
         testProduct1 = Product.builder()
                 .title("Basic Plan")
                 .description("Basic service plan")
-                .baseMonthlyFee(new BigDecimal("29.99"))
+                .basePrice(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -54,7 +54,7 @@ class ProductRepositoryTest {
         testProduct2 = Product.builder()
                 .title("Premium Plan")
                 .description("Premium service plan")
-                .baseMonthlyFee(new BigDecimal("59.99"))
+                .basePrice(new BigDecimal("59.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -62,7 +62,7 @@ class ProductRepositoryTest {
         testProduct3 = Product.builder()
                 .title("Enterprise Plan")
                 .description("Enterprise service plan")
-                .baseMonthlyFee(new BigDecimal("99.99"))
+                .basePrice(new BigDecimal("99.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.INACTIVE)
                 .build();
@@ -70,7 +70,7 @@ class ProductRepositoryTest {
         testProduct4 = Product.builder()
                 .title("Student Plan")
                 .description("Discounted student plan")
-                .baseMonthlyFee(new BigDecimal("9.99"))
+                .basePrice(new BigDecimal("9.99"))
                 .discountRate(new BigDecimal("0.5000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -88,7 +88,7 @@ class ProductRepositoryTest {
         // Then
         assertThat(foundProduct).isPresent();
         assertThat(foundProduct.get().getTitle()).isEqualTo("Basic Plan");
-        assertThat(foundProduct.get().getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("29.99"));
+        assertThat(foundProduct.get().getBasePrice()).isEqualByComparingTo(new BigDecimal("29.99"));
         assertThat(foundProduct.get().getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
     }
 
@@ -138,7 +138,7 @@ class ProductRepositoryTest {
         Product newProduct = Product.builder()
                 .title("New Plan")
                 .description("Brand new service plan")
-                .baseMonthlyFee(new BigDecimal("79.99"))
+                .basePrice(new BigDecimal("79.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -149,7 +149,7 @@ class ProductRepositoryTest {
         // Then
         assertThat(savedProduct.getId()).isNotNull();
         assertThat(savedProduct.getTitle()).isEqualTo("New Plan");
-        assertThat(savedProduct.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("79.99"));
+        assertThat(savedProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("79.99"));
         assertThat(savedProduct.getCreatedAt()).isNotNull();
         assertThat(savedProduct.getUpdatedAt()).isNotNull();
         assertThat(savedProduct.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
@@ -166,7 +166,7 @@ class ProductRepositoryTest {
         Product product = Product.builder()
                 .title("Plan With Features")
                 .description("A plan with several features")
-                .baseMonthlyFee(new BigDecimal("49.99"))
+                .basePrice(new BigDecimal("49.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();

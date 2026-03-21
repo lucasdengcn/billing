@@ -30,9 +30,9 @@ public class Product {
     @Column(columnDefinition = "json")
     private String description;
 
-    @Column(name = "base_monthly_fee", nullable = false, precision = 19, scale = 4)
+    @Column(name = "base_price", nullable = false, precision = 19, scale = 4)
     @Builder.Default
-    private BigDecimal baseMonthlyFee = BigDecimal.ZERO;
+    private BigDecimal basePrice = BigDecimal.ZERO;
 
     @Column(name = "discount_rate", precision = 5, scale = 4)
     @Builder.Default

@@ -34,7 +34,7 @@ class ProductMapperTest {
                 .id(1L)
                 .title("Premium Plan")
                 .description("{\"tier\":\"premium\",\"support\":\"24/7\"}")
-                .baseMonthlyFee(new BigDecimal("59.99"))
+                .basePrice(new BigDecimal("59.99"))
                 .discountRate(new BigDecimal("0.90"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .createdAt(OffsetDateTime.now().minusDays(1))
@@ -59,7 +59,7 @@ class ProductMapperTest {
         ProductRequest request = new ProductRequest();
         request.setTitle("Basic Plan");
         request.setDescription("{\"tier\":\"basic\"}");
-        request.setBaseMonthlyFee(new BigDecimal("29.99"));
+        request.setBasePrice(new BigDecimal("29.99"));
         request.setDiscountRate(new BigDecimal("1.00"));
         request.setDiscountStatus(DiscountStatus.INACTIVE);
 
@@ -71,7 +71,7 @@ class ProductMapperTest {
         assertThat(product.getId()).isNull(); // Should be ignored
         assertThat(product.getTitle()).isEqualTo("Basic Plan");
         assertThat(product.getDescription()).isEqualTo("{\"tier\":\"basic\"}");
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("29.99"));
+        assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("29.99"));
         assertThat(product.getDiscountRate()).isEqualByComparingTo(new BigDecimal("1.00"));
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.INACTIVE);
         
@@ -88,7 +88,7 @@ class ProductMapperTest {
         // Given
         ProductRequest request = new ProductRequest();
         request.setTitle("Free Plan");
-        request.setBaseMonthlyFee(BigDecimal.ZERO); // Required field
+        request.setBasePrice(BigDecimal.ZERO); // Required field
 
         // When
         Product product = productMapper.toEntity(request);
@@ -97,7 +97,7 @@ class ProductMapperTest {
         assertThat(product).isNotNull();
         assertThat(product.getId()).isNull();
         assertThat(product.getTitle()).isEqualTo("Free Plan");
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(product.getBasePrice()).isEqualByComparingTo(BigDecimal.ZERO);
         // Default values verification
         assertThat(product.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE); // Default value
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.INACTIVE); // Default value
@@ -116,7 +116,7 @@ class ProductMapperTest {
         assertThat(response.getId()).isEqualTo(1L);
         assertThat(response.getTitle()).isEqualTo("Premium Plan");
         assertThat(response.getDescription()).isEqualTo("{\"tier\":\"premium\",\"support\":\"24/7\"}");
-        assertThat(response.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("59.99"));
+        assertThat(response.getBasePrice()).isEqualByComparingTo(new BigDecimal("59.99"));
         assertThat(response.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.90"));
         assertThat(response.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
         assertThat(response.getCreatedAt()).isEqualTo(testProduct.getCreatedAt());
@@ -129,7 +129,7 @@ class ProductMapperTest {
                 .id(2L)
                 .title("Null Fields Product")
                 .description(null)
-                .baseMonthlyFee(new BigDecimal("19.99"))
+                .basePrice(new BigDecimal("19.99"))
                 .discountRate(null)
                 .discountStatus(null)
                 .createdAt(OffsetDateTime.now())
@@ -144,7 +144,7 @@ class ProductMapperTest {
         assertThat(response.getId()).isEqualTo(2L);
         assertThat(response.getTitle()).isEqualTo("Null Fields Product");
         assertThat(response.getDescription()).isNull();
-        assertThat(response.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("19.99"));
+        assertThat(response.getBasePrice()).isEqualByComparingTo(new BigDecimal("19.99"));
         assertThat(response.getDiscountRate()).isNull();
         assertThat(response.getDiscountStatus()).isNull();
         assertThat(response.getCreatedAt()).isEqualTo(productWithNulls.getCreatedAt());
@@ -157,7 +157,7 @@ class ProductMapperTest {
         ProductRequest request = new ProductRequest();
         request.setTitle("Updated Premium Plan");
         request.setDescription("{\"tier\":\"premium_plus\",\"support\":\"priority\"}");
-        request.setBaseMonthlyFee(new BigDecimal("79.99"));
+        request.setBasePrice(new BigDecimal("79.99"));
         request.setDiscountRate(new BigDecimal("0.85"));
         request.setDiscountStatus(DiscountStatus.ACTIVE);
 
@@ -169,7 +169,7 @@ class ProductMapperTest {
         assertThat(existingProduct.getId()).isEqualTo(1L); // Should not change
         assertThat(existingProduct.getTitle()).isEqualTo("Updated Premium Plan");
         assertThat(existingProduct.getDescription()).isEqualTo("{\"tier\":\"premium_plus\",\"support\":\"priority\"}");
-        assertThat(existingProduct.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("79.99"));
+        assertThat(existingProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("79.99"));
         assertThat(existingProduct.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.85"));
         assertThat(existingProduct.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
         

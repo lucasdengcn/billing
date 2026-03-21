@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity;
 
+import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -41,6 +42,10 @@ public class SubscriptionFeature {
     @Column(columnDefinition = "json")
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "feature_type", length = 50)
+    private FeatureType featureType;
+
     @Column(nullable = false)
     @Builder.Default
     private Integer quota = 0;
@@ -56,4 +61,12 @@ public class SubscriptionFeature {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
+    
+    @PrePersist
+    @PreUpdate
+    private void populateFeatureType() {
+        if (this.productFeature != null && this.productFeature.getFeatureType() != null && this.featureType == null) {
+            this.featureType = this.productFeature.getFeatureType();
+        }
+    }
 }

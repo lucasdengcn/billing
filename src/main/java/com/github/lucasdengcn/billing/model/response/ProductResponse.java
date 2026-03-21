@@ -20,8 +20,8 @@ public class ProductResponse {
     @Schema(description = "Product metadata and description in JSON", example = "{\"tier\":\"premium\"}")
     private String description;
 
-    @Schema(description = "Base monthly fee amount", example = "29.99")
-    private BigDecimal baseMonthlyFee;
+    @Schema(description = "Base price amount", example = "29.99")
+    private BigDecimal basePrice;
 
     @Schema(description = "Active discount rate", example = "0.90")
     private BigDecimal discountRate;

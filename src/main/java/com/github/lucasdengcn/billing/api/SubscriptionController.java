@@ -36,29 +36,17 @@ public class SubscriptionController {
 
         private final SubscriptionService subscriptionService;
         private final CustomerService customerService;
-        private final DeviceService deviceService;
-        private final ProductService productService;
         private final SubscriptionMapper subscriptionMapper;
 
         @PostMapping
-        @Operation(summary = "Create a subscription", description = "Subscribes a customer to a specific product, optionally linked to a device")
+        @Operation(summary = "Create a subscription", description = "Subscribes a customer to a specific product, linked to a device")
         @ApiResponse(responseCode = "200", description = "Subscription created successfully")
         @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
         @ApiResponse(responseCode = "404", description = "Customer, Product, or Device not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
         public ResponseEntity<SubscriptionResponse> createSubscription(
                         @Valid @RequestBody SubscriptionRequest request) {
-                Customer customer = customerService.findById(request.getCustomerId());
-                Product product = productService.findProductById(request.getProductId());
-                Device device = null;
-                if (request.getDeviceId() != null) {
-                        device = deviceService.findById(request.getDeviceId());
-                }
-
-                Subscription subscription = subscriptionMapper.toEntity(request);
-                subscription.setCustomer(customer);
-                subscription.setProduct(product);
-                subscription.setDevice(device);
-                Subscription saved = subscriptionService.saveSubscription(subscription);
+                
+                Subscription saved = subscriptionService.createSubscription(request);
                 return ResponseEntity.ok(subscriptionMapper.toResponse(saved));
         }
 

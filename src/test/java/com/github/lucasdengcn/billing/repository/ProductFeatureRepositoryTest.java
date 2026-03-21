@@ -48,7 +48,7 @@ class ProductFeatureRepositoryTest {
         testProduct1 = Product.builder()
                 .title("Basic Plan")
                 .description("Basic service plan")
-                .baseMonthlyFee(new BigDecimal("29.99"))
+                .basePrice(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -56,7 +56,7 @@ class ProductFeatureRepositoryTest {
         testProduct2 = Product.builder()
                 .title("Premium Plan")
                 .description("Premium service plan")
-                .baseMonthlyFee(new BigDecimal("59.99"))
+                .basePrice(new BigDecimal("59.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -150,7 +150,7 @@ class ProductFeatureRepositoryTest {
         Product newProduct = Product.builder()
                 .title("New Plan")
                 .description("New service plan")
-                .baseMonthlyFee(new BigDecimal("39.99"))
+                .basePrice(new BigDecimal("39.99"))
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();

@@ -1188,9 +1188,9 @@ components:
       type: object
       description: Request model for creating or updating a product
       properties:
-        baseMonthlyFee:
+        basePrice:
           type: number
-          description: Standard monthly cost before any discounts
+          description: Standard price before any discounts
           example: "29.99"
           minimum: 0.0
         description:
@@ -1218,15 +1218,15 @@ components:
           maxLength: 255
           minLength: 2
       required:
-        - baseMonthlyFee
+        - basePrice
         - title
     ProductResponse:
       type: object
       description: Response model representing a service or product
       properties:
-        baseMonthlyFee:
+        basePrice:
           type: number
-          description: Base monthly fee amount
+          description: Base price amount
           example: "29.99"
         createdAt:
           type: string

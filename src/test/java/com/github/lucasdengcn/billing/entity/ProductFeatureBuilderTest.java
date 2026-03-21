@@ -16,7 +16,7 @@ class ProductFeatureBuilderTest {
         Product product = Product.builder()
                 .id(1L)
                 .title("Premium Plan")
-                .baseMonthlyFee(java.math.BigDecimal.TEN)
+                .basePrice(java.math.BigDecimal.TEN)
                 .build();
         
         List<SubscriptionFeature> subscriptionFeatures = Arrays.asList(
@@ -74,7 +74,7 @@ class ProductFeatureBuilderTest {
         Product product = Product.builder()
                 .id(1L)
                 .title("Basic Plan")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(29.99))
+                .basePrice(java.math.BigDecimal.valueOf(29.99))
                 .build();
         
         // When
@@ -124,7 +124,7 @@ class ProductFeatureBuilderTest {
         Product product = Product.builder()
                 .id(1L)
                 .title("Test Plan")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(19.99))
+                .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .build();
         
         // When
@@ -158,7 +158,7 @@ class ProductFeatureBuilderTest {
         Product product = Product.builder()
                 .id(1L)
                 .title("Test Plan")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(19.99))
+                .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .build();
         
         // When
@@ -189,7 +189,7 @@ class ProductFeatureBuilderTest {
         Product product = Product.builder()
                 .id(1L)
                 .title("Test Plan")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(19.99))
+                .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .build();
         
         // When
@@ -222,13 +222,13 @@ class ProductFeatureBuilderTest {
         Product product1 = Product.builder()
                 .id(1L)
                 .title("Product 1")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(19.99))
+                .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .build();
         
         Product product2 = Product.builder()
                 .id(2L)
                 .title("Product 2")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(29.99))
+                .basePrice(java.math.BigDecimal.valueOf(29.99))
                 .build();
         
         // When
@@ -253,7 +253,7 @@ class ProductFeatureBuilderTest {
         Product product = Product.builder()
                 .id(1L)
                 .title("Test Plan")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(19.99))
+                .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .build();
         
         List<SubscriptionFeature> subscriptionFeatures = Arrays.asList(
@@ -319,7 +319,7 @@ class ProductFeatureBuilderTest {
         Product product = Product.builder()
                 .id(100L)
                 .title("Chained Plan")
-                .baseMonthlyFee(java.math.BigDecimal.valueOf(49.99))
+                .basePrice(java.math.BigDecimal.valueOf(49.99))
                 .build();
         
         List<SubscriptionFeature> subscriptionFeatures = Arrays.asList(

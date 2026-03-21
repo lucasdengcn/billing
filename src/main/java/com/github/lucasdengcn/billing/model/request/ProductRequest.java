@@ -22,10 +22,10 @@ public class ProductRequest {
     @Schema(description = "JSON description of the product", example = "{\"tier\":\"premium\",\"support\":\"24/7\"}")
     private String description;
 
-    @NotNull(message = "Base monthly fee is required")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Base monthly fee must be non-negative")
-    @Schema(description = "Standard monthly cost before any discounts", example = "29.99")
-    private BigDecimal baseMonthlyFee;
+    @NotNull(message = "Base price is required")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Base price must be non-negative")
+    @Schema(description = "Standard price before any discounts", example = "29.99")
+    private BigDecimal basePrice;
 
     @DecimalMin(value = "0.0", inclusive = true, message = "Discount rate must be at least 0.0")
     @Schema(description = "Discount rate applied to base fee (1.0 = no discount)", example = "0.90")

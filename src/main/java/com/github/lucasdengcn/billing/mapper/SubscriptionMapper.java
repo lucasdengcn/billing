@@ -3,10 +3,7 @@ package com.github.lucasdengcn.billing.mapper;
 import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.ObjectFactory;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface SubscriptionMapper {
@@ -20,7 +17,6 @@ public interface SubscriptionMapper {
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "device", ignore = true)
     @Mapping(target = "product", ignore = true)
-    @Mapping(target = "totalFee", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "subscriptionFeatures", ignore = true)
@@ -38,12 +34,12 @@ public interface SubscriptionMapper {
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "device", ignore = true)
     @Mapping(target = "product", ignore = true)
-    @Mapping(target = "totalFee", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "subscriptionFeatures", ignore = true)
     @Mapping(target = "subscriptionRenewals", ignore = true)
     @Mapping(target = "accessLogs", ignore = true)
     @Mapping(target = "usageStats", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(SubscriptionRequest request, @MappingTarget Subscription subscription);
 }

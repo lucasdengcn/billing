@@ -54,7 +54,7 @@ public class Subscription {
 
     @Column(name = "discount_rate", precision = 5, scale = 4)
     @Builder.Default
-    private BigDecimal discountRate = BigDecimal.ONE;
+    private BigDecimal discountRate = BigDecimal.ZERO;
 
     @Column(name = "total_fee", nullable = false, precision = 19, scale = 4)
     @Builder.Default

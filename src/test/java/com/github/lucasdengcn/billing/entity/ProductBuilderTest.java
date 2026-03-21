@@ -27,7 +27,7 @@ class ProductBuilderTest {
                 .id(100L)
                 .title("Premium Plan")
                 .description("{\"tier\":\"premium\"}")
-                .baseMonthlyFee(new BigDecimal("59.99"))
+                .basePrice(new BigDecimal("59.99"))
                 .discountRate(new BigDecimal("0.90"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .createdAt(now)
@@ -40,7 +40,7 @@ class ProductBuilderTest {
         assertThat(product.getId()).isEqualTo(100L);
         assertThat(product.getTitle()).isEqualTo("Premium Plan");
         assertThat(product.getDescription()).isEqualTo("{\"tier\":\"premium\"}");
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("59.99"));
+        assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("59.99"));
         assertThat(product.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.90"));
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
         assertThat(product.getCreatedAt()).isEqualTo(now);
@@ -55,7 +55,7 @@ class ProductBuilderTest {
         // When
         Product product = Product.builder()
                 .title("Basic Plan")
-                .baseMonthlyFee(new BigDecimal("29.99"))
+                .basePrice(new BigDecimal("29.99"))
                 .build();
 
         // Then
@@ -63,7 +63,7 @@ class ProductBuilderTest {
         assertThat(product.getId()).isNull();
         assertThat(product.getTitle()).isEqualTo("Basic Plan");
         assertThat(product.getDescription()).isNull();
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("29.99"));
+        assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("29.99"));
         assertThat(product.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE); // Default value from @Builder.Default
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.INACTIVE); // Default value from @Builder.Default
         assertThat(product.getCreatedAt()).isNull();
@@ -81,7 +81,7 @@ class ProductBuilderTest {
         assertThat(product.getId()).isNull();
         assertThat(product.getTitle()).isNull();
         assertThat(product.getDescription()).isNull();
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(BigDecimal.ZERO); // Default value from @Builder.Default
+        assertThat(product.getBasePrice()).isEqualByComparingTo(BigDecimal.ZERO); // Default value from @Builder.Default
         assertThat(product.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE); // Default value from @Builder.Default
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.INACTIVE); // Default value from @Builder.Default
         assertThat(product.getCreatedAt()).isNull();
@@ -96,13 +96,13 @@ class ProductBuilderTest {
         // When
         Product productWithActiveStatus = Product.builder()
                 .title("Active Product")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
         
         Product productWithInactiveStatus = Product.builder()
                 .title("Inactive Product")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .discountStatus(DiscountStatus.INACTIVE)
                 .build();
 
@@ -116,23 +116,23 @@ class ProductBuilderTest {
         // When
         Product freeProduct = Product.builder()
                 .title("Free Plan")
-                .baseMonthlyFee(BigDecimal.ZERO)
+                .basePrice(BigDecimal.ZERO)
                 .build();
         
         Product lowCostProduct = Product.builder()
                 .title("Low Cost Plan")
-                .baseMonthlyFee(new BigDecimal("9.99"))
+                .basePrice(new BigDecimal("9.99"))
                 .build();
         
         Product highCostProduct = Product.builder()
                 .title("High Cost Plan")
-                .baseMonthlyFee(new BigDecimal("99.99"))
+                .basePrice(new BigDecimal("99.99"))
                 .build();
 
         // Then
-        assertThat(freeProduct.getBaseMonthlyFee()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(lowCostProduct.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("9.99"));
-        assertThat(highCostProduct.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("99.99"));
+        assertThat(freeProduct.getBasePrice()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(lowCostProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("9.99"));
+        assertThat(highCostProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("99.99"));
     }
 
     @Test
@@ -140,19 +140,19 @@ class ProductBuilderTest {
         // When
         Product noDiscountProduct = Product.builder()
                 .title("No Discount Plan")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .discountRate(BigDecimal.ONE) // No discount (1.0 = 100%)
                 .build();
         
         Product tenPercentDiscountProduct = Product.builder()
                 .title("10% Discount Plan")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .discountRate(new BigDecimal("0.90")) // 10% discount
                 .build();
         
         Product fiftyPercentDiscountProduct = Product.builder()
                 .title("50% Discount Plan")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .discountRate(new BigDecimal("0.50")) // 50% discount
                 .build();
 
@@ -167,17 +167,17 @@ class ProductBuilderTest {
         // When
         Product product1 = Product.builder()
                 .title("Premium Plan")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .build();
         
         Product product2 = Product.builder()
                 .title("Basic Plan")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .build();
         
         Product product3 = Product.builder()
                 .title("Enterprise Solution")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .build();
 
         // Then
@@ -192,18 +192,18 @@ class ProductBuilderTest {
         Product product1 = Product.builder()
                 .title("Plan 1")
                 .description("{\"feature\":\"value\"}")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .build();
         
         Product product2 = Product.builder()
                 .title("Plan 2")
                 .description("{\"tier\":\"standard\",\"support\":\"email\"}")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .build();
         
         Product product3 = Product.builder()
                 .title("Plan 3")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .build(); // No description
 
         // Then
@@ -224,7 +224,7 @@ class ProductBuilderTest {
         // When
         Product product = Product.builder()
                 .title("Feature-Rich Plan")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .features(features)
                 .build();
 
@@ -239,11 +239,11 @@ class ProductBuilderTest {
         // When
         Product product = Product.builder()
                 .title("Test Product")
-                .baseMonthlyFee(BigDecimal.TEN)
+                .basePrice(BigDecimal.TEN)
                 .build();
 
         // Then
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(BigDecimal.TEN); // Provided value
+        assertThat(product.getBasePrice()).isEqualByComparingTo(BigDecimal.TEN); // Provided value
         assertThat(product.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE); // Default value
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.INACTIVE); // Default value
     }
@@ -253,13 +253,13 @@ class ProductBuilderTest {
         // When
         Product product = Product.builder()
                 .title("Special Product")
-                .baseMonthlyFee(new BigDecimal("49.99"))
+                .basePrice(new BigDecimal("49.99"))
                 .discountRate(new BigDecimal("0.75"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
 
         // Then
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("49.99"));
+        assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("49.99"));
         assertThat(product.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.75"));
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
     }
@@ -279,7 +279,7 @@ class ProductBuilderTest {
                 .id(1000L)
                 .title("Chained Product")
                 .description("{\"chained\":true}")
-                .baseMonthlyFee(new BigDecimal("79.99"))
+                .basePrice(new BigDecimal("79.99"))
                 .discountRate(new BigDecimal("0.85"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .createdAt(createdAt)
@@ -291,7 +291,7 @@ class ProductBuilderTest {
         assertThat(product.getId()).isEqualTo(1000L);
         assertThat(product.getTitle()).isEqualTo("Chained Product");
         assertThat(product.getDescription()).isEqualTo("{\"chained\":true}");
-        assertThat(product.getBaseMonthlyFee()).isEqualByComparingTo(new BigDecimal("79.99"));
+        assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("79.99"));
         assertThat(product.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.85"));
         assertThat(product.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
         assertThat(product.getCreatedAt()).isEqualTo(createdAt);

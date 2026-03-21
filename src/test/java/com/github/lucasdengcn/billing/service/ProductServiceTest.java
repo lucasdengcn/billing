@@ -57,7 +57,7 @@ class ProductServiceTest {
                 .id(1L)
                 .title("Premium Plan")
                 .description("{\"features\":[\"premium\"]}")
-                .baseMonthlyFee(new BigDecimal("29.99"))
+                .basePrice(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -72,7 +72,7 @@ class ProductServiceTest {
         
         productRequest = new ProductRequest();
         productRequest.setTitle("Updated Premium Plan");
-        productRequest.setBaseMonthlyFee(new BigDecimal("39.99"));
+        productRequest.setBasePrice(new BigDecimal("39.99"));
         productRequest.setDiscountRate(new BigDecimal("0.85"));
         productRequest.setDiscountStatus(DiscountStatus.INACTIVE);
         
