@@ -1,16 +1,13 @@
 package com.github.lucasdengcn.billing.service.impl;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.entity.*;
-import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
-import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.handler.SubscriptionHandler;
+import com.github.lucasdengcn.billing.handler.strategy.SubscriptionHandlerFactory;
 import com.github.lucasdengcn.billing.service.CustomerService;
 import com.github.lucasdengcn.billing.service.DeviceService;
 import com.github.lucasdengcn.billing.service.ProductService;
@@ -40,7 +37,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final CustomerService customerService;
     private final DeviceService deviceService;
     private final SubscriptionMapper subscriptionMapper;
-    private final PricingCalculator pricingCalculator;
+    private final SubscriptionHandlerFactory subscriptionHandlerFactory;
 
     @Override
     public Subscription saveSubscription(Subscription subscription) {
@@ -163,33 +160,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscription.setCustomer(customer);
         subscription.setProduct(product);
         subscription.setDevice(device);
-        
-        // Set default dates if not provided
-        OffsetDateTime now = OffsetDateTime.now();
-        OffsetDateTime startDate = request.getStartDate() != null ? request.getStartDate() : now;
-        OffsetDateTime endDate = request.getEndDate() != null ? request.getEndDate() : calculateEndDate(startDate, product.getPriceType());
-        
-        // Validate date logic
-        if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Start date must be before end date");
+        subscription.setStartDate(request.getStartDate());
+        subscription.setEndDate(request.getEndDate());
+
+        // Handle new subscription
+        SubscriptionHandler handler = subscriptionHandlerFactory.getHandler(product.getPriceType());
+        if (handler == null) {
+            throw new IllegalArgumentException("No handler found for price type: " + product.getPriceType());
         }
-        
-        subscription.setStartDate(startDate);
-        subscription.setEndDate(endDate);
-
-        // Calculate period and unit based on duration
-        calculatePeriods(startDate, endDate, subscription, product.getPriceType());
-
-        // Set base fee and discount rate from product if not provided in request
-        BigDecimal baseFee = subscription.getBaseFee() != null ? subscription.getBaseFee() : product.getBasePrice();
-        BigDecimal discountRate = subscription.getDiscountRate() != null ? subscription.getDiscountRate() : product.getDiscountRate();
-        
-        subscription.setBaseFee(baseFee);
-        subscription.setDiscountRate(discountRate);
-        
-        // Calculate total fee using FeeCalculator
-        BigDecimal calculatedTotalFee = pricingCalculator.calculateSubscriptionTotalFee(subscription);
-        subscription.setTotalFee(calculatedTotalFee);
+        handler.handleNew(product, subscription);
         
         // Save the subscription
         Subscription saved = subscriptionRepository.save(subscription);
@@ -197,32 +176,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // Create subscription features from product features
         createSubscriptionFeaturesFromProduct(saved);
         
-        log.info("Successfully created subscription: {} with total fee: {}, and {} features", 
-            saved.getId(), calculatedTotalFee, productService.findFeaturesByProduct(product.getId()).size());
+        log.info("Successfully created subscription: {} with total fee: {}",
+            saved.getId(), subscription.getTotalFee());
         
         return saved;
-    }
-
-    private void calculatePeriods(OffsetDateTime startDate, OffsetDateTime endDate, Subscription subscription, PriceType priceType) {
-        // Calculate period and unit based on duration
-        long totalDays = java.time.Duration.between(startDate, endDate).toDays();
-
-        if (totalDays <= 0) {
-            totalDays = 1; // Ensure at least 1 day
-        }
-
-        // Determine the most appropriate period unit based on total days
-        if (priceType == PriceType.YEARLY) {
-            // Years (approximately)
-            int years = (int) (totalDays / 365);
-            subscription.setPeriods(years);
-            subscription.setPeriodUnit(PeriodUnit.YEARS);
-        } else {
-            // Months (approximately)
-            int months = (int) (totalDays / 30);
-            subscription.setPeriods(months);
-            subscription.setPeriodUnit(PeriodUnit.MONTHS);
-        }
     }
 
     private void validateSubscriptionRequest(SubscriptionRequest request) {
@@ -232,21 +189,5 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             }
         }
     }
-    
-    private OffsetDateTime calculateEndDate(OffsetDateTime startDate, PriceType priceType) {
-        switch (priceType) {
-            case MONTHLY:
-                return startDate.plusMonths(1);
-            case YEARLY:
-                return startDate.plusYears(1);
-            case ONE_TIME:
-                return startDate.plusDays(30); // Default for one-time to 30 days
-            case USAGE_BASED:
-                return startDate.plusMonths(1); // Default for usage-based to 30 days
-            case CUSTOM:
-                return startDate.plusMonths(1); // Default for custom to 30 days
-            default:
-                return startDate.plusMonths(1); // Default to monthly
-        }
-    }
+
 }

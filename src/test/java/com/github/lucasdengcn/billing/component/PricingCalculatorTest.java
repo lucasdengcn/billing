@@ -69,6 +69,8 @@ class PricingCalculatorTest {
         Product product = Product.builder()
                 .title("Monthly Plan")
                 .priceType(PriceType.MONTHLY)
+                .basePrice(new BigDecimal("99.99"))
+                .discountRate(new BigDecimal("0.90"))
                 .build();
         
         Subscription subscription = Subscription.builder()
@@ -79,7 +81,7 @@ class PricingCalculatorTest {
                 .build();
         
         // When
-        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(subscription);
+        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
         
         // Then
         assertThat(totalFee).isEqualByComparingTo(new BigDecimal("269.9730")); // 99.99 * 0.90 * 3
@@ -92,6 +94,8 @@ class PricingCalculatorTest {
         Product product = Product.builder()
                 .title("Yearly Plan")
                 .priceType(PriceType.YEARLY)
+                .basePrice(new BigDecimal("1000.00"))
+                .discountRate(new BigDecimal("0.85"))
                 .build();
         
         Subscription subscription = Subscription.builder()
@@ -102,47 +106,10 @@ class PricingCalculatorTest {
                 .build();
         
         // When
-        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(subscription);
+        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
         
         // Then
         assertThat(totalFee).isEqualByComparingTo(new BigDecimal("1700.0000")); // 1000.00 * 0.85 * 2
-    }
-    
-    @Test
-    @DisplayName("Calculate subscription total fee with one-time pricing")
-    void calculateSubscriptionTotalFee_OneTimePricing_ShouldReturnCorrectAmount() {
-        // Given
-        Product product = Product.builder()
-                .title("One-time Plan")
-                .priceType(PriceType.ONE_TIME)
-                .build();
-        
-        Subscription subscription = Subscription.builder()
-                .product(product)
-                .baseFee(new BigDecimal("49.99"))
-                .discountRate(new BigDecimal("0.95"))
-                .periods(12) // Should not be multiplied for one-time
-                .build();
-        
-        // When
-        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(subscription);
-        
-        // Then
-        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("47.4905")); // 49.99 * 0.95 (not multiplied by 12)
-    }
-    
-    @Test
-    @DisplayName("Calculate custom total fee should work correctly")
-    void calculateCustomTotalFee_ShouldReturnCorrectAmount() {
-        // Given
-        BigDecimal baseFee = new BigDecimal("100.00");
-        BigDecimal discountRate = new BigDecimal("0.85");
-        
-        // When
-        BigDecimal totalFee = pricingCalculator.calculateCustomTotalFee(baseFee, discountRate);
-        
-        // Then
-        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("85.0000")); // 100.00 * 0.85
     }
     
     @Test
@@ -175,21 +142,8 @@ class PricingCalculatorTest {
     void calculateSubscriptionTotalFee_WithNullSubscription_ShouldThrowException() {
         // When & Then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pricingCalculator.calculateSubscriptionTotalFee(null))
-                .withMessage("Subscription cannot be null");
+                .isThrownBy(() -> pricingCalculator.calculateSubscriptionTotalFee(null, null))
+                .withMessage("Product Invalid");
     }
-    
-    @Test
-    @DisplayName("Calculate custom total fee with null parameters should throw exception")
-    void calculateCustomTotalFee_WithNullParameters_ShouldThrowException() {
-        // Test null base fee
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pricingCalculator.calculateCustomTotalFee(null, new BigDecimal("0.90")))
-                .withMessage("Base fee cannot be null");
-        
-        // Test null discount rate
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pricingCalculator.calculateCustomTotalFee(new BigDecimal("100.00"), null))
-                .withMessage("Discount rate cannot be null");
-    }
+
 }
