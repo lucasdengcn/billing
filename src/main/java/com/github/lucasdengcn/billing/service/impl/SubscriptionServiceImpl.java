@@ -39,12 +39,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionMapper subscriptionMapper;
     private final SubscriptionHandlerFactory subscriptionHandlerFactory;
 
-    @Override
-    public Subscription saveSubscription(Subscription subscription) {
-        log.info("Saving subscription for customer: {} on product: {}", 
-                subscription.getCustomer().getId(), subscription.getProduct().getId());
-        return subscriptionRepository.save(subscription);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -59,13 +53,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public List<Subscription> findSubscriptionsByCustomer(Customer customer) {
         log.debug("Finding subscriptions for customer: {}", customer.getId());
         return subscriptionRepository.findByCustomer(customer);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Subscription> findSubscriptionsByStatus(SubscriptionStatus status) {
-        log.debug("Finding subscriptions by status: {}", status);
-        return subscriptionRepository.findByStatus(status);
     }
 
     @Override
