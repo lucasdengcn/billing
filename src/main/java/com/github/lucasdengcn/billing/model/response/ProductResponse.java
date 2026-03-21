@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.model.response;
 
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,9 @@ public class ProductResponse {
 
     @Schema(description = "Base price amount", example = "29.99")
     private BigDecimal basePrice;
+
+    @Schema(description = "Type of pricing model for the product", example = "MONTHLY")
+    private PriceType priceType;
 
     @Schema(description = "Active discount rate", example = "0.90")
     private BigDecimal discountRate;

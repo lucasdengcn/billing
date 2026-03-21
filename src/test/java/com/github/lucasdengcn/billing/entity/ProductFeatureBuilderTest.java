@@ -17,6 +17,7 @@ class ProductFeatureBuilderTest {
                 .id(1L)
                 .title("Premium Plan")
                 .basePrice(java.math.BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         List<SubscriptionFeature> subscriptionFeatures = Arrays.asList(
@@ -75,6 +76,7 @@ class ProductFeatureBuilderTest {
                 .id(1L)
                 .title("Basic Plan")
                 .basePrice(java.math.BigDecimal.valueOf(29.99))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
         
         // When
@@ -125,6 +127,7 @@ class ProductFeatureBuilderTest {
                 .id(1L)
                 .title("Test Plan")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         // When
@@ -159,6 +162,7 @@ class ProductFeatureBuilderTest {
                 .id(1L)
                 .title("Test Plan")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
         
         // When
@@ -190,6 +194,7 @@ class ProductFeatureBuilderTest {
                 .id(1L)
                 .title("Test Plan")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build();
         
         // When
@@ -223,12 +228,14 @@ class ProductFeatureBuilderTest {
                 .id(1L)
                 .title("Product 1")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         Product product2 = Product.builder()
                 .id(2L)
                 .title("Product 2")
                 .basePrice(java.math.BigDecimal.valueOf(29.99))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
         
         // When

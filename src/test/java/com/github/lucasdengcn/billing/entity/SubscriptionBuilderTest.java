@@ -34,6 +34,7 @@ class SubscriptionBuilderTest {
                 .id(10L)
                 .title("Premium Plan")
                 .basePrice(new BigDecimal("29.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         mockDevice = Device.builder()

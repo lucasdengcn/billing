@@ -28,6 +28,7 @@ class ProductBuilderTest {
                 .title("Premium Plan")
                 .description("{\"tier\":\"premium\"}")
                 .basePrice(new BigDecimal("59.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .discountRate(new BigDecimal("0.90"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .createdAt(now)
@@ -56,6 +57,7 @@ class ProductBuilderTest {
         Product product = Product.builder()
                 .title("Basic Plan")
                 .basePrice(new BigDecimal("29.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
 
         // Then
@@ -74,7 +76,9 @@ class ProductBuilderTest {
     @Test
     void builder_WithNoFields_ShouldCreateProductWithNullsAndDefaults() {
         // When
-        Product product = Product.builder().build();
+        Product product = Product.builder()
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
+                .build();
 
         // Then
         assertThat(product).isNotNull();
@@ -97,12 +101,14 @@ class ProductBuilderTest {
         Product productWithActiveStatus = Product.builder()
                 .title("Active Product")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
         
         Product productWithInactiveStatus = Product.builder()
                 .title("Inactive Product")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .discountStatus(DiscountStatus.INACTIVE)
                 .build();
 
@@ -117,16 +123,19 @@ class ProductBuilderTest {
         Product freeProduct = Product.builder()
                 .title("Free Plan")
                 .basePrice(BigDecimal.ZERO)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build();
         
         Product lowCostProduct = Product.builder()
                 .title("Low Cost Plan")
                 .basePrice(new BigDecimal("9.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         Product highCostProduct = Product.builder()
                 .title("High Cost Plan")
                 .basePrice(new BigDecimal("99.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
 
         // Then
@@ -141,18 +150,21 @@ class ProductBuilderTest {
         Product noDiscountProduct = Product.builder()
                 .title("No Discount Plan")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .discountRate(BigDecimal.ONE) // No discount (1.0 = 100%)
                 .build();
         
         Product tenPercentDiscountProduct = Product.builder()
                 .title("10% Discount Plan")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .discountRate(new BigDecimal("0.90")) // 10% discount
                 .build();
         
         Product fiftyPercentDiscountProduct = Product.builder()
                 .title("50% Discount Plan")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .discountRate(new BigDecimal("0.50")) // 50% discount
                 .build();
 
@@ -168,16 +180,19 @@ class ProductBuilderTest {
         Product product1 = Product.builder()
                 .title("Premium Plan")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         Product product2 = Product.builder()
                 .title("Basic Plan")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
         
         Product product3 = Product.builder()
                 .title("Enterprise Solution")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build();
 
         // Then
@@ -193,17 +208,20 @@ class ProductBuilderTest {
                 .title("Plan 1")
                 .description("{\"feature\":\"value\"}")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         Product product2 = Product.builder()
                 .title("Plan 2")
                 .description("{\"tier\":\"standard\",\"support\":\"email\"}")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
         
         Product product3 = Product.builder()
                 .title("Plan 3")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build(); // No description
 
         // Then
@@ -225,6 +243,7 @@ class ProductBuilderTest {
         Product product = Product.builder()
                 .title("Feature-Rich Plan")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .features(features)
                 .build();
 
@@ -240,6 +259,7 @@ class ProductBuilderTest {
         Product product = Product.builder()
                 .title("Test Product")
                 .basePrice(BigDecimal.TEN)
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
 
         // Then

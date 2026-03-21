@@ -8,9 +8,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.context.annotation.Description;
 
 @Entity
 @Table(name = "products")
@@ -34,6 +36,12 @@ public class Product {
     @Builder.Default
     private BigDecimal basePrice = BigDecimal.ZERO;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "price_type", nullable = false)
+    @Builder.Default
+    private PriceType priceType = PriceType.MONTHLY;
+
+    // Discount rate applied to base price (1.0 = no discount), fee = basePrice * discountRate
     @Column(name = "discount_rate", precision = 5, scale = 4)
     @Builder.Default
     private BigDecimal discountRate = BigDecimal.ONE;

@@ -58,6 +58,7 @@ class ProductServiceTest {
                 .title("Premium Plan")
                 .description("{\"features\":[\"premium\"]}")
                 .basePrice(new BigDecimal("29.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .discountRate(new BigDecimal("0.90"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -73,6 +74,7 @@ class ProductServiceTest {
         productRequest = new ProductRequest();
         productRequest.setTitle("Updated Premium Plan");
         productRequest.setBasePrice(new BigDecimal("39.99"));
+        productRequest.setPriceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY);
         productRequest.setDiscountRate(new BigDecimal("0.85"));
         productRequest.setDiscountStatus(DiscountStatus.INACTIVE);
         

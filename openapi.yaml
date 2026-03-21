@@ -798,6 +798,21 @@ paths:
         - Subscription Management
 components:
   schemas:
+    DiscountStatus:
+      type: string
+      description: Status of discount for the product
+      enum:
+        - ACTIVE
+        - INACTIVE
+    PriceType:
+      type: string
+      description: Type of pricing model for the product
+      enum:
+        - MONTHLY
+        - YEARLY
+        - ONE_TIME
+        - USAGE_BASED
+        - CUSTOM
     BillRequest:
       type: object
       description: Request model for generating or updating a bill
@@ -1193,6 +1208,8 @@ components:
           description: Standard price before any discounts
           example: "29.99"
           minimum: 0.0
+        priceType:
+          $ref: '#/components/schemas/PriceType'
         description:
           type: string
           description: JSON description of the product
@@ -1211,6 +1228,8 @@ components:
             - INACTIVE
             - ACTIVE
           example: ACTIVE
+        priceType:
+          $ref: '#/components/schemas/PriceType'
         title:
           type: string
           description: Title of the service/product
@@ -1219,6 +1238,7 @@ components:
           minLength: 2
       required:
         - basePrice
+        - priceType
         - title
     ProductResponse:
       type: object

@@ -47,6 +47,7 @@ class ProductRepositoryTest {
                 .title("Basic Plan")
                 .description("Basic service plan")
                 .basePrice(new BigDecimal("29.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -55,6 +56,7 @@ class ProductRepositoryTest {
                 .title("Premium Plan")
                 .description("Premium service plan")
                 .basePrice(new BigDecimal("59.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -63,6 +65,7 @@ class ProductRepositoryTest {
                 .title("Enterprise Plan")
                 .description("Enterprise service plan")
                 .basePrice(new BigDecimal("99.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.INACTIVE)
                 .build();
@@ -71,6 +74,7 @@ class ProductRepositoryTest {
                 .title("Student Plan")
                 .description("Discounted student plan")
                 .basePrice(new BigDecimal("9.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .discountRate(new BigDecimal("0.5000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -89,6 +93,7 @@ class ProductRepositoryTest {
         assertThat(foundProduct).isPresent();
         assertThat(foundProduct.get().getTitle()).isEqualTo("Basic Plan");
         assertThat(foundProduct.get().getBasePrice()).isEqualByComparingTo(new BigDecimal("29.99"));
+        assertThat(foundProduct.get().getPriceType()).isEqualTo(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY);
         assertThat(foundProduct.get().getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
     }
 
@@ -139,6 +144,7 @@ class ProductRepositoryTest {
                 .title("New Plan")
                 .description("Brand new service plan")
                 .basePrice(new BigDecimal("79.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -150,6 +156,7 @@ class ProductRepositoryTest {
         assertThat(savedProduct.getId()).isNotNull();
         assertThat(savedProduct.getTitle()).isEqualTo("New Plan");
         assertThat(savedProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("79.99"));
+        assertThat(savedProduct.getPriceType()).isEqualTo(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY);
         assertThat(savedProduct.getCreatedAt()).isNotNull();
         assertThat(savedProduct.getUpdatedAt()).isNotNull();
         assertThat(savedProduct.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
@@ -167,6 +174,7 @@ class ProductRepositoryTest {
                 .title("Plan With Features")
                 .description("A plan with several features")
                 .basePrice(new BigDecimal("49.99"))
+                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();

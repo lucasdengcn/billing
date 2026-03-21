@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.mapper;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.ProductFeature;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
 import com.github.lucasdengcn.billing.model.request.ProductRequest;
 import com.github.lucasdengcn.billing.model.response.ProductFeatureResponse;
@@ -35,6 +36,7 @@ class ProductMapperTest {
                 .title("Premium Plan")
                 .description("{\"tier\":\"premium\",\"support\":\"24/7\"}")
                 .basePrice(new BigDecimal("59.99"))
+                .priceType(PriceType.MONTHLY)
                 .discountRate(new BigDecimal("0.90"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .createdAt(OffsetDateTime.now().minusDays(1))
@@ -60,6 +62,7 @@ class ProductMapperTest {
         request.setTitle("Basic Plan");
         request.setDescription("{\"tier\":\"basic\"}");
         request.setBasePrice(new BigDecimal("29.99"));
+        request.setPriceType(PriceType.YEARLY);
         request.setDiscountRate(new BigDecimal("1.00"));
         request.setDiscountStatus(DiscountStatus.INACTIVE);
 
@@ -89,6 +92,7 @@ class ProductMapperTest {
         ProductRequest request = new ProductRequest();
         request.setTitle("Free Plan");
         request.setBasePrice(BigDecimal.ZERO); // Required field
+        request.setPriceType(PriceType.ONE_TIME); // Required field
 
         // When
         Product product = productMapper.toEntity(request);
@@ -117,6 +121,7 @@ class ProductMapperTest {
         assertThat(response.getTitle()).isEqualTo("Premium Plan");
         assertThat(response.getDescription()).isEqualTo("{\"tier\":\"premium\",\"support\":\"24/7\"}");
         assertThat(response.getBasePrice()).isEqualByComparingTo(new BigDecimal("59.99"));
+        assertThat(response.getPriceType()).isEqualTo(PriceType.MONTHLY);
         assertThat(response.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.90"));
         assertThat(response.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
         assertThat(response.getCreatedAt()).isEqualTo(testProduct.getCreatedAt());
@@ -130,6 +135,7 @@ class ProductMapperTest {
                 .title("Null Fields Product")
                 .description(null)
                 .basePrice(new BigDecimal("19.99"))
+                .priceType(PriceType.YEARLY)
                 .discountRate(null)
                 .discountStatus(null)
                 .createdAt(OffsetDateTime.now())
@@ -145,6 +151,7 @@ class ProductMapperTest {
         assertThat(response.getTitle()).isEqualTo("Null Fields Product");
         assertThat(response.getDescription()).isNull();
         assertThat(response.getBasePrice()).isEqualByComparingTo(new BigDecimal("19.99"));
+        assertThat(response.getPriceType()).isEqualTo(PriceType.YEARLY);
         assertThat(response.getDiscountRate()).isNull();
         assertThat(response.getDiscountStatus()).isNull();
         assertThat(response.getCreatedAt()).isEqualTo(productWithNulls.getCreatedAt());
@@ -158,6 +165,7 @@ class ProductMapperTest {
         request.setTitle("Updated Premium Plan");
         request.setDescription("{\"tier\":\"premium_plus\",\"support\":\"priority\"}");
         request.setBasePrice(new BigDecimal("79.99"));
+        request.setPriceType(PriceType.YEARLY);
         request.setDiscountRate(new BigDecimal("0.85"));
         request.setDiscountStatus(DiscountStatus.ACTIVE);
 
@@ -170,6 +178,7 @@ class ProductMapperTest {
         assertThat(existingProduct.getTitle()).isEqualTo("Updated Premium Plan");
         assertThat(existingProduct.getDescription()).isEqualTo("{\"tier\":\"premium_plus\",\"support\":\"priority\"}");
         assertThat(existingProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("79.99"));
+        assertThat(existingProduct.getPriceType()).isEqualTo(PriceType.YEARLY);
         assertThat(existingProduct.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.85"));
         assertThat(existingProduct.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
         
