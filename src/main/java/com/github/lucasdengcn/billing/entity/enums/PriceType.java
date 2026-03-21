@@ -17,11 +17,11 @@ public enum PriceType {
     
     @JsonValue
     public String getValue() {
-        return value.toLowerCase();
+        return value;
     }
     
     @Override
     public String toString() {
-        return value.toLowerCase();
+        return value;
     }
 }

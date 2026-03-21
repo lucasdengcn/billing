@@ -16,7 +16,7 @@ import java.math.RoundingMode;
 @Component
 public class PricingCalculatorImpl implements PricingCalculator {
 
-    private static final int SCALE = 4; // Match database precision (19, 4)
+    private static final int SCALE = 2; // Match database precision (19, 4)
     private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
 
     @Override

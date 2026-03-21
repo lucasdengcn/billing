@@ -35,7 +35,7 @@ public enum FeatureType {
 
     @JsonValue
     public String toJson() {
-        return this.getValue().toLowerCase();
+        return this.getValue();
     }
 
 }

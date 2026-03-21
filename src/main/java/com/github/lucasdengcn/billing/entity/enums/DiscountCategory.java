@@ -28,17 +28,17 @@ public enum DiscountCategory {
     
     @JsonValue
     public String getValue() {
-        return value.toLowerCase();
+        return value;
     }
     
     @Override
     public String toString() {
-        return value.toLowerCase();
+        return value;
     }
 
     @JsonValue
     public String toJson() {
-        return this.getValue().toLowerCase();
+        return this.getValue();
     }
 
 }
