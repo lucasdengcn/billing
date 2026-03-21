@@ -19,11 +19,11 @@ public enum PeriodUnit {
     
     @JsonValue
     public String getValue() {
-        return value;
+        return value.toLowerCase();
     }
     
     @Override
     public String toString() {
-        return value;
+        return value.toLowerCase();
     }
 }

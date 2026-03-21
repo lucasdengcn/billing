@@ -67,4 +67,15 @@ public interface ProductMapper {
     @Mapping(source = "product.id", target = "productId")
     ProductFeatureResponse toResponse(ProductFeature productFeature);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "product", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "subscriptionFeatures", ignore = true)
+    @Mapping(target = "accessLogs", ignore = true)
+    @Mapping(target = "usageStats", ignore = true)
+    @Mapping(target = "billDetails", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntity(ProductFeatureRequest request, @MappingTarget ProductFeature productFeature);
+
 }

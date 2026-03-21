@@ -74,13 +74,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<SubscriptionRenewal> findRenewalsBySubscription(@NonNull Subscription subscription) {
-        log.debug("Finding renewals for subscription: {}", subscription.getId());
-        return subscriptionRenewalRepository.findBySubscription(subscription);
-    }
-
-    @Override
     @Transactional
     public void createSubscriptionFeaturesFromProduct(@NonNull Subscription subscription) {
         log.info("Creating subscription features from product features for subscription: {}", subscription.getId());

@@ -131,7 +131,7 @@ class DeviceControllerIntegrationTest {
                 .andExpect(jsonPath("$.deviceName").value("New Integration Device"))
                 .andExpect(jsonPath("$.deviceNo").value("NI-000003"))
                 .andExpect(jsonPath("$.deviceType").value("DESKTOP"))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.status").value(DeviceStatus.ACTIVE.getValue()));
 
         // Verify database state
         List<Device> devices = deviceRepository.findAll();
@@ -159,7 +159,7 @@ class DeviceControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.deviceNo").value("EC-000004"))
                 .andExpect(jsonPath("$.deviceName").value("Device for Existing Customer"))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.status").value(DeviceStatus.ACTIVE.getValue()));
 
         // Verify device is associated with correct customer
         Device savedDevice = deviceRepository.findByDeviceNo("EC-000004").orElseThrow();
@@ -235,7 +235,7 @@ class DeviceControllerIntegrationTest {
                 .andExpect(jsonPath("$.deviceName").value("Updated Device Name"))
                 .andExpect(jsonPath("$.deviceNo").value("UD-000007"))
                 .andExpect(jsonPath("$.deviceType").value("UPDATED-TYPE"))
-                .andExpect(jsonPath("$.status").value("SUSPENDED"));
+                .andExpect(jsonPath("$.status").value(DeviceStatus.SUSPENDED.getValue()));
 
         // Verify database update
         Device updatedDevice = deviceRepository.findById(testDevice1.getId()).orElseThrow();
@@ -274,7 +274,7 @@ class DeviceControllerIntegrationTest {
         mockMvc.perform(post("/api/devices/activate/{deviceNo}", testDevice2.getDeviceNo()))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.status").value(DeviceStatus.ACTIVE.getValue()));
 
         // Verify database state - retrieve a fresh instance from database
         Device activatedDevice = deviceRepository.findByDeviceNo(testDevice2.getDeviceNo()).orElseThrow();
@@ -309,7 +309,7 @@ class DeviceControllerIntegrationTest {
         mockMvc.perform(patch("/api/devices/deactivate/{deviceNo}", testDevice1.getDeviceNo()))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.status").value("DEACTIVATED"));
+                .andExpect(jsonPath("$.status").value(DeviceStatus.DEACTIVATED.getValue()));
 
         // Verify database state - retrieve a fresh instance from database
         Device deactivatedDevice = deviceRepository.findByDeviceNo(testDevice1.getDeviceNo()).orElseThrow();
@@ -339,7 +339,7 @@ class DeviceControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").value(testDevice1.getId()))
                 .andExpect(jsonPath("$.deviceName").value(testDevice1.getDeviceName()))
                 .andExpect(jsonPath("$.deviceNo").value(testDevice1.getDeviceNo()))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.status").value(DeviceStatus.ACTIVE.getValue()));
     }
 
     @Test

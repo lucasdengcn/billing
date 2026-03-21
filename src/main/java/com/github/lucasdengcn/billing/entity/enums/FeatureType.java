@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -31,4 +32,10 @@ public enum FeatureType {
         }
         return OTHER; // default fallback
     }
+
+    @JsonValue
+    public String toJson() {
+        return this.getValue().toLowerCase();
+    }
+
 }

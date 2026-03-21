@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -19,4 +20,10 @@ public enum DiscountStatus {
         }
         return INACTIVE; // default
     }
+
+    @JsonValue
+    public String toJson() {
+        return String.valueOf(value);
+    }
+
 }

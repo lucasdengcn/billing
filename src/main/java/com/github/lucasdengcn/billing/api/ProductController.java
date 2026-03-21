@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.github.lucasdengcn.billing.entity.ProductFeature;
 import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
+import com.github.lucasdengcn.billing.model.request.ProductFeatureRequestBulk;
 import com.github.lucasdengcn.billing.model.response.ProductFeatureResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -78,8 +79,8 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Features added successfully")
     @ApiResponse(responseCode = "400", description = "Invalid feature data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
     @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<List<ProductFeatureResponse>> addFeaturesToProduct(@PathVariable Long productId, @Valid @RequestBody List<@Valid ProductFeatureRequest> requests) {
-        List<ProductFeature> features = productService.addFeaturesToProduct(productId, requests);
+    public ResponseEntity<List<ProductFeatureResponse>> addFeaturesToProduct(@PathVariable Long productId, @Valid @RequestBody ProductFeatureRequestBulk requestBulk) {
+        List<ProductFeature> features = productService.addFeaturesToProduct(productId, requestBulk.getItems());
         List<ProductFeatureResponse> responses = features.stream()
                 .map(productMapper::toResponse)
                 .collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -20,5 +21,15 @@ public enum PaymentStatus {
             }
         }
         return PENDING; // default
+    }
+
+    @JsonValue
+    public String toJson() {
+        return String.valueOf(value);
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
     }
 }

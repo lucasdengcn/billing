@@ -279,15 +279,8 @@ class ProductServiceTest {
         // Then
         assertThat(result).isEqualTo(existingFeature);
         verify(productFeatureRepository, times(1)).findById(10L);
+        verify(productMapper, times(1)).updateEntity(eq(featureRequest), any(ProductFeature.class));
         verify(productFeatureRepository, times(1)).save(existingFeature);
-        
-        // Verify that the feature was updated with values from the request
-        ArgumentCaptor<ProductFeature> captor = ArgumentCaptor.forClass(ProductFeature.class);
-        verify(productFeatureRepository).save(captor.capture());
-        ProductFeature capturedFeature = captor.getValue();
-        assertThat(capturedFeature.getTitle()).isEqualTo(featureRequest.getTitle());
-        assertThat(capturedFeature.getDescription()).isEqualTo(featureRequest.getDescription());
-        assertThat(capturedFeature.getQuota()).isEqualTo(featureRequest.getQuota());
     }
 
     @Test

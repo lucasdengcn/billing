@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
+import org.springframework.validation.method.ParameterErrors;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,6 +19,7 @@ import com.github.lucasdengcn.billing.model.response.ValidationErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import com.github.lucasdengcn.billing.exception.BusinessException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @Slf4j
 @RestControllerAdvice
@@ -48,6 +51,22 @@ public class GlobalExceptionHandler {
         ValidationErrorResponse response = ValidationErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Validation failed")
+                .timestamp(OffsetDateTime.now())
+                .path(request.getRequestURI())
+                .errors(errors)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ValidationErrorResponse> handleValidationException(HandlerMethodValidationException ex,
+                                                                             HttpServletRequest request) {
+        log.error("Method parameter Binding validation exception: {}", ex.getMessage(), ex);
+        Map<String, String> errors = new HashMap<>();
+
+        ValidationErrorResponse response = ValidationErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Method parameter Binding validation failed")
                 .timestamp(OffsetDateTime.now())
                 .path(request.getRequestURI())
                 .errors(errors)

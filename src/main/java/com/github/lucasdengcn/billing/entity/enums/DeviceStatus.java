@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -21,4 +22,10 @@ public enum DeviceStatus {
         }
         return ACTIVE; // default
     }
+
+    @JsonValue
+    public String toJson() {
+        return String.valueOf(value);
+    }
+
 }

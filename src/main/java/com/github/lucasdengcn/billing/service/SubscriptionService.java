@@ -18,5 +18,4 @@ public interface SubscriptionService {
     List<SubscriptionFeature> findFeaturesBySubscription(@NonNull Subscription subscription);
 
     SubscriptionRenewal saveRenewal(@NonNull SubscriptionRenewal renewal);
-    List<SubscriptionRenewal> findRenewalsBySubscription(@NonNull Subscription subscription);
 }

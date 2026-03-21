@@ -115,9 +115,7 @@ public class ProductServiceImpl implements ProductService {
         // Find the existing feature
         ProductFeature existingFeature = findFeatureById(featureId);
         // Update the feature properties
-        existingFeature.setTitle(request.getTitle());
-        existingFeature.setDescription(request.getDescription());
-        existingFeature.setQuota(request.getQuota());
+        productMapper.updateEntity(request, existingFeature);
         return productFeatureRepository.save(existingFeature);
     }
 
