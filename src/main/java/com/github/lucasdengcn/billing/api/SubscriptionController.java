@@ -13,6 +13,7 @@ import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
+import com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.ErrorResponse;
 import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
@@ -67,6 +68,31 @@ public class SubscriptionController {
                 Customer customer = customerService.findById(customerId);
                 List<SubscriptionResponse> responses = subscriptionService.findSubscriptionsByCustomer(customer)
                                 .stream()
+                                .map(subscriptionMapper::toResponse)
+                                .collect(Collectors.toList());
+                return ResponseEntity.ok(responses);
+        }
+
+        @PostMapping("/cancel")
+        @Operation(summary = "Cancel a subscription", description = "Cancels a subscription identified by customer ID, device ID, and product ID")
+        @ApiResponse(responseCode = "200", description = "Subscription cancelled successfully")
+        @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+        @ApiResponse(responseCode = "404", description = "Subscription not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        public ResponseEntity<SubscriptionResponse> cancelSubscription(
+                        @Valid @RequestBody CancelSubscriptionRequest request) {
+                
+                Subscription cancelled = subscriptionService.cancelSubscription(
+                    request.getCustomerId(), request.getDeviceId(), request.getProductId());
+                return ResponseEntity.ok(subscriptionMapper.toResponse(cancelled));
+        }
+
+        @GetMapping("/device/{deviceNo}")
+        @Operation(summary = "List subscriptions by device number", description = "Retrieves all subscriptions associated with a specific device number")
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved subscriptions")
+        @ApiResponse(responseCode = "404", description = "Device not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        public ResponseEntity<List<SubscriptionResponse>> getSubscriptionsByDeviceNo(@PathVariable String deviceNo) {
+                List<Subscription> subscriptions = subscriptionService.findSubscriptionsByDeviceNo(deviceNo);
+                List<SubscriptionResponse> responses = subscriptions.stream()
                                 .map(subscriptionMapper::toResponse)
                                 .collect(Collectors.toList());
                 return ResponseEntity.ok(responses);

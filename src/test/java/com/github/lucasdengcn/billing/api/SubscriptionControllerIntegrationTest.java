@@ -8,6 +8,7 @@ import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
 import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
+import com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.repository.CustomerRepository;
 import com.github.lucasdengcn.billing.repository.DeviceRepository;
@@ -380,5 +381,297 @@ class SubscriptionControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void cancelSubscription_WithValidIds_ShouldCancelSubscription() throws Exception {
+        // Given - Create a subscription first
+        SubscriptionRequest request = new SubscriptionRequest();
+        request.setCustomerId(testCustomer.getId());
+        request.setDeviceId(testDevice.getId());
+        request.setProductId(testProduct.getId());
+        request.setStartDate(OffsetDateTime.now().plusDays(1));
+        request.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        // Create the subscription via API
+        String response = mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // Extract the ID from the response
+        Long subscriptionId = objectMapper.readTree(response).get("id").asLong();
+
+        // Verify the subscription is initially active
+        mockMvc.perform(get("/api/subscriptions/{id}", subscriptionId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(SubscriptionStatus.ACTIVE.getValue()));
+
+        // Prepare cancel request
+        com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest cancelRequest = 
+            new com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest();
+        cancelRequest.setCustomerId(testCustomer.getId());
+        cancelRequest.setDeviceId(testDevice.getId());
+        cancelRequest.setProductId(testProduct.getId());
+
+        // When & Then - Cancel the subscription
+        mockMvc.perform(post("/api/subscriptions/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(subscriptionId))
+                .andExpect(jsonPath("$.status").value(SubscriptionStatus.CANCELLED.getValue()));
+
+        // Verify the subscription is now cancelled in the database
+        List<Subscription> subscriptions = subscriptionRepository.findAll();
+        assertThat(subscriptions).hasSize(1);
+        Subscription cancelledSubscription = subscriptions.get(0);
+        assertThat(cancelledSubscription.getId()).isEqualTo(subscriptionId);
+        assertThat(cancelledSubscription.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+    }
+
+    @Test
+    void cancelSubscription_WhenSubscriptionDoesNotExist_ShouldReturnNotFound() throws Exception {
+        // Prepare cancel request with non-existent IDs
+        com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest cancelRequest = 
+            new com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest();
+        cancelRequest.setCustomerId(999L);
+        cancelRequest.setDeviceId(999L);
+        cancelRequest.setProductId(999L);
+
+        // When & Then
+        mockMvc.perform(post("/api/subscriptions/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    void cancelSubscription_WhenCustomerDoesNotExist_ShouldReturnNotFound() throws Exception {
+        // Given - Create a subscription first
+        SubscriptionRequest request = new SubscriptionRequest();
+        request.setCustomerId(testCustomer.getId());
+        request.setDeviceId(testDevice.getId());
+        request.setProductId(testProduct.getId());
+        request.setStartDate(OffsetDateTime.now().plusDays(1));
+        request.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        // Create the subscription via API
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // Prepare cancel request with non-existent customer ID
+        com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest cancelRequest = 
+            new com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest();
+        cancelRequest.setCustomerId(999L);
+        cancelRequest.setDeviceId(testDevice.getId());
+        cancelRequest.setProductId(testProduct.getId());
+
+        // When & Then
+        mockMvc.perform(post("/api/subscriptions/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Customer not found with id: 999"));
+    }
+
+    @Test
+    void cancelSubscription_WhenMultipleSubscriptionsExist_ShouldCancelMostRecentOne() throws Exception {
+        // Given - Create two subscriptions for the same customer, device, and product
+        SubscriptionRequest request1 = new SubscriptionRequest();
+        request1.setCustomerId(testCustomer.getId());
+        request1.setDeviceId(testDevice.getId());
+        request1.setProductId(testProduct.getId());
+        request1.setStartDate(OffsetDateTime.now().plusDays(1));
+        request1.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        SubscriptionRequest request2 = new SubscriptionRequest();
+        request2.setCustomerId(testCustomer.getId());
+        request2.setDeviceId(testDevice.getId());
+        request2.setProductId(testProduct.getId());
+        request2.setStartDate(OffsetDateTime.now().plusDays(2));
+        request2.setEndDate(OffsetDateTime.now().plusMonths(2));
+
+        // Create both subscriptions
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isOk());
+
+        Thread.sleep(100); // Ensure different timestamps
+
+        String response2 = mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // Extract the ID of the second (most recent) subscription
+        Long mostRecentSubscriptionId = objectMapper.readTree(response2).get("id").asLong();
+
+        // Prepare cancel request
+        com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest cancelRequest = 
+            new com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest();
+        cancelRequest.setCustomerId(testCustomer.getId());
+        cancelRequest.setDeviceId(testDevice.getId());
+        cancelRequest.setProductId(testProduct.getId());
+
+        // When & Then - Cancel the subscription (should cancel the most recent one)
+        mockMvc.perform(post("/api/subscriptions/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(mostRecentSubscriptionId))
+                .andExpect(jsonPath("$.status").value(SubscriptionStatus.CANCELLED.getValue()));
+    }
+
+    @Test
+    void cancelSubscription_WithInvalidRequest_ShouldReturnBadRequest() throws Exception {
+        // Given - Invalid request with missing customer ID
+        com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest cancelRequest = 
+            new com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest();
+        // Don't set customer ID to trigger validation
+        cancelRequest.setDeviceId(testDevice.getId());
+        cancelRequest.setProductId(testProduct.getId());
+
+        // When & Then
+        mockMvc.perform(post("/api/subscriptions/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.customerId").exists());
+    }
+
+    @Test
+    void cancelSubscription_WithNegativeIds_ShouldReturnBadRequest() throws Exception {
+        // Given - Invalid request with negative customer ID
+        com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest cancelRequest = 
+            new com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest();
+        cancelRequest.setCustomerId(-1L);
+        cancelRequest.setDeviceId(testDevice.getId());
+        cancelRequest.setProductId(testProduct.getId());
+
+        // When & Then
+        mockMvc.perform(post("/api/subscriptions/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.customerId").value("Customer ID must be a positive number"));
+    }
+
+    @Test
+    void getSubscriptionsByDeviceNo_WithValidDeviceNo_ShouldReturnSubscriptions() throws Exception {
+        // Given - Create a subscription first
+        SubscriptionRequest request = new SubscriptionRequest();
+        request.setCustomerId(testCustomer.getId());
+        request.setDeviceId(testDevice.getId());
+        request.setProductId(testProduct.getId());
+        request.setStartDate(OffsetDateTime.now().plusDays(1));
+        request.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        // Create the subscription via API
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // When & Then
+        mockMvc.perform(get("/api/subscriptions/device/{deviceNo}", testDevice.getDeviceNo()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].customerId").value(testCustomer.getId()))
+                .andExpect(jsonPath("$[0].deviceId").value(testDevice.getId()))
+                .andExpect(jsonPath("$[0].productId").value(testProduct.getId()));
+    }
+
+    @Test
+    void getSubscriptionsByDeviceNo_WithValidDeviceNoAndMultipleSubscriptions_ShouldReturnAllSubscriptions() throws Exception {
+        // Given - Create multiple subscriptions for the same device
+        SubscriptionRequest request1 = new SubscriptionRequest();
+        request1.setCustomerId(testCustomer.getId());
+        request1.setDeviceId(testDevice.getId());
+        request1.setProductId(testProduct.getId());
+        request1.setStartDate(OffsetDateTime.now().plusDays(1));
+        request1.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        SubscriptionRequest request2 = new SubscriptionRequest();
+        request2.setCustomerId(testCustomer.getId());
+        request2.setDeviceId(testDevice.getId());
+        request2.setProductId(testProduct2.getId());
+        request2.setStartDate(OffsetDateTime.now().plusDays(1));
+        request2.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        // Create both subscriptions
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isOk());
+
+        // When & Then
+        mockMvc.perform(get("/api/subscriptions/device/{deviceNo}", testDevice.getDeviceNo()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].deviceId").value(everyItem(equalTo(testDevice.getId()))));
+    }
+
+    @Test
+    void getSubscriptionsByDeviceNo_WhenDeviceHasNoSubscriptions_ShouldReturnEmptyList() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/subscriptions/device/{deviceNo}", testDevice.getDeviceNo()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void getSubscriptionsByDeviceNo_WhenDeviceDoesNotExist_ShouldReturnNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/subscriptions/device/{deviceNo}", "NONEXISTENT_DEVICE_NO"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Device not found with deviceNo: NONEXISTENT_DEVICE_NO"));
+    }
+
+    @Test
+    void getSubscriptionsByDeviceNo_WithSpecialCharactersInDeviceNo_ShouldWork() throws Exception {
+        // Given - Create a device with special characters in device number
+        Device specialDevice = Device.builder()
+                .customer(testCustomer)
+                .deviceName("Special Device")
+                .deviceNo("DEV-2026-ABC_123")
+                .deviceType("TABLET")
+                .status(DeviceStatus.ACTIVE)
+                .build();
+        specialDevice = deviceRepository.save(specialDevice);
+
+        // Create a subscription for the special device
+        SubscriptionRequest request = new SubscriptionRequest();
+        request.setCustomerId(testCustomer.getId());
+        request.setDeviceId(specialDevice.getId());
+        request.setProductId(testProduct.getId());
+        request.setStartDate(OffsetDateTime.now().plusDays(1));
+        request.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // When & Then
+        mockMvc.perform(get("/api/subscriptions/device/{deviceNo}", "DEV-2026-ABC_123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].deviceId").value(specialDevice.getId()));
     }
 }

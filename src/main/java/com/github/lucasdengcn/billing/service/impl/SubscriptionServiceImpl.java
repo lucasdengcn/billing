@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.service.impl;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -163,4 +164,41 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
+    @Override
+    public Subscription cancelSubscription(Long customerId, Long deviceId, Long productId) {
+        log.info("Canceling subscription for customer ID: {}, device ID: {}, product ID: {}", customerId, deviceId, productId);
+        
+        // Find the associated entities
+        Customer customer = customerService.findById(customerId);
+        Device device = deviceService.findById(deviceId);
+        Product product = productService.findProductById(productId);
+        
+        // Find the subscription by customer, device, and product
+        Subscription subscription = subscriptionRepository.findFirstByCustomerAndDeviceAndProductOrderByCreatedAtDesc(customer, device, product)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                    String.format("Subscription not found for customer ID: %d, device ID: %d, product ID: %d", 
+                                 customerId, deviceId, productId)));
+        
+        // Update the subscription status to CANCELLED
+        subscription.setStatus(SubscriptionStatus.CANCELLED);
+        subscription.setUpdatedAt(OffsetDateTime.now());
+        
+        // Save the updated subscription
+        Subscription updatedSubscription = subscriptionRepository.save(subscription);
+        log.info("Subscription {} has been cancelled", updatedSubscription.getId());
+        
+        return updatedSubscription;
+    }
+
+    @Override
+    public List<Subscription> findSubscriptionsByDeviceNo(String deviceNo) {
+        log.info("Finding active subscriptions for device number: {}", deviceNo);
+        
+        // Find subscriptions directly by device number and status in a single query
+        List<Subscription> activeSubscriptions = subscriptionRepository.findByDevice_DeviceNoAndStatus(deviceNo, SubscriptionStatus.ACTIVE);
+        
+        log.info("Found {} active subscriptions for device number: {}", activeSubscriptions.size(), deviceNo);
+        
+        return activeSubscriptions;
+    }
 }

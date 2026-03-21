@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
@@ -16,4 +17,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     List<Subscription> findByDevice(Device device);
     List<Subscription> findByProduct(Product product);
     List<Subscription> findByStatus(SubscriptionStatus status);
+    
+    List<Subscription> findByCustomerAndDeviceAndProduct(Customer customer, Device device, Product product);
+    
+    Optional<Subscription> findFirstByCustomerAndDeviceAndProductOrderByCreatedAtDesc(Customer customer, Device device, Product product);
+    
+    List<Subscription> findByDevice_DeviceNoAndStatus(String deviceNo, SubscriptionStatus status);
 }
