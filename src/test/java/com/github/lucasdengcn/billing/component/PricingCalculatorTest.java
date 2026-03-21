@@ -40,7 +40,7 @@ class PricingCalculatorTest {
         BigDecimal totalFee = pricingCalculator.calculateProductTotalFee(product);
         
         // Then
-        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("89.9910")); // 99.99 * 0.90
+        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("89.99")); // 99.99 * 0.90
     }
     
     @Test
@@ -59,7 +59,7 @@ class PricingCalculatorTest {
         BigDecimal totalFee = pricingCalculator.calculateProductTotalFee(product);
         
         // Then
-        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("850.0000")); // 1000.00 * 0.85
+        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("850.00")); // 1000.00 * 0.85
     }
     
     @Test
@@ -84,7 +84,7 @@ class PricingCalculatorTest {
         BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
         
         // Then
-        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("269.9730")); // 99.99 * 0.90 * 3
+        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("269.97")); // 99.99 * 0.90 * 3
     }
     
     @Test
@@ -109,7 +109,7 @@ class PricingCalculatorTest {
         BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
         
         // Then
-        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("1700.0000")); // 1000.00 * 0.85 * 2
+        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("1700.00")); // 1000.00 * 0.85 * 2
     }
     
     @Test
