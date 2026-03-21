@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
     @UniqueConstraint(columnNames = {"subscription_id", "product_feature_id"})
 })
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubscriptionFeature {

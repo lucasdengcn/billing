@@ -1,8 +1,11 @@
 package com.github.lucasdengcn.billing.mapper;
 
 import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.entity.SubscriptionFeature;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
 import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
+import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
@@ -44,4 +47,14 @@ public interface SubscriptionMapper {
     @Mapping(target = "usageStats", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(SubscriptionRequest request, @MappingTarget Subscription subscription);
+    
+    @Mapping(target = "customerId", source = "customer.id")
+    @Mapping(target = "deviceId", source = "device.id")
+    @Mapping(target = "productId", source = "product.id")
+    SubscriptionWithFeaturesResponse toWithFeaturesResponse(Subscription subscription);
+    
+    @Mapping(target = "subscriptionId", source = "subscription.id")
+    @Mapping(target = "deviceId", source = "device.id")
+    @Mapping(target = "productFeatureId", source = "productFeature.id")
+    SubscriptionFeatureResponse toFeatureResponse(SubscriptionFeature subscriptionFeature);
 }

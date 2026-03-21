@@ -2,11 +2,14 @@ package com.github.lucasdengcn.billing.service.impl;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
+import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
 import com.github.lucasdengcn.billing.handler.SubscriptionHandler;
 import com.github.lucasdengcn.billing.handler.strategy.SubscriptionHandlerFactory;
 import com.github.lucasdengcn.billing.service.CustomerService;
@@ -200,5 +203,33 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         log.info("Found {} active subscriptions for device number: {}", activeSubscriptions.size(), deviceNo);
         
         return activeSubscriptions;
+    }
+
+    @Override
+    public SubscriptionWithFeaturesResponse findSubscriptionWithFeaturesById(Long id) {
+        log.info("Finding subscription with features by ID: {}", id);
+        
+        // First, fetch the subscription
+        Subscription subscription = subscriptionRepository.findById(id).orElse(null);
+        
+        if (subscription == null) {
+            throw new ResourceNotFoundException("Subscription not found with id: " + id);
+        }
+        
+        // Then fetch the subscription features separately to avoid N+1 problem
+        List<SubscriptionFeature> subscriptionFeatures = subscriptionFeatureRepository.findBySubscription(subscription);
+        subscription.setSubscriptionFeatures(subscriptionFeatures);
+
+        // Use the mapper to convert subscription to response
+        SubscriptionWithFeaturesResponse response = subscriptionMapper.toWithFeaturesResponse(subscription);
+        
+        if (response == null) {
+            log.error("Mapper returned null for subscription ID: {}", subscription.getId());
+            throw new IllegalStateException("Failed to map subscription to response for ID: " + subscription.getId());
+        }
+        
+        log.info("Successfully retrieved subscription {} with {} features", id, response.getSubscriptionFeatures().size());
+        
+        return response;
     }
 }

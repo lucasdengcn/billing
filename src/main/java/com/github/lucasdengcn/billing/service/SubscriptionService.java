@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.service;
 import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface SubscriptionService {
     Subscription cancelSubscription(Long customerId, Long deviceId, Long productId);
     
     List<Subscription> findSubscriptionsByDeviceNo(String deviceNo);
+    
+    SubscriptionWithFeaturesResponse findSubscriptionWithFeaturesById(Long id);
 }

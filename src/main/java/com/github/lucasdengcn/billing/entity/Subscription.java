@@ -17,7 +17,7 @@ import lombok.*;
 @Entity
 @Table(name = "subscriptions")
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Subscription {

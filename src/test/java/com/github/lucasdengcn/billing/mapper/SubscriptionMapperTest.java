@@ -1,16 +1,21 @@
 package com.github.lucasdengcn.billing.mapper;
 
 import com.github.lucasdengcn.billing.entity.*;
+import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
 import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
+import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -282,5 +287,258 @@ class SubscriptionMapperTest {
         assertThat(response.getProductId()).isEqualTo(request.getProductId());
         assertThat(response.getStartDate()).isEqualTo(request.getStartDate());
         assertThat(response.getEndDate()).isEqualTo(request.getEndDate());
+    }
+
+    @Test
+    void toWithFeaturesResponse_WithValidEntityAndFeatures_ShouldMapCorrectly() {
+        // Given
+        Customer customer = Customer.builder().id(1L).name("Test Customer").build();
+        Device device = Device.builder().id(10L).deviceName("Test Device").build();
+        Product product = Product.builder().id(100L).title("Premium Plan").build();
+        
+        // Create subscription features
+        ProductFeature productFeature1 = ProductFeature.builder()
+                .id(101L)
+                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS)
+                .build();
+        
+        SubscriptionFeature subFeature1 = SubscriptionFeature.builder()
+                .id(1001L)
+                .subscription(null) // Will be set later
+                .productFeature(productFeature1)
+                .title("API Access")
+                .description("Provides access to the API with rate limiting")
+                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS)
+                .quota(1000)
+                .accessed(150)
+                .balance(850)
+                .createdAt(testDateTime)
+                .build();
+        
+        ProductFeature productFeature2 = ProductFeature.builder()
+                .id(102L)
+                .featureType(FeatureType.STORAGE_SPACE)
+                .build();
+        
+        SubscriptionFeature subFeature2 = SubscriptionFeature.builder()
+                .id(1002L)
+                .subscription(null)
+                .productFeature(productFeature2)
+                .title("Storage")
+                .description("Provides cloud storage space")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(100)
+                .accessed(25)
+                .balance(75)
+                .createdAt(testDateTime)
+                .build();
+        
+        Subscription entity = Subscription.builder()
+                .id(999L)
+                .customer(customer)
+                .device(device)
+                .product(product)
+                .startDate(testDateTime)
+                .endDate(testDateTime.plusDays(30))
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
+                .baseFee(new BigDecimal("29.99"))
+                .discountRate(new BigDecimal("0.90"))
+                .totalFee(new BigDecimal("26.99"))
+                .status(SubscriptionStatus.ACTIVE)
+                .subscriptionFeatures(Arrays.asList(subFeature1, subFeature2))
+                .build();
+        
+        // When
+        SubscriptionWithFeaturesResponse response = mapper.toWithFeaturesResponse(entity);
+        
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(entity.getId());
+        assertThat(response.getCustomerId()).isEqualTo(entity.getCustomer().getId());
+        assertThat(response.getDeviceId()).isEqualTo(entity.getDevice().getId());
+        assertThat(response.getProductId()).isEqualTo(entity.getProduct().getId());
+        assertThat(response.getStartDate()).isEqualTo(entity.getStartDate());
+        assertThat(response.getEndDate()).isEqualTo(entity.getEndDate());
+        assertThat(response.getPeriods()).isEqualTo(entity.getPeriods());
+        assertThat(response.getPeriodUnit()).isEqualTo(entity.getPeriodUnit());
+        assertThat(response.getBaseFee()).isEqualByComparingTo(entity.getBaseFee());
+        assertThat(response.getDiscountRate()).isEqualByComparingTo(entity.getDiscountRate());
+        assertThat(response.getTotalFee()).isEqualByComparingTo(entity.getTotalFee());
+        assertThat(response.getStatus()).isEqualTo(entity.getStatus());
+        
+        // Verify subscription features mapping
+        assertThat(response.getSubscriptionFeatures()).hasSize(2);
+        assertThat(response.getSubscriptionFeatures())
+                .extracting(SubscriptionFeatureResponse::getId)
+                .containsExactlyInAnyOrder(1001L, 1002L);
+        
+        // Verify individual feature mappings
+        SubscriptionFeatureResponse apiFeature = response.getSubscriptionFeatures().stream()
+                .filter(f -> f.getId().equals(1001L))
+                .findFirst().orElse(null);
+        assertThat(apiFeature).isNotNull();
+        assertThat(apiFeature.getTitle()).isEqualTo("API Access");
+        assertThat(apiFeature.getDescription()).isEqualTo("Provides access to the API with rate limiting");
+        assertThat(apiFeature.getFeatureType()).isEqualTo(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS);
+        assertThat(apiFeature.getQuota()).isEqualTo(1000);
+        assertThat(apiFeature.getAccessed()).isEqualTo(150);
+        assertThat(apiFeature.getBalance()).isEqualTo(850);
+        assertThat(apiFeature.getCreatedAt()).isEqualTo(testDateTime);
+        
+        SubscriptionFeatureResponse storageFeature = response.getSubscriptionFeatures().stream()
+                .filter(f -> f.getId().equals(1002L))
+                .findFirst().orElse(null);
+        assertThat(storageFeature).isNotNull();
+        assertThat(storageFeature.getTitle()).isEqualTo("Storage");
+        assertThat(storageFeature.getDescription()).isEqualTo("Provides cloud storage space");
+        assertThat(storageFeature.getFeatureType()).isEqualTo(FeatureType.STORAGE_SPACE);
+        assertThat(storageFeature.getQuota()).isEqualTo(100);
+        assertThat(storageFeature.getAccessed()).isEqualTo(25);
+        assertThat(storageFeature.getBalance()).isEqualTo(75);
+    }
+
+    @Test
+    void toWithFeaturesResponse_WithEntityWithoutFeatures_ShouldMapCorrectly() {
+        // Given
+        Customer customer = Customer.builder().id(1L).name("Test Customer").build();
+        Device device = Device.builder().id(10L).deviceName("Test Device").build();
+        Product product = Product.builder().id(100L).title("Premium Plan").build();
+        
+        Subscription entity = Subscription.builder()
+                .id(999L)
+                .customer(customer)
+                .device(device)
+                .product(product)
+                .startDate(testDateTime)
+                .endDate(testDateTime.plusDays(30))
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
+                .baseFee(new BigDecimal("29.99"))
+                .discountRate(new BigDecimal("0.90"))
+                .totalFee(new BigDecimal("26.99"))
+                .status(SubscriptionStatus.ACTIVE)
+                .subscriptionFeatures(Collections.emptyList())
+                .build();
+        
+        // When
+        SubscriptionWithFeaturesResponse response = mapper.toWithFeaturesResponse(entity);
+        
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(entity.getId());
+        assertThat(response.getCustomerId()).isEqualTo(entity.getCustomer().getId());
+        assertThat(response.getDeviceId()).isEqualTo(entity.getDevice().getId());
+        assertThat(response.getProductId()).isEqualTo(entity.getProduct().getId());
+        assertThat(response.getSubscriptionFeatures()).isEmpty();
+    }
+
+    @Test
+    void toWithFeaturesResponse_WithEntityWithNullFeatures_ShouldMapCorrectly() {
+        // Given
+        Customer customer = Customer.builder().id(1L).name("Test Customer").build();
+        Device device = Device.builder().id(10L).deviceName("Test Device").build();
+        Product product = Product.builder().id(100L).title("Premium Plan").build();
+        
+        Subscription entity = Subscription.builder()
+                .id(999L)
+                .customer(customer)
+                .device(device)
+                .product(product)
+                .startDate(testDateTime)
+                .endDate(testDateTime.plusDays(30))
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
+                .baseFee(new BigDecimal("29.99"))
+                .discountRate(new BigDecimal("0.90"))
+                .totalFee(new BigDecimal("26.99"))
+                .status(SubscriptionStatus.ACTIVE)
+                .subscriptionFeatures(null) // Null features
+                .build();
+        
+        // When
+        SubscriptionWithFeaturesResponse response = mapper.toWithFeaturesResponse(entity);
+        
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(entity.getId());
+        assertThat(response.getCustomerId()).isEqualTo(entity.getCustomer().getId());
+        assertThat(response.getDeviceId()).isEqualTo(entity.getDevice().getId());
+        assertThat(response.getProductId()).isEqualTo(entity.getProduct().getId());
+        assertThat(response.getSubscriptionFeatures()).isNull();
+    }
+
+    @Test
+    void toFeatureResponse_WithValidEntity_ShouldMapCorrectly() {
+        // Given
+        Subscription subscription = Subscription.builder().id(999L).build();
+        Device device = Device.builder().id(10L).build();
+        ProductFeature productFeature = ProductFeature.builder().id(101L).build();
+        
+        SubscriptionFeature entity = SubscriptionFeature.builder()
+                .id(1001L)
+                .subscription(subscription)
+                .device(device)
+                .productFeature(productFeature)
+                .title("API Access")
+                .description("Provides access to the API with rate limiting")
+                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS)
+                .quota(1000)
+                .accessed(150)
+                .balance(850)
+                .createdAt(testDateTime)
+                .build();
+        
+        // When
+        SubscriptionFeatureResponse response = mapper.toFeatureResponse(entity);
+        
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(entity.getId());
+        assertThat(response.getSubscriptionId()).isEqualTo(entity.getSubscription().getId());
+        assertThat(response.getDeviceId()).isEqualTo(entity.getDevice().getId());
+        assertThat(response.getProductFeatureId()).isEqualTo(entity.getProductFeature().getId());
+        assertThat(response.getTitle()).isEqualTo(entity.getTitle());
+        assertThat(response.getDescription()).isEqualTo(entity.getDescription());
+        assertThat(response.getFeatureType()).isEqualTo(entity.getFeatureType());
+        assertThat(response.getQuota()).isEqualTo(entity.getQuota());
+        assertThat(response.getAccessed()).isEqualTo(entity.getAccessed());
+        assertThat(response.getBalance()).isEqualTo(entity.getBalance());
+        assertThat(response.getCreatedAt()).isEqualTo(entity.getCreatedAt());
+    }
+
+    @Test
+    void toFeatureResponse_WithNullRelationships_ShouldMapCorrectly() {
+        // Given
+        SubscriptionFeature entity = SubscriptionFeature.builder()
+                .id(1001L)
+                .subscription(null) // Null subscription
+                .device(null)        // Null device
+                .productFeature(null) // Null product feature
+                .title("API Access")
+                .description("Provides access to the API with rate limiting")
+                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS)
+                .quota(1000)
+                .accessed(150)
+                .balance(850)
+                .createdAt(testDateTime)
+                .build();
+        
+        // When
+        SubscriptionFeatureResponse response = mapper.toFeatureResponse(entity);
+        
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(entity.getId());
+        assertThat(response.getSubscriptionId()).isNull(); // Should be null when subscription is null
+        assertThat(response.getDeviceId()).isNull();       // Should be null when device is null
+        assertThat(response.getProductFeatureId()).isNull(); // Should be null when productFeature is null
+        assertThat(response.getTitle()).isEqualTo(entity.getTitle());
+        assertThat(response.getDescription()).isEqualTo(entity.getDescription());
+        assertThat(response.getFeatureType()).isEqualTo(entity.getFeatureType());
+        assertThat(response.getQuota()).isEqualTo(entity.getQuota());
+        assertThat(response.getAccessed()).isEqualTo(entity.getAccessed());
+        assertThat(response.getBalance()).isEqualTo(entity.getBalance());
+        assertThat(response.getCreatedAt()).isEqualTo(entity.getCreatedAt());
     }
 }
