@@ -11,6 +11,7 @@ import com.github.lucasdengcn.billing.handler.strategy.SubscriptionHandlerFactor
 import com.github.lucasdengcn.billing.service.CustomerService;
 import com.github.lucasdengcn.billing.service.DeviceService;
 import com.github.lucasdengcn.billing.service.ProductService;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +51,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Subscription> findSubscriptionsByCustomer(Customer customer) {
+    public List<Subscription> findSubscriptionsByCustomer(@NonNull Customer customer) {
         log.debug("Finding subscriptions for customer: {}", customer.getId());
         return subscriptionRepository.findByCustomer(customer);
     }
@@ -62,34 +63,26 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public SubscriptionFeature saveSubscriptionFeature(SubscriptionFeature feature) {
-        log.info("Saving subscription feature: {}", feature);
-        return subscriptionFeatureRepository.save(feature);
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public List<SubscriptionFeature> findFeaturesBySubscription(Subscription subscription) {
-        log.debug("Finding features for subscription: {}", subscription.getId());
+    public List<SubscriptionFeature> findFeaturesBySubscription(@NonNull Subscription subscription) {
         return subscriptionFeatureRepository.findBySubscription(subscription);
     }
 
     @Override
-    public SubscriptionRenewal saveRenewal(SubscriptionRenewal renewal) {
-        log.info("Saving renewal for subscription: {}", renewal.getSubscription().getId());
+    public SubscriptionRenewal saveRenewal(@NonNull SubscriptionRenewal renewal) {
         return subscriptionRenewalRepository.save(renewal);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SubscriptionRenewal> findRenewalsBySubscription(Subscription subscription) {
+    public List<SubscriptionRenewal> findRenewalsBySubscription(@NonNull Subscription subscription) {
         log.debug("Finding renewals for subscription: {}", subscription.getId());
         return subscriptionRenewalRepository.findBySubscription(subscription);
     }
 
     @Override
     @Transactional
-    public void createSubscriptionFeaturesFromProduct(Subscription subscription) {
+    public void createSubscriptionFeaturesFromProduct(@NonNull Subscription subscription) {
         log.info("Creating subscription features from product features for subscription: {}", subscription.getId());
         
         // Get all product features for the subscription's product
@@ -113,7 +106,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             subscription.getId(), savedFeatures.size());
     }
 
-    private static SubscriptionFeature getSubscriptionFeature(Subscription subscription, ProductFeature productFeature) {
+    private static SubscriptionFeature getSubscriptionFeature(@NonNull Subscription subscription, @NonNull ProductFeature productFeature) {
         SubscriptionFeature subscriptionFeature = new SubscriptionFeature();
         subscriptionFeature.setSubscription(subscription);
         subscriptionFeature.setProductFeature(productFeature);
@@ -130,7 +123,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional
-    public Subscription createSubscription(SubscriptionRequest request) {
+    public Subscription createSubscription(@NonNull SubscriptionRequest request) {
         log.info("Creating subscription for customer: {} with product: {} and device: {}", 
             request.getCustomerId(), request.getProductId(), request.getDeviceId());
         
@@ -169,7 +162,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return saved;
     }
 
-    private void validateSubscriptionRequest(SubscriptionRequest request) {
+    private void validateSubscriptionRequest(@NonNull SubscriptionRequest request) {
         if (request.getStartDate() != null && request.getEndDate() != null) {
             if (request.getStartDate().isAfter(request.getEndDate())) {
                 throw new IllegalArgumentException("Start date must be before end date");
