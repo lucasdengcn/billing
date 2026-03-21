@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.model.response;
 
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -29,8 +30,11 @@ public class SubscriptionResponse {
     @Schema(description = "Expiry date")
     private OffsetDateTime endDate;
 
-    @Schema(description = "Subscription period in days", example = "365")
-    private Integer periodDays;
+    @Schema(description = "Subscription period quantity", example = "1")
+    private Integer periods;
+
+    @Schema(description = "Unit of subscription period", example = "MONTHS")
+    private PeriodUnit periodUnit;
 
     @Schema(description = "Base fee at subscription time", example = "29.99")
     private BigDecimal baseFee;

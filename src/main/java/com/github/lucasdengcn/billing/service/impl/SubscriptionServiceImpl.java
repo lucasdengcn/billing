@@ -1,11 +1,14 @@
 package com.github.lucasdengcn.billing.service.impl;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.lucasdengcn.billing.component.FeeCalculator;
 import com.github.lucasdengcn.billing.entity.*;
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.service.CustomerService;
@@ -147,6 +150,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         log.info("Creating subscription for customer: {} with product: {} and device: {}", 
             request.getCustomerId(), request.getProductId(), request.getDeviceId());
         
+        // Validate request
+        validateSubscriptionRequest(request);
+        
         // Load related entities
         Customer customer = customerService.findById(request.getCustomerId());
         Product product = productService.findProductById(request.getProductId());
@@ -158,13 +164,27 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscription.setProduct(product);
         subscription.setDevice(device);
         
-        // Calculate total fee based on base fee and discount rate
-        BigDecimal baseFee = subscription.getBaseFee() != null ? subscription.getBaseFee() : product.getBasePrice();
-        BigDecimal discountRate = subscription.getDiscountRate() != null ? subscription.getDiscountRate() : product.getDiscountRate();
-        BigDecimal calculatedTotalFee = baseFee.multiply(discountRate);
+        // Set default dates if not provided
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime startDate = request.getStartDate() != null ? request.getStartDate() : now;
+        OffsetDateTime endDate = request.getEndDate() != null ? request.getEndDate() : calculateEndDate(startDate, product.getPriceType());
         
-        subscription.setBaseFee(baseFee);
-        subscription.setDiscountRate(discountRate);
+        // Validate date logic
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date must be before end date");
+        }
+        
+        subscription.setStartDate(startDate);
+        subscription.setEndDate(endDate);
+
+        // Calculate period and unit based on duration
+        calculatePeriods(startDate, endDate, subscription, product.getPriceType());
+
+        // Calculate total fee using FeeCalculator
+        BigDecimal calculatedTotalFee = feeCalculator.calculateSubscriptionTotalFee(subscription);
+        
+        subscription.setBaseFee(product.getBasePrice());
+        subscription.setDiscountRate(product.getDiscountRate());
         subscription.setTotalFee(calculatedTotalFee);
         
         // Save the subscription
@@ -177,5 +197,52 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             saved.getId(), calculatedTotalFee, productService.findFeaturesByProduct(product.getId()).size());
         
         return saved;
+    }
+
+    private void calculatePeriods(OffsetDateTime startDate, OffsetDateTime endDate, Subscription subscription, PriceType priceType) {
+        // Calculate period and unit based on duration
+        long totalDays = java.time.Duration.between(startDate, endDate).toDays();
+
+        if (totalDays <= 0) {
+            totalDays = 1; // Ensure at least 1 day
+        }
+
+        // Determine the most appropriate period unit based on total days
+        if (priceType == PriceType.YEARLY) {
+            // Years (approximately)
+            int years = (int) (totalDays / 365);
+            subscription.setPeriods(years);
+            subscription.setPeriodUnit(PeriodUnit.YEARS);
+        } else {
+            // Months (approximately)
+            int months = (int) (totalDays / 30);
+            subscription.setPeriods(months);
+            subscription.setPeriodUnit(PeriodUnit.MONTHS);
+        }
+    }
+
+    private void validateSubscriptionRequest(SubscriptionRequest request) {
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            if (request.getStartDate().isAfter(request.getEndDate())) {
+                throw new IllegalArgumentException("Start date must be before end date");
+            }
+        }
+    }
+    
+    private OffsetDateTime calculateEndDate(OffsetDateTime startDate, PriceType priceType) {
+        switch (priceType) {
+            case MONTHLY:
+                return startDate.plusMonths(1);
+            case YEARLY:
+                return startDate.plusYears(1);
+            case ONE_TIME:
+                return startDate.plusDays(30); // Default for one-time to 30 days
+            case USAGE_BASED:
+                return startDate.plusMonths(1); // Default for usage-based to 30 days
+            case CUSTOM:
+                return startDate.plusMonths(1); // Default for custom to 30 days
+            default:
+                return startDate.plusMonths(1); // Default to monthly
+        }
     }
 }

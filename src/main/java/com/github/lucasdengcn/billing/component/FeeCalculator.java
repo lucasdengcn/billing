@@ -18,16 +18,6 @@ public interface FeeCalculator {
      * @return The calculated discounted price
      */
     BigDecimal calculateProductTotalFee(Product product);
-    
-    /**
-     * Calculates the total fee for a subscription based on the subscription request and associated product.
-     * 
-     * @param request The subscription request containing fee and discount information
-     * @param product The product associated with the subscription
-     * @return The calculated total fee for the subscription
-     */
-    BigDecimal calculateSubscriptionTotalFee(SubscriptionRequest request, Product product);
-    
     /**
      * Calculates the total fee for an existing subscription based on its base fee and discount rate.
      * 

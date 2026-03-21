@@ -4,6 +4,7 @@ import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.ProductFeature;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
 import com.github.lucasdengcn.billing.entity.enums.FeatureType;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.mapper.ProductMapper;
 import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
@@ -58,7 +59,7 @@ class ProductServiceTest {
                 .title("Premium Plan")
                 .description("{\"features\":[\"premium\"]}")
                 .basePrice(new BigDecimal("29.99"))
-                .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
+                .priceType(PriceType.MONTHLY)
                 .discountRate(new BigDecimal("0.90"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -67,14 +68,14 @@ class ProductServiceTest {
                 .id(10L)
                 .title("API Access")
                 .description("{\"type\":\"api\"}")
-                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS)
+                .featureType(FeatureType.API_ACCESS)
                 .quota(1000)
                 .build();
         
         productRequest = new ProductRequest();
         productRequest.setTitle("Updated Premium Plan");
         productRequest.setBasePrice(new BigDecimal("39.99"));
-        productRequest.setPriceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY);
+        productRequest.setPriceType(PriceType.YEARLY);
         productRequest.setDiscountRate(new BigDecimal("0.85"));
         productRequest.setDiscountStatus(DiscountStatus.INACTIVE);
         
@@ -82,7 +83,7 @@ class ProductServiceTest {
                 .productId(1L)
                 .title("New Feature")
                 .description("New feature description")
-                .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.STORAGE_SPACE)
+                .featureType(FeatureType.STORAGE_SPACE)
                 .quota(500)
                 .build();
     }

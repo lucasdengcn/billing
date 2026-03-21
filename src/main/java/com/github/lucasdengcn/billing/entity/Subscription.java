@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import com.github.lucasdengcn.billing.entity.enums.DiscountRate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 
 import jakarta.persistence.*;
@@ -45,16 +47,22 @@ public class Subscription {
     @Column(name = "end_date")
     private OffsetDateTime endDate;
 
-    @Column(name = "period_days", nullable = false)
-    private Integer periodDays;
+    @Column(name = "periods", nullable = false)
+    private Integer periods;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "period_unit", nullable = false)
+    @Builder.Default
+    private PeriodUnit periodUnit = PeriodUnit.MONTHS;
 
     @Column(name = "base_fee", nullable = false, precision = 19, scale = 4)
     @Builder.Default
     private BigDecimal baseFee = BigDecimal.ZERO;
 
+    // 1 means no discount
     @Column(name = "discount_rate", precision = 5, scale = 4)
     @Builder.Default
-    private BigDecimal discountRate = BigDecimal.ZERO;
+    private BigDecimal discountRate = DiscountRate.NO_DISCOUNT.getRate();
 
     @Column(name = "total_fee", nullable = false, precision = 19, scale = 4)
     @Builder.Default

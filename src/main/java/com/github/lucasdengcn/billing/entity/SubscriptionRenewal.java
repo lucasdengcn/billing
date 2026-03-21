@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity;
 
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,8 +36,13 @@ public class SubscriptionRenewal {
     @Column(name = "new_end_date", nullable = false)
     private OffsetDateTime newEndDate;
 
-    @Column(name = "renewal_period_days", nullable = false)
-    private Integer renewalPeriodDays;
+    @Column(name = "renewal_periods", nullable = false)
+    private Integer renewalPeriods;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "renewal_period_unit", nullable = false)
+    @Builder.Default
+    private PeriodUnit renewalPeriodUnit = PeriodUnit.DAYS;
 
     @Column(name = "base_fee", nullable = false, precision = 19, scale = 4)
     @Builder.Default

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import com.github.lucasdengcn.billing.entity.enums.DiscountRate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -44,7 +45,7 @@ public class Product {
     // Discount rate applied to base price (1.0 = no discount), fee = basePrice * discountRate
     @Column(name = "discount_rate", precision = 5, scale = 4)
     @Builder.Default
-    private BigDecimal discountRate = BigDecimal.ONE;
+    private BigDecimal discountRate = DiscountRate.NO_DISCOUNT.getRate();
 
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "discount_status")

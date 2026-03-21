@@ -55,7 +55,8 @@ CREATE TABLE subscriptions (
     product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
     end_date TIMESTAMP WITH TIME ZONE,
-    period_days INTEGER NOT NULL,
+    periods INTEGER NOT NULL DEFAULT 1,
+    period_unit VARCHAR(255) NOT NULL DEFAULT 'DAYS',
     base_fee DECIMAL(19, 4) NOT NULL DEFAULT 0.0000,
     discount_rate DECIMAL(5, 4) DEFAULT 1.0000, -- Locked discount rate at subscription time
     total_fee DECIMAL(19, 4) NOT NULL DEFAULT 0.0000, -- base_fee * discount_rate
@@ -86,7 +87,8 @@ CREATE TABLE subscription_renewals (
     subscription_id BIGINT NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
     previous_end_date TIMESTAMP WITH TIME ZONE,
     new_end_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    renewal_period_days INTEGER NOT NULL,
+    renewal_periods INTEGER NOT NULL DEFAULT 1,
+    renewal_period_unit VARCHAR(255) NOT NULL DEFAULT 'DAYS',
     base_fee DECIMAL(19, 4) NOT NULL DEFAULT 0.0000,
     discount_rate DECIMAL(5, 4) DEFAULT 1.0000, -- Locked discount rate at subscription time
     total_fee DECIMAL(19, 4) NOT NULL DEFAULT 0.0000, -- base_fee * discount_rate

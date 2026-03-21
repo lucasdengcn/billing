@@ -34,30 +34,6 @@ public class FeeCalculatorImpl implements FeeCalculator {
     }
     
     @Override
-    public BigDecimal calculateSubscriptionTotalFee(SubscriptionRequest request, Product product) {
-        if (request == null) {
-            throw new IllegalArgumentException("Subscription request cannot be null");
-        }
-        if (product == null) {
-            throw new IllegalArgumentException("Product cannot be null");
-        }
-        
-        // Determine base fee - prefer request value, fallback to product base price
-        BigDecimal baseFee = request.getBaseFee();
-        if (baseFee == null || baseFee.compareTo(ZERO) == 0) {
-            baseFee = product.getBasePrice();
-        }
-        
-        // Determine discount rate - prefer request value, fallback to product discount rate
-        BigDecimal discountRate = request.getDiscountRate();
-        if (discountRate == null) {
-            discountRate = product.getDiscountRate() != null ? product.getDiscountRate() : DEFAULT_DISCOUNT_RATE;
-        }
-        
-        return baseFee.multiply(discountRate).setScale(SCALE, ROUNDING_MODE);
-    }
-    
-    @Override
     public BigDecimal calculateSubscriptionTotalFee(Subscription subscription) {
         if (subscription == null) {
             throw new IllegalArgumentException("Subscription cannot be null");
@@ -65,8 +41,9 @@ public class FeeCalculatorImpl implements FeeCalculator {
         
         BigDecimal baseFee = subscription.getBaseFee() != null ? subscription.getBaseFee() : ZERO;
         BigDecimal discountRate = subscription.getDiscountRate() != null ? subscription.getDiscountRate() : DEFAULT_DISCOUNT_RATE;
+        int periods = subscription.getPeriods() != null ? subscription.getPeriods() : 1;
         
-        return baseFee.multiply(discountRate).setScale(SCALE, ROUNDING_MODE);
+        return baseFee.multiply(discountRate).multiply(new BigDecimal(periods)).setScale(SCALE, ROUNDING_MODE);
     }
     
     @Override

@@ -1306,12 +1306,7 @@ components:
           format: date-time
           description: When the subscription expires
           example: "2027-03-16T00:00:00Z"
-        periodDays:
-          type: integer
-          format: int32
-          description: Duration of the subscription in days
-          example: 365
-          minimum: 1
+
         productId:
           type: integer
           format: int64
@@ -1333,7 +1328,6 @@ components:
           example: ACTIVE
       required:
         - customerId
-        - periodDays
         - productId
         - startDate
     SubscriptionResponse:
@@ -1367,11 +1361,20 @@ components:
           format: int64
           description: Unique database identifier for the subscription
           example: 1
-        periodDays:
+        periods:
           type: integer
           format: int32
-          description: Subscription period in days
-          example: 365
+          description: Subscription period quantity
+          example: 1
+        periodUnit:
+          type: string
+          description: Unit of subscription period
+          example: "MONTHS"
+          enum:
+            - DAYS
+            - WEEKS
+            - MONTHS
+            - YEARS
         productId:
           type: integer
           format: int64

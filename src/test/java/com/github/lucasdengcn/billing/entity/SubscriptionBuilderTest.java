@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity;
 
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +56,8 @@ class SubscriptionBuilderTest {
         
         SubscriptionRenewal renewal1 = SubscriptionRenewal.builder()
                 .id(2000L)
-                .renewalPeriodDays(30)
+                .renewalPeriods(1)
+                .renewalPeriodUnit(PeriodUnit.MONTHS)
                 .build();
         
         mockRenewals = Arrays.asList(renewal1);
@@ -74,7 +76,8 @@ class SubscriptionBuilderTest {
                 .product(mockProduct)
                 .startDate(testStartDate)
                 .endDate(endDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))
                 .totalFee(new BigDecimal("26.99"))
@@ -90,7 +93,8 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getProduct()).isEqualTo(mockProduct);
         assertThat(subscription.getStartDate()).isEqualTo(testStartDate);
         assertThat(subscription.getEndDate()).isEqualTo(endDate);
-        assertThat(subscription.getPeriodDays()).isEqualTo(30);
+        assertThat(subscription.getPeriods()).isEqualTo(1);
+        assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS);
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(new BigDecimal("29.99"));
         assertThat(subscription.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.90"));
         assertThat(subscription.getTotalFee()).isEqualByComparingTo(new BigDecimal("26.99"));
@@ -106,18 +110,20 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .build();
         
         // Then
         assertThat(subscription.getCustomer()).isEqualTo(mockCustomer);
         assertThat(subscription.getProduct()).isEqualTo(mockProduct);
         assertThat(subscription.getStartDate()).isEqualTo(testStartDate);
-        assertThat(subscription.getPeriodDays()).isEqualTo(30);
+        assertThat(subscription.getPeriods()).isEqualTo(1);
+        assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS);
         
         // Verify defaults
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE);
         assertThat(subscription.getTotalFee()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         assertThat(subscription.getId()).isNull();
@@ -134,12 +140,13 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .build();
         
         // Then
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ZERO); // Default value
+        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE); // Default value
         assertThat(subscription.getTotalFee()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE); // Default value
     }
@@ -154,14 +161,15 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(customBaseFee)
                 .build();
         
         // Then
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(customBaseFee);
         // Other defaults should still apply
-        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE);
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
     }
 
@@ -175,7 +183,8 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .discountRate(customDiscountRate)
                 .build();
         
@@ -196,7 +205,8 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .status(customStatus)
                 .build();
         
@@ -204,7 +214,7 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getStatus()).isEqualTo(customStatus);
         // Other defaults should still apply
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE);
     }
 
     @Test
@@ -217,11 +227,12 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getCustomer()).isNull();
         assertThat(subscription.getProduct()).isNull();
         assertThat(subscription.getStartDate()).isNull();
-        assertThat(subscription.getPeriodDays()).isNull();
+        assertThat(subscription.getPeriods()).isNull();
+        assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS); // default value
         
         // But defaults still apply for fields with @Builder.Default
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(subscription.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE);
         assertThat(subscription.getTotalFee()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
     }
@@ -237,7 +248,8 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .endDate(endDate)
                 .device(mockDevice)
                 .baseFee(new BigDecimal("39.99"))
@@ -251,7 +263,8 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getCustomer()).isEqualTo(mockCustomer);
         assertThat(subscription.getProduct()).isEqualTo(mockProduct);
         assertThat(subscription.getStartDate()).isEqualTo(testStartDate);
-        assertThat(subscription.getPeriodDays()).isEqualTo(30);
+        assertThat(subscription.getPeriods()).isEqualTo(1);
+        assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS);
         assertThat(subscription.getEndDate()).isEqualTo(endDate);
         assertThat(subscription.getDevice()).isEqualTo(mockDevice);
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(new BigDecimal("39.99"));
@@ -267,7 +280,8 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .subscriptionFeatures(mockFeatures)
                 .subscriptionRenewals(mockRenewals)
                 .build();
@@ -293,7 +307,8 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(startDate1)
-                .periodDays(30)
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
                 .status(SubscriptionStatus.ACTIVE)
                 .build();
         
@@ -302,14 +317,16 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(startDate2)
-                .periodDays(60)
+                .periods(2)
+                .periodUnit(PeriodUnit.MONTHS)
                 .status(SubscriptionStatus.EXPIRED)
                 .build();
         
         // Then
         assertThat(sub1.getId()).isNotEqualTo(sub2.getId());
         assertThat(sub1.getStartDate()).isNotEqualTo(sub2.getStartDate());
-        assertThat(sub1.getPeriodDays()).isNotEqualTo(sub2.getPeriodDays());
+        assertThat(sub1.getPeriods()).isNotEqualTo(sub2.getPeriods());
+        assertThat(sub1.getPeriodUnit()).isEqualTo(sub2.getPeriodUnit()); // both use default
         assertThat(sub1.getStatus()).isNotEqualTo(sub2.getStatus());
         
         // But shared objects are the same reference (as expected)
