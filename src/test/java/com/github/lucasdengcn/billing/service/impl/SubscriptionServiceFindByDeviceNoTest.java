@@ -94,7 +94,7 @@ class SubscriptionServiceFindByDeviceNoTest {
     void findSubscriptionsByDeviceNo_WhenDeviceExistsWithActiveSubscriptions_ShouldReturnActiveSubscriptions() {
         // Given - Both subscriptions are active
         when(deviceService.findByDeviceNo("TEST-DEVICE-001")).thenReturn(testDevice);
-        when(subscriptionRepository.findByDevice(testDevice)).thenReturn(Arrays.asList(testSubscription1, testSubscription2));
+        when(subscriptionRepository.findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE)).thenReturn(Arrays.asList(testSubscription1, testSubscription2));
 
         // When
         List<Subscription> result = subscriptionService.findSubscriptionsByDeviceNo("TEST-DEVICE-001");
@@ -104,7 +104,7 @@ class SubscriptionServiceFindByDeviceNoTest {
         assertThat(result).containsExactly(testSubscription1, testSubscription2);
 
         verify(deviceService).findByDeviceNo("TEST-DEVICE-001");
-        verify(subscriptionRepository).findByDevice(testDevice);
+        verify(subscriptionRepository).findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE);
     }
 
     @Test
@@ -121,8 +121,8 @@ class SubscriptionServiceFindByDeviceNoTest {
                 .build();
         
         when(deviceService.findByDeviceNo("TEST-DEVICE-001")).thenReturn(testDevice);
-        when(subscriptionRepository.findByDevice(testDevice)).thenReturn(
-            Arrays.asList(testSubscription1, cancelledSubscription, testSubscription2));
+        when(subscriptionRepository.findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE)).thenReturn(
+            Arrays.asList(testSubscription1, testSubscription2));
 
         // When
         List<Subscription> result = subscriptionService.findSubscriptionsByDeviceNo("TEST-DEVICE-001");
@@ -133,14 +133,14 @@ class SubscriptionServiceFindByDeviceNoTest {
         assertThat(result).doesNotContain(cancelledSubscription);
 
         verify(deviceService).findByDeviceNo("TEST-DEVICE-001");
-        verify(subscriptionRepository).findByDevice(testDevice);
+        verify(subscriptionRepository).findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE);
     }
 
     @Test
     void findSubscriptionsByDeviceNo_WhenDeviceExistsButHasNoSubscriptions_ShouldReturnEmptyList() {
         // Given
         when(deviceService.findByDeviceNo("TEST-DEVICE-001")).thenReturn(testDevice);
-        when(subscriptionRepository.findByDevice(testDevice)).thenReturn(Collections.emptyList());
+        when(subscriptionRepository.findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE)).thenReturn(Collections.emptyList());
 
         // When
         List<Subscription> result = subscriptionService.findSubscriptionsByDeviceNo("TEST-DEVICE-001");
@@ -149,7 +149,7 @@ class SubscriptionServiceFindByDeviceNoTest {
         assertThat(result).isEmpty();
 
         verify(deviceService).findByDeviceNo("TEST-DEVICE-001");
-        verify(subscriptionRepository).findByDevice(testDevice);
+        verify(subscriptionRepository).findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE);
     }
 
     @Test
@@ -176,8 +176,8 @@ class SubscriptionServiceFindByDeviceNoTest {
                 .build();
         
         when(deviceService.findByDeviceNo("TEST-DEVICE-001")).thenReturn(testDevice);
-        when(subscriptionRepository.findByDevice(testDevice)).thenReturn(
-            Arrays.asList(cancelledSubscription1, cancelledSubscription2));
+        when(subscriptionRepository.findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE)).thenReturn(
+            Collections.emptyList());
 
         // When
         List<Subscription> result = subscriptionService.findSubscriptionsByDeviceNo("TEST-DEVICE-001");
@@ -186,7 +186,7 @@ class SubscriptionServiceFindByDeviceNoTest {
         assertThat(result).isEmpty();
 
         verify(deviceService).findByDeviceNo("TEST-DEVICE-001");
-        verify(subscriptionRepository).findByDevice(testDevice);
+        verify(subscriptionRepository).findByDeviceIdAndStatus(testDevice.getId(), SubscriptionStatus.ACTIVE);
     }
 
     @Test
@@ -211,7 +211,7 @@ class SubscriptionServiceFindByDeviceNoTest {
                 .isInstanceOf(Exception.class); // This depends on how JPA handles null values
 
         verify(deviceService).findByDeviceNo(null);
-        verify(subscriptionRepository, never()).findByDevice(any(Device.class));
+        verify(subscriptionRepository, never()).findByDeviceIdAndStatus(any(Long.class), any(SubscriptionStatus.class));
     }
 
     @Test
@@ -226,6 +226,6 @@ class SubscriptionServiceFindByDeviceNoTest {
                 .hasMessage("Device not found with deviceNo: ");
 
         verify(deviceService).findByDeviceNo("");
-        verify(subscriptionRepository, never()).findByDevice(any(Device.class));
+        verify(subscriptionRepository, never()).findByDeviceIdAndStatus(any(Long.class), any(SubscriptionStatus.class));
     }
 }

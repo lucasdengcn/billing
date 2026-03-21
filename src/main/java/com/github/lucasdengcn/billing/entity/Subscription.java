@@ -48,7 +48,8 @@ public class Subscription {
     private OffsetDateTime endDate;
 
     @Column(name = "periods", nullable = false)
-    private Integer periods;
+    @Builder.Default
+    private Integer periods = 1;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "period_unit", nullable = false)

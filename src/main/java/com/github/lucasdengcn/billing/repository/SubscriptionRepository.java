@@ -23,4 +23,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     Optional<Subscription> findFirstByCustomerAndDeviceAndProductOrderByCreatedAtDesc(Customer customer, Device device, Product product);
     
     List<Subscription> findByDevice_DeviceNoAndStatus(String deviceNo, SubscriptionStatus status);
+
+    List<Subscription> findByDeviceIdAndStatus(Long deviceId, SubscriptionStatus subscriptionStatus);
 }

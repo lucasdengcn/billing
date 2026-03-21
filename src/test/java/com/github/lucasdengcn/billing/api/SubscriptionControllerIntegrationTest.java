@@ -622,7 +622,7 @@ class SubscriptionControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].deviceId").value(everyItem(equalTo(testDevice.getId()))));
+                .andExpect(jsonPath("$[*].deviceId").value(everyItem(equalTo(testDevice.getId().intValue()))));
     }
 
     @Test

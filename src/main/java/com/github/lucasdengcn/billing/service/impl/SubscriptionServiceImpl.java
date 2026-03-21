@@ -193,9 +193,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public List<Subscription> findSubscriptionsByDeviceNo(String deviceNo) {
         log.info("Finding active subscriptions for device number: {}", deviceNo);
-        
+        Device device = deviceService.findByDeviceNo(deviceNo);
         // Find subscriptions directly by device number and status in a single query
-        List<Subscription> activeSubscriptions = subscriptionRepository.findByDevice_DeviceNoAndStatus(deviceNo, SubscriptionStatus.ACTIVE);
+        List<Subscription> activeSubscriptions = subscriptionRepository.findByDeviceIdAndStatus(device.getId(), SubscriptionStatus.ACTIVE);
         
         log.info("Found {} active subscriptions for device number: {}", activeSubscriptions.size(), deviceNo);
         

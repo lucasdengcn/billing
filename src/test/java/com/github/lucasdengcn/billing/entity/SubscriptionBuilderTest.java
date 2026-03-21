@@ -227,7 +227,7 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getCustomer()).isNull();
         assertThat(subscription.getProduct()).isNull();
         assertThat(subscription.getStartDate()).isNull();
-        assertThat(subscription.getPeriods()).isNull();
+        assertThat(subscription.getPeriods()).isEqualTo(1);
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS); // default value
         
         // But defaults still apply for fields with @Builder.Default
