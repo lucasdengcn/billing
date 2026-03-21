@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.lucasdengcn.billing.component.FeeCalculator;
 import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
@@ -36,6 +37,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final CustomerService customerService;
     private final DeviceService deviceService;
     private final SubscriptionMapper subscriptionMapper;
+    private final FeeCalculator feeCalculator;
 
     @Override
     public Subscription saveSubscription(Subscription subscription) {
