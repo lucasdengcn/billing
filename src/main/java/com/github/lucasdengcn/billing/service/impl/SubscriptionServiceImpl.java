@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.lucasdengcn.billing.component.FeeCalculator;
+import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.PriceType;
@@ -40,7 +40,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final CustomerService customerService;
     private final DeviceService deviceService;
     private final SubscriptionMapper subscriptionMapper;
-    private final FeeCalculator feeCalculator;
+    private final PricingCalculator pricingCalculator;
 
     @Override
     public Subscription saveSubscription(Subscription subscription) {
@@ -180,11 +180,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // Calculate period and unit based on duration
         calculatePeriods(startDate, endDate, subscription, product.getPriceType());
 
-        // Calculate total fee using FeeCalculator
-        BigDecimal calculatedTotalFee = feeCalculator.calculateSubscriptionTotalFee(subscription);
+        // Set base fee and discount rate from product if not provided in request
+        BigDecimal baseFee = subscription.getBaseFee() != null ? subscription.getBaseFee() : product.getBasePrice();
+        BigDecimal discountRate = subscription.getDiscountRate() != null ? subscription.getDiscountRate() : product.getDiscountRate();
         
-        subscription.setBaseFee(product.getBasePrice());
-        subscription.setDiscountRate(product.getDiscountRate());
+        subscription.setBaseFee(baseFee);
+        subscription.setDiscountRate(discountRate);
+        
+        // Calculate total fee using FeeCalculator
+        BigDecimal calculatedTotalFee = pricingCalculator.calculateSubscriptionTotalFee(subscription);
         subscription.setTotalFee(calculatedTotalFee);
         
         // Save the subscription

@@ -1,9 +1,10 @@
 package com.github.lucasdengcn.billing.component.impl;
 
-import com.github.lucasdengcn.billing.component.FeeCalculator;
+import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
-import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.pricing.PricingStrategy;
+import com.github.lucasdengcn.billing.pricing.strategy.PricingStrategyFactory;
 
 import org.springframework.stereotype.Component;
 
@@ -11,10 +12,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * Implementation of the FeeCalculator interface that handles fee calculations for products and subscriptions.
+ * Implementation of the PricingCalculator interface that uses strategy pattern
+ * to handle fee calculations for products and subscriptions based on their pricing type.
  */
 @Component
-public class FeeCalculatorImpl implements FeeCalculator {
+public class PricingCalculatorImpl implements PricingCalculator {
     
     private static final BigDecimal DEFAULT_DISCOUNT_RATE = BigDecimal.ONE;
     private static final BigDecimal ZERO = BigDecimal.ZERO;
@@ -27,10 +29,9 @@ public class FeeCalculatorImpl implements FeeCalculator {
             throw new IllegalArgumentException("Product and basePrice cannot be null");
         }
         
-        BigDecimal basePrice = product.getBasePrice();
-        BigDecimal discountRate = product.getDiscountRate() != null ? product.getDiscountRate() : DEFAULT_DISCOUNT_RATE;
-        
-        return basePrice.multiply(discountRate).setScale(SCALE, ROUNDING_MODE);
+        // Use strategy pattern to calculate based on product type
+        PricingStrategy strategy = PricingStrategyFactory.getStrategy(product.getPriceType());
+        return strategy.calculateProductPrice(product);
     }
     
     @Override
@@ -39,11 +40,10 @@ public class FeeCalculatorImpl implements FeeCalculator {
             throw new IllegalArgumentException("Subscription cannot be null");
         }
         
-        BigDecimal baseFee = subscription.getBaseFee() != null ? subscription.getBaseFee() : ZERO;
-        BigDecimal discountRate = subscription.getDiscountRate() != null ? subscription.getDiscountRate() : DEFAULT_DISCOUNT_RATE;
-        int periods = subscription.getPeriods() != null ? subscription.getPeriods() : 1;
-        
-        return baseFee.multiply(discountRate).multiply(new BigDecimal(periods)).setScale(SCALE, ROUNDING_MODE);
+        // Use strategy pattern to calculate based on subscription's product type
+        PricingStrategy strategy = PricingStrategyFactory.getStrategy(
+            subscription.getProduct() != null ? subscription.getProduct().getPriceType() : null);
+        return strategy.calculateSubscriptionPrice(subscription);
     }
     
     @Override
