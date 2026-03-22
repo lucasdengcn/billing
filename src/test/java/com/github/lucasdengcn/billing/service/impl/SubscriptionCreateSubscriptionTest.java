@@ -282,7 +282,7 @@ class SubscriptionCreateSubscriptionTest {
         invalidRequest.setEndDate(OffsetDateTime.now()); // End date before start date
 
         // When & Then
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatExceptionOfType(com.github.lucasdengcn.billing.exception.InvalidSubscriptionDateRangeException.class)
                 .isThrownBy(() -> subscriptionService.createSubscription(invalidRequest))
                 .withMessage("Start date must be before end date");
 
@@ -401,7 +401,7 @@ class SubscriptionCreateSubscriptionTest {
         when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.of(existingSubscription));
         
         // When & Then
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatExceptionOfType(com.github.lucasdengcn.billing.exception.SubscriptionAlreadyActiveException.class)
                 .isThrownBy(() -> subscriptionService.createSubscription(request))
                 .withMessage("Device 100 already has an active subscription to product 10");
         

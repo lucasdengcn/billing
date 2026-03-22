@@ -193,7 +193,7 @@ class DeviceServiceImplTest {
 
         // When & Then
         assertThatThrownBy(() -> deviceService.registerDevice(registerRequest))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(com.github.lucasdengcn.billing.exception.CustomerResolutionException.class)
                 .hasMessage("Customer information is required to register a device");
     }
 

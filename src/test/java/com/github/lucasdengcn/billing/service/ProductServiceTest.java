@@ -478,7 +478,7 @@ class ProductServiceTest {
         
         // When & Then
         assertThatThrownBy(() -> productService.saveProduct(newProduct))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(com.github.lucasdengcn.billing.exception.ProductAlreadyExistsException.class)
                 .hasMessageContaining("Product with product number 'EXISTING_PLAN_001' already exists");
         verify(productRepository, never()).save(any(Product.class));
     }
@@ -503,7 +503,7 @@ class ProductServiceTest {
         
         // When & Then
         assertThatThrownBy(() -> productService.updateProduct(1L, request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(com.github.lucasdengcn.billing.exception.ProductAlreadyExistsException.class)
                 .hasMessageContaining("Product with product number 'EXISTING_PLAN_002' already exists");
         verify(productRepository, never()).save(any(Product.class));
     }

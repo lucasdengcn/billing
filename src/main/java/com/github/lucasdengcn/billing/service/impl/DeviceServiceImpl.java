@@ -14,6 +14,7 @@ import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.exception.CustomerResolutionException;
 import com.github.lucasdengcn.billing.mapper.DeviceMapper;
 import com.github.lucasdengcn.billing.repository.DeviceRepository;
 import com.github.lucasdengcn.billing.service.DeviceService;
@@ -96,7 +97,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     private Customer resolveCustomer(CustomerInfo info) {
         if (info == null) {
-            throw new IllegalArgumentException("Customer information is required to register a device");
+            throw new CustomerResolutionException("Customer information is required to register a device");
         }
 
         // 1. Try by customerId
@@ -134,7 +135,7 @@ public class DeviceServiceImpl implements DeviceService {
             return customerService.save(newCustomer);
         }
 
-        throw new IllegalArgumentException("Could not resolve or create customer from provided information");
+        throw new CustomerResolutionException();
     }
 
     @Override

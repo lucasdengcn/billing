@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.exception.SubscriptionAlreadyActiveException;
+import com.github.lucasdengcn.billing.exception.InvalidSubscriptionDateRangeException;
 import com.github.lucasdengcn.billing.repository.SubscriptionFeatureRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRenewalRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRepository;
@@ -140,9 +142,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             device.getId(), product.getId(), SubscriptionStatus.ACTIVE);
         
         if (existingSubscriptionOpt.isPresent()) {
-            throw new IllegalArgumentException(
-                String.format("Device %d already has an active subscription to product %d", 
-                             device.getId(), product.getId()));
+            throw new SubscriptionAlreadyActiveException(device.getId(), product.getId());
         }
         
         // Create subscription entity from request
@@ -175,7 +175,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private void validateSubscriptionRequest(@NonNull SubscriptionRequest request) {
         if (request.getStartDate() != null && request.getEndDate() != null) {
             if (request.getStartDate().isAfter(request.getEndDate())) {
-                throw new IllegalArgumentException("Start date must be before end date");
+                throw new InvalidSubscriptionDateRangeException();
             }
         }
     }

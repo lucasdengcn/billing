@@ -142,7 +142,7 @@ class YearlySubscriptionHandlerTest {
         subscription.setEndDate(endDate);
 
         // When & Then
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatExceptionOfType(com.github.lucasdengcn.billing.exception.InvalidSubscriptionDateRangeException.class)
                 .isThrownBy(() -> handler.handleNew(product, subscription))
                 .withMessage("Start date must be before end date");
     }

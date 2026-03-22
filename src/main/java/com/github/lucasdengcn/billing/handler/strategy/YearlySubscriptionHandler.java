@@ -4,6 +4,7 @@ import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
+import com.github.lucasdengcn.billing.exception.InvalidSubscriptionDateRangeException;
 import com.github.lucasdengcn.billing.handler.SubscriptionHandler;
 
 import java.math.BigDecimal;
@@ -48,7 +49,7 @@ public class YearlySubscriptionHandler implements SubscriptionHandler {
 
         // Validate date logic
         if (subscription.getStartDate().isAfter(subscription.getEndDate())) {
-            throw new IllegalArgumentException("Start date must be before end date");
+            throw new InvalidSubscriptionDateRangeException();
         }
 
         subscription.setBaseFee(product.getBasePrice());

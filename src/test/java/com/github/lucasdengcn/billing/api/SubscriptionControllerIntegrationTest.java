@@ -789,7 +789,7 @@ class SubscriptionControllerIntegrationTest {
         mockMvc.perform(post("/api/subscriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(secondRequest)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Device " + testDevice.getId() + " already has an active subscription to product " + testProduct.getId()));
     }
 

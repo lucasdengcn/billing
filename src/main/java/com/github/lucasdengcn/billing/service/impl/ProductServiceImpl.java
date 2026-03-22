@@ -12,6 +12,7 @@ import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.ProductFeature;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.exception.ProductAlreadyExistsException;
 import com.github.lucasdengcn.billing.mapper.ProductMapper;
 import com.github.lucasdengcn.billing.model.request.ProductRequest;
 import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
@@ -38,7 +39,7 @@ public class ProductServiceImpl implements ProductService {
         // Validate productNo uniqueness if provided
         if (product.getProductNo() != null && product.getId() == null) { // Only check for new products
             if (productRepository.existsByProductNo(product.getProductNo())) {
-                throw new IllegalArgumentException("Product with product number '" + product.getProductNo() + "' already exists");
+                throw new ProductAlreadyExistsException(product.getProductNo());
             }
         }
         
@@ -96,7 +97,7 @@ public class ProductServiceImpl implements ProductService {
         // Check if productNo is being updated and ensure uniqueness
         if (request.getProductNo() != null && !request.getProductNo().equals(existingProduct.getProductNo())) {
             if (productRepository.existsByProductNo(request.getProductNo())) {
-                throw new IllegalArgumentException("Product with product number '" + request.getProductNo() + "' already exists");
+                throw new ProductAlreadyExistsException(request.getProductNo());
             }
         }
         
