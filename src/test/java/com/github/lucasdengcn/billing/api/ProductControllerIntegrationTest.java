@@ -536,4 +536,29 @@ class ProductControllerIntegrationTest {
                 .andExpect(jsonPath("$.productNo").value("UPDATED_PRODUCT_ZERO_DISCOUNT_001"))
                 .andExpect(jsonPath("$.discountRate").value(0));
     }
+
+    @Test
+    void getProductByProductNo_WithValidProductNo_ShouldReturnProduct() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/products")
+                        .param("productNo", "PREMIUM_PLAN_001"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.id").value(testProduct1.getId()))
+                .andExpect(jsonPath("$.productNo").value("PREMIUM_PLAN_001"))
+                .andExpect(jsonPath("$.title").value("Premium Plan"))
+                .andExpect(jsonPath("$.basePrice").value(59.99))
+                .andExpect(jsonPath("$.priceType").value(testProduct1.getPriceType().getValue()))
+                .andExpect(jsonPath("$.discountRate").value(0.9))
+                .andExpect(jsonPath("$.discountStatus").value(DiscountStatus.ACTIVE.getValue()));
+    }
+
+    @Test
+    void getProductByProductNo_WhenProductNotFound_ShouldReturnNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/products")
+                        .param("productNo", "NONEXISTENT_PRODUCT_001"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Product not found with product number: NONEXISTENT_PRODUCT_001"));
+    }
 }

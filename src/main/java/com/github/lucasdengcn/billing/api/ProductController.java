@@ -64,6 +64,15 @@ public class ProductController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping(params = "productNo")
+    @Operation(summary = "Get product by product number", description = "Retrieves details of a specific product by its product number")
+    @ApiResponse(responseCode = "200", description = "Product found")
+    @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<ProductResponse> getProductByProductNo(@RequestParam String productNo) {
+        Product product = productService.findProductByProductNo(productNo);
+        return ResponseEntity.ok(productMapper.toResponse(product));
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Update a product", description = "Updates an existing product in the catalog")
     @ApiResponse(responseCode = "200", description = "Product updated successfully")
