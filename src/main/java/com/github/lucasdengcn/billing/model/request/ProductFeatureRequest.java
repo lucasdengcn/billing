@@ -39,4 +39,9 @@ public class ProductFeatureRequest {
     @Builder.Default
     @Schema(description = "Quota limit for the feature", example = "1000", required = true)
     private Integer quota = 0;
+
+    @NotBlank(message = "Feature number is required")
+    @Size(min = 2, max = 50, message = "Feature number must be between 2 and 50 characters")
+    @Schema(description = "Unique identifier for the feature", example = "FEAT_0001", required = true)
+    private String featureNo;
 }

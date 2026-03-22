@@ -84,6 +84,7 @@ class ProductServiceTest {
         
         featureRequest = ProductFeatureRequest.builder()
                 .productId(1L)
+                .featureNo("FEAT_0001")
                 .title("New Feature")
                 .description("New feature description")
                 .featureType(FeatureType.STORAGE_SPACE)
@@ -381,6 +382,7 @@ class ProductServiceTest {
         Product product = sampleProduct;
         ProductFeatureRequest requestWithFeatureType = ProductFeatureRequest.builder()
                 .productId(1L)
+                .featureNo("FEAT_0002")
                 .title("Storage Feature")
                 .description("Storage space feature")
                 .featureType(FeatureType.STORAGE_SPACE)

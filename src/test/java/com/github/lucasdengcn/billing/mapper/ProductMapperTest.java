@@ -205,6 +205,7 @@ class ProductMapperTest {
         // Given
         ProductFeatureRequest request = new ProductFeatureRequest();
         request.setProductId(1L);
+        request.setFeatureNo("FEAT_0001");
         request.setTitle("Storage Space");
         request.setDescription("Additional cloud storage");
         request.setQuota(5000);
@@ -234,6 +235,7 @@ class ProductMapperTest {
         // Given
         ProductFeatureRequest request = new ProductFeatureRequest();
         request.setProductId(2L);
+        request.setFeatureNo("FEAT_0002");
         request.setTitle("Basic Feature");
         request.setQuota(100); // Required field
 

@@ -268,6 +268,7 @@ class ProductControllerIntegrationTest {
         // Given
         ProductFeatureRequest feature1 = new ProductFeatureRequest();
         feature1.setProductId(testProduct1.getId());
+        feature1.setFeatureNo("FEAT_0001");
         feature1.setTitle("API Access");
         feature1.setDescription("Access to premium API endpoints");
         feature1.setFeatureType(FeatureType.API_ACCESS);
@@ -275,6 +276,7 @@ class ProductControllerIntegrationTest {
 
         ProductFeatureRequest feature2 = new ProductFeatureRequest();
         feature2.setProductId(testProduct1.getId());
+        feature2.setFeatureNo("FEAT_0002");
         feature2.setTitle("Storage Space");
         feature2.setDescription("Additional cloud storage space");
         feature2.setFeatureType(FeatureType.STORAGE_SPACE);
@@ -308,6 +310,7 @@ class ProductControllerIntegrationTest {
         // Given
         ProductFeatureRequest feature = new ProductFeatureRequest();
         feature.setProductId(999L); // Non-existent product
+        feature.setFeatureNo("FEAT_0003");
         feature.setTitle("Feature for Non-existent Product");
         feature.setFeatureType(FeatureType.CUSTOMIZATION);
         feature.setQuota(500);
@@ -329,6 +332,7 @@ class ProductControllerIntegrationTest {
         // Given - Missing required title
         ProductFeatureRequest feature = new ProductFeatureRequest();
         feature.setProductId(testProduct1.getId());
+        feature.setFeatureNo("FEAT_0004");
         // Title is required but not set
         feature.setFeatureType(FeatureType.CREDIT);
         feature.setQuota(-10); // Invalid: negative quota
@@ -411,6 +415,7 @@ class ProductControllerIntegrationTest {
         // Update request
         ProductFeatureRequest updateRequest = new ProductFeatureRequest();
         updateRequest.setProductId(testProduct1.getId());
+        updateRequest.setFeatureNo("FEAT_0005");
         updateRequest.setTitle("Updated Feature Title");
         updateRequest.setDescription("Updated description");
         updateRequest.setFeatureType(FeatureType.STORAGE_SPACE);
@@ -439,6 +444,7 @@ class ProductControllerIntegrationTest {
         // Given
         ProductFeatureRequest updateRequest = new ProductFeatureRequest();
         updateRequest.setProductId(testProduct1.getId());
+        updateRequest.setFeatureNo("FEAT_0006");
         updateRequest.setTitle("Non-existent Feature");
         updateRequest.setFeatureType(FeatureType.ANALYTICS);
         updateRequest.setQuota(500);

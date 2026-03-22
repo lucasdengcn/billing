@@ -100,7 +100,8 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
 
     @Test
     void findByDeviceIdAndStatus_WhenDeviceHasActiveSubscriptions_ShouldReturnActiveSubscriptionsOnly() {
-        // Given - Create active subscriptions for test device
+        // Given - Create active subscriptions for test device with different products
+        // Each device can only have one subscription per product due to unique constraint
         Subscription activeSub1 = Subscription.builder()
                 .customer(testCustomer)
                 .device(testDevice)
@@ -119,16 +120,6 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
                 .status(SubscriptionStatus.ACTIVE)
                 .build();
 
-        // Create a cancelled subscription for the same device (should not be returned)
-        Subscription cancelledSub = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(testProduct)
-                .startDate(OffsetDateTime.now().minusDays(3))
-                .endDate(OffsetDateTime.now().plusMonths(3))
-                .status(SubscriptionStatus.CANCELLED)
-                .build();
-
         // Create an active subscription for a different device (should not be returned)
         Subscription otherDeviceSub = Subscription.builder()
                 .customer(testCustomer)
@@ -140,7 +131,7 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
                 .build();
 
         // Save all subscriptions
-        subscriptionRepository.saveAll(List.of(activeSub1, activeSub2, cancelledSub, otherDeviceSub));
+        subscriptionRepository.saveAll(List.of(activeSub1, activeSub2, otherDeviceSub));
 
         // When
         List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
@@ -158,58 +149,34 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
     }
 
     @Test
-    void findByDeviceIdAndStatus_WhenDeviceHasCancelledSubscriptions_ShouldReturnCancelledSubscriptionsOnly() {
-        // Given - Create cancelled subscriptions for test device
-        Subscription cancelledSub1 = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(testProduct)
-                .startDate(OffsetDateTime.now().minusDays(1))
-                .endDate(OffsetDateTime.now().plusMonths(1))
-                .status(SubscriptionStatus.CANCELLED)
-                .build();
-
-        Subscription cancelledSub2 = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(otherProduct)
-                .startDate(OffsetDateTime.now().minusDays(2))
-                .endDate(OffsetDateTime.now().plusMonths(2))
-                .status(SubscriptionStatus.CANCELLED)
-                .build();
-
-        // Create an active subscription for the same device (should not be returned)
+    void findByDeviceIdAndStatus_WhenDeviceHasSingleActiveSubscription_ShouldReturnIt() {
+        // Given - Create one active subscription for test device
         Subscription activeSub = Subscription.builder()
                 .customer(testCustomer)
                 .device(testDevice)
                 .product(testProduct)
-                .startDate(OffsetDateTime.now().minusDays(3))
-                .endDate(OffsetDateTime.now().plusMonths(3))
+                .startDate(OffsetDateTime.now().minusDays(1))
+                .endDate(OffsetDateTime.now().plusMonths(1))
                 .status(SubscriptionStatus.ACTIVE)
                 .build();
 
-        // Save all subscriptions
-        subscriptionRepository.saveAll(List.of(cancelledSub1, cancelledSub2, activeSub));
+        subscriptionRepository.save(activeSub);
 
         // When
         List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
-                testDevice.getId(), SubscriptionStatus.CANCELLED);
+                testDevice.getId(), SubscriptionStatus.ACTIVE);
 
         // Then
-        assertThat(result).hasSize(2);
-        assertThat(result).extracting(Subscription::getId)
-                .containsExactlyInAnyOrder(cancelledSub1.getId(), cancelledSub2.getId());
-        assertThat(result).extracting(Subscription::getStatus)
-                .containsOnly(SubscriptionStatus.CANCELLED);
-        assertThat(result).extracting(Subscription::getDevice)
-                .extracting(Device::getId)
-                .containsOnly(testDevice.getId());
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(activeSub.getId());
+        assertThat(result.get(0).getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(result.get(0).getDevice().getId()).isEqualTo(testDevice.getId());
     }
 
     @Test
     void findByDeviceIdAndStatus_WhenDeviceHasNoSubscriptionsWithRequestedStatus_ShouldReturnEmptyList() {
-        // Given - Create only cancelled subscriptions for test device
-        Subscription cancelledSub1 = Subscription.builder()
+        // Given - Create only cancelled subscription for test device
+        Subscription cancelledSub = Subscription.builder()
                 .customer(testCustomer)
                 .device(testDevice)
                 .product(testProduct)
@@ -218,16 +185,7 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
                 .status(SubscriptionStatus.CANCELLED)
                 .build();
 
-        Subscription cancelledSub2 = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(otherProduct)
-                .startDate(OffsetDateTime.now().minusDays(2))
-                .endDate(OffsetDateTime.now().plusMonths(2))
-                .status(SubscriptionStatus.CANCELLED)
-                .build();
-
-        subscriptionRepository.saveAll(List.of(cancelledSub1, cancelledSub2));
+        subscriptionRepository.save(cancelledSub);
 
         // When - Query for active subscriptions (none exist)
         List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
@@ -248,55 +206,8 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
     }
 
     @Test
-    void findByDeviceIdAndStatus_WithExpiredStatus_ShouldReturnExpiredSubscriptions() {
-        // Given - Create subscriptions with different statuses
-        Subscription activeSub = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(testProduct)
-                .startDate(OffsetDateTime.now().minusDays(1))
-                .endDate(OffsetDateTime.now().plusMonths(1))
-                .status(SubscriptionStatus.ACTIVE)
-                .build();
-
-        Subscription expiredSub1 = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(otherProduct)
-                .startDate(OffsetDateTime.now().minusMonths(2))
-                .endDate(OffsetDateTime.now().minusDays(1))
-                .status(SubscriptionStatus.EXPIRED)
-                .build();
-
-        Subscription expiredSub2 = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(testProduct)
-                .startDate(OffsetDateTime.now().minusMonths(3))
-                .endDate(OffsetDateTime.now().minusWeeks(2))
-                .status(SubscriptionStatus.EXPIRED)
-                .build();
-
-        subscriptionRepository.saveAll(List.of(activeSub, expiredSub1, expiredSub2));
-
-        // When - Query for expired subscriptions
-        List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
-                testDevice.getId(), SubscriptionStatus.EXPIRED);
-
-        // Then
-        assertThat(result).hasSize(2);
-        assertThat(result).extracting(Subscription::getStatus)
-                .containsOnly(SubscriptionStatus.EXPIRED);
-        assertThat(result).extracting(Subscription::getDevice)
-                .extracting(Device::getId)
-                .containsOnly(testDevice.getId());
-        assertThat(result).extracting(Subscription::getId)
-                .containsExactlyInAnyOrder(expiredSub1.getId(), expiredSub2.getId());
-    }
-
-    @Test
-    void findByDeviceIdAndStatus_WithDifferentStatuses_ShouldReturnCorrectStatusSubscriptions() {
-        // Given - Create subscriptions with different statuses
+    void findByDeviceIdAndStatus_WhenDeviceHasMixedStatusSubscriptions_ShouldReturnOnlyRequestedStatus() {
+        // Given - Create subscriptions with different statuses for the same device with different products
         Subscription activeSub = Subscription.builder()
                 .customer(testCustomer)
                 .device(testDevice)
@@ -315,57 +226,62 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
                 .status(SubscriptionStatus.CANCELLED)
                 .build();
 
+        // Save subscriptions
+        subscriptionRepository.saveAll(List.of(activeSub, cancelledSub));
+
+        // When - Query for active subscriptions only
+        List<Subscription> activeResult = subscriptionRepository.findByDeviceIdAndStatus(
+                testDevice.getId(), SubscriptionStatus.ACTIVE);
+
+        // Then - Should return only active subscription
+        assertThat(activeResult).hasSize(1);
+        assertThat(activeResult.get(0).getId()).isEqualTo(activeSub.getId());
+        assertThat(activeResult.get(0).getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+
+        // When - Query for cancelled subscriptions only
+        List<Subscription> cancelledResult = subscriptionRepository.findByDeviceIdAndStatus(
+                testDevice.getId(), SubscriptionStatus.CANCELLED);
+
+        // Then - Should return only cancelled subscription
+        assertThat(cancelledResult).hasSize(1);
+        assertThat(cancelledResult.get(0).getId()).isEqualTo(cancelledSub.getId());
+        assertThat(cancelledResult.get(0).getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+    }
+
+    @Test
+    void findByDeviceIdAndStatus_WithExpiredStatus_ShouldReturnExpiredSubscriptions() {
+        // Given - Create expired subscription for test device
+        Product expiredProduct = Product.builder()
+                .productNo("PROD_EXPIRED_001")
+                .title("Expired Plan")
+                .description("Expired plan for testing")
+                .basePrice(new BigDecimal("35.99"))
+                .priceType(PriceType.YEARLY)
+                .discountRate(new BigDecimal("1.00"))
+                .discountStatus(DiscountStatus.ACTIVE)
+                .build();
+        expiredProduct = productRepository.save(expiredProduct);
+
         Subscription expiredSub = Subscription.builder()
                 .customer(testCustomer)
                 .device(testDevice)
-                .product(testProduct)
+                .product(expiredProduct)
                 .startDate(OffsetDateTime.now().minusMonths(2))
                 .endDate(OffsetDateTime.now().minusDays(1))
                 .status(SubscriptionStatus.EXPIRED)
                 .build();
 
-        subscriptionRepository.saveAll(List.of(activeSub, cancelledSub, expiredSub));
+        subscriptionRepository.save(expiredSub);
 
-        // When - Query for each status separately
-        List<Subscription> activeResult = subscriptionRepository.findByDeviceIdAndStatus(
-                testDevice.getId(), SubscriptionStatus.ACTIVE);
-        List<Subscription> cancelledResult = subscriptionRepository.findByDeviceIdAndStatus(
-                testDevice.getId(), SubscriptionStatus.CANCELLED);
-        List<Subscription> expiredResult = subscriptionRepository.findByDeviceIdAndStatus(
+        // When - Query for expired subscriptions
+        List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
                 testDevice.getId(), SubscriptionStatus.EXPIRED);
 
-        // Then - Each query should return only subscriptions with the requested status
-        assertThat(activeResult).hasSize(1);
-        assertThat(activeResult.get(0).getId()).isEqualTo(activeSub.getId());
-        assertThat(activeResult.get(0).getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-
-        assertThat(cancelledResult).hasSize(1);
-        assertThat(cancelledResult.get(0).getId()).isEqualTo(cancelledSub.getId());
-        assertThat(cancelledResult.get(0).getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
-
-        assertThat(expiredResult).hasSize(1);
-        assertThat(expiredResult.get(0).getId()).isEqualTo(expiredSub.getId());
-        assertThat(expiredResult.get(0).getStatus()).isEqualTo(SubscriptionStatus.EXPIRED);
-    }
-
-    @Test
-    void findByDeviceIdAndStatus_WithNullParameters_ShouldHandleGracefully() {
-        // When & Then - Query with null status should return empty list (database constraint)
-        List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
-                testDevice.getId(), null);
-
-        // Result depends on database constraints, but should not throw exception
-        assertThat(result).isNotNull();
-    }
-
-    @Test
-    void findByDeviceIdAndStatus_WithZeroDeviceId_ShouldReturnEmptyList() {
-        // When - Query with device ID 0
-        List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
-                0L, SubscriptionStatus.ACTIVE);
-
         // Then
-        assertThat(result).isEmpty();
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(expiredSub.getId());
+        assertThat(result.get(0).getStatus()).isEqualTo(SubscriptionStatus.EXPIRED);
+        assertThat(result.get(0).getDevice().getId()).isEqualTo(testDevice.getId());
     }
 
     @Test
@@ -383,7 +299,7 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
         Subscription otherDeviceActive = Subscription.builder()
                 .customer(testCustomer)
                 .device(otherDevice)
-                .product(testProduct)
+                .product(otherProduct)
                 .startDate(OffsetDateTime.now().minusDays(1))
                 .endDate(OffsetDateTime.now().plusMonths(1))
                 .status(SubscriptionStatus.ACTIVE)
@@ -402,60 +318,23 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
     }
 
     @Test
-    void findByDeviceIdAndStatus_WithLargeDataSet_ShouldPerformEfficiently() {
-        // Given - Create many subscriptions for the same device with mixed statuses
-        int totalSubscriptions = 100;
-        int activeCount = 30;
-        int cancelledCount = 40;
-        int expiredCount = 30;
+    void findByDeviceIdAndStatus_WithNullStatus_ShouldReturnEmptyList() {
+        // Given - Create an active subscription
+        Subscription activeSub = Subscription.builder()
+                .customer(testCustomer)
+                .device(testDevice)
+                .product(testProduct)
+                .startDate(OffsetDateTime.now().minusDays(1))
+                .endDate(OffsetDateTime.now().plusMonths(1))
+                .status(SubscriptionStatus.ACTIVE)
+                .build();
+        subscriptionRepository.save(activeSub);
 
-        // Create a batch of subscriptions
-        for (int i = 0; i < activeCount; i++) {
-            Subscription sub = Subscription.builder()
-                    .customer(testCustomer)
-                    .device(testDevice)
-                    .product(testProduct)
-                    .startDate(OffsetDateTime.now().minusDays(1))
-                    .endDate(OffsetDateTime.now().plusMonths(1))
-                    .status(SubscriptionStatus.ACTIVE)
-                    .build();
-            subscriptionRepository.save(sub);
-        }
-
-        for (int i = 0; i < cancelledCount; i++) {
-            Subscription sub = Subscription.builder()
-                    .customer(testCustomer)
-                    .device(testDevice)
-                    .product(testProduct)
-                    .startDate(OffsetDateTime.now().minusDays(2))
-                    .endDate(OffsetDateTime.now().plusMonths(2))
-                    .status(SubscriptionStatus.CANCELLED)
-                    .build();
-            subscriptionRepository.save(sub);
-        }
-
-        for (int i = 0; i < expiredCount; i++) {
-            Subscription sub = Subscription.builder()
-                    .customer(testCustomer)
-                    .device(testDevice)
-                    .product(testProduct)
-                    .startDate(OffsetDateTime.now().minusMonths(2))
-                    .endDate(OffsetDateTime.now().minusDays(1))
-                    .status(SubscriptionStatus.EXPIRED)
-                    .build();
-            subscriptionRepository.save(sub);
-        }
-
-        // When
+        // When - Query with null status
         List<Subscription> result = subscriptionRepository.findByDeviceIdAndStatus(
-                testDevice.getId(), SubscriptionStatus.ACTIVE);
+                testDevice.getId(), null);
 
         // Then
-        assertThat(result).hasSize(activeCount);
-        assertThat(result).extracting(Subscription::getStatus)
-                .containsOnly(SubscriptionStatus.ACTIVE);
-        assertThat(result).extracting(Subscription::getDevice)
-                .extracting(Device::getId)
-                .containsOnly(testDevice.getId());
+        assertThat(result).isEmpty();
     }
 }

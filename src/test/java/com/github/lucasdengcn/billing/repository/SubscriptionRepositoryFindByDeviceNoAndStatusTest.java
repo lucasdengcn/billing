@@ -119,16 +119,6 @@ class SubscriptionRepositoryFindByDeviceNoAndStatusTest {
                 .status(SubscriptionStatus.ACTIVE)
                 .build();
 
-        // Create a cancelled subscription for the same device (should not be returned)
-        Subscription cancelledSub = Subscription.builder()
-                .customer(testCustomer)
-                .device(testDevice)
-                .product(testProduct)
-                .startDate(OffsetDateTime.now().minusDays(3))
-                .endDate(OffsetDateTime.now().plusMonths(3))
-                .status(SubscriptionStatus.CANCELLED)
-                .build();
-
         // Create an active subscription for a different device (should not be returned)
         Subscription otherDeviceSub = Subscription.builder()
                 .customer(testCustomer)
@@ -140,7 +130,7 @@ class SubscriptionRepositoryFindByDeviceNoAndStatusTest {
                 .build();
 
         // Save all subscriptions
-        subscriptionRepository.saveAll(List.of(activeSub1, activeSub2, cancelledSub, otherDeviceSub));
+        subscriptionRepository.saveAll(List.of(activeSub1, activeSub2, otherDeviceSub));
 
         // When
         List<Subscription> result = subscriptionRepository.findByDevice_DeviceNoAndStatus(
@@ -221,7 +211,7 @@ class SubscriptionRepositoryFindByDeviceNoAndStatusTest {
 
         Subscription expiredSub = Subscription.builder()
                 .customer(testCustomer)
-                .device(testDevice)
+                .device(otherDevice)
                 .product(testProduct)
                 .startDate(OffsetDateTime.now().minusMonths(2))
                 .endDate(OffsetDateTime.now().minusDays(1))
@@ -232,7 +222,7 @@ class SubscriptionRepositoryFindByDeviceNoAndStatusTest {
 
         // When - Query for cancelled subscriptions
         List<Subscription> cancelledResult = subscriptionRepository.findByDevice_DeviceNoAndStatus(
-                "TEST-DEVICE-001", SubscriptionStatus.CANCELLED);
+                testDevice.getDeviceNo(), SubscriptionStatus.CANCELLED);
 
         // Then - Should return only cancelled subscriptions
         assertThat(cancelledResult).hasSize(1);
@@ -241,7 +231,7 @@ class SubscriptionRepositoryFindByDeviceNoAndStatusTest {
 
         // When - Query for expired subscriptions
         List<Subscription> expiredResult = subscriptionRepository.findByDevice_DeviceNoAndStatus(
-                "TEST-DEVICE-001", SubscriptionStatus.EXPIRED);
+                otherDevice.getDeviceNo(), SubscriptionStatus.EXPIRED);
 
         // Then - Should return only expired subscriptions
         assertThat(expiredResult).hasSize(1);

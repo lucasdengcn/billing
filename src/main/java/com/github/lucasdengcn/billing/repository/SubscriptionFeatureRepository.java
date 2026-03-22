@@ -17,6 +17,5 @@ public interface SubscriptionFeatureRepository extends JpaRepository<Subscriptio
 
     Optional<SubscriptionFeature> findBySubscriptionAndProductFeature(Subscription subscription, ProductFeature productFeature);
 
-    Optional<SubscriptionFeature> findBySubscription_IdAndFeatureType(Long subscriptionId, FeatureType featureType);
 
 }
