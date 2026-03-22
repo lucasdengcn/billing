@@ -148,6 +148,7 @@ class SubscriptionCreateSubscriptionTest {
         when(customerService.findById(1L)).thenReturn(customer);
         when(productService.findProductById(10L)).thenReturn(product);
         when(deviceService.findById(100L)).thenReturn(device);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.empty());
         when(subscriptionMapper.toEntity(request)).thenReturn(subscription);
         when(subscriptionHandlerFactory.getHandler(PriceType.MONTHLY)).thenReturn(mockHandler);
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
@@ -167,6 +168,7 @@ class SubscriptionCreateSubscriptionTest {
         when(customerService.findById(1L)).thenReturn(customer);
         when(productService.findProductById(10L)).thenReturn(product);
         when(deviceService.findById(100L)).thenReturn(device);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.empty());
         when(subscriptionMapper.toEntity(request)).thenReturn(subscription);
         when(subscriptionHandlerFactory.getHandler(PriceType.MONTHLY)).thenReturn(mockHandler);
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
@@ -200,6 +202,7 @@ class SubscriptionCreateSubscriptionTest {
         when(customerService.findById(1L)).thenReturn(customer);
         when(productService.findProductById(10L)).thenReturn(product);
         when(deviceService.findById(100L)).thenReturn(device);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.empty());
         when(subscriptionMapper.toEntity(request)).thenReturn(subscription);
         when(subscriptionHandlerFactory.getHandler(PriceType.MONTHLY)).thenReturn(mockHandler);
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
@@ -293,6 +296,7 @@ class SubscriptionCreateSubscriptionTest {
         when(customerService.findById(1L)).thenReturn(customer);
         when(productService.findProductById(10L)).thenReturn(product);
         when(deviceService.findById(100L)).thenReturn(device);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.empty());
         when(subscriptionMapper.toEntity(request)).thenReturn(subscription);
         when(subscriptionHandlerFactory.getHandler(PriceType.MONTHLY)).thenReturn(mockHandler);
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
@@ -332,6 +336,7 @@ class SubscriptionCreateSubscriptionTest {
         when(customerService.findById(1L)).thenReturn(customer);
         when(productService.findProductById(10L)).thenReturn(product);
         when(deviceService.findById(100L)).thenReturn(device);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.empty());
         when(subscriptionMapper.toEntity(request)).thenReturn(subscription);
         when(subscriptionHandlerFactory.getHandler(PriceType.MONTHLY)).thenReturn(mockHandler);
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
@@ -362,6 +367,7 @@ class SubscriptionCreateSubscriptionTest {
         when(subscriptionMapper.toEntity(request)).thenReturn(subscription);
         when(subscriptionHandlerFactory.getHandler(PriceType.MONTHLY)).thenReturn(mockHandler);
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.empty());
         when(productService.findFeaturesByProduct(10L)).thenReturn(productFeatures);
         when(subscriptionFeatureRepository.saveAll(any())).thenReturn(Collections.emptyList());
 
@@ -372,5 +378,63 @@ class SubscriptionCreateSubscriptionTest {
         verify(productService).findFeaturesByProduct(10L);
         verify(subscriptionFeatureRepository).saveAll(any());
         assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Create subscription should fail when device already has an active subscription to the same product")
+    void createSubscription_WhenDeviceAlreadyHasActiveSubscriptionToSameProduct_ShouldThrowException() {
+        // Given
+        Subscription existingSubscription = Subscription.builder()
+                .id(999L)
+                .customer(customer)
+                .product(product)
+                .device(device)
+                .status(SubscriptionStatus.ACTIVE)
+                .build();
+        
+        when(customerService.findById(1L)).thenReturn(customer);
+        when(productService.findProductById(10L)).thenReturn(product);
+        when(deviceService.findById(100L)).thenReturn(device);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.of(existingSubscription));
+        
+        // When & Then
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> subscriptionService.createSubscription(request))
+                .withMessage("Device 100 already has an active subscription to product 10");
+        
+        verify(customerService).findById(1L);
+        verify(productService).findProductById(10L);
+        verify(deviceService).findById(100L);
+        verify(subscriptionRepository).findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE);
+        verify(subscriptionRepository, never()).save(any(Subscription.class));
+    }
+
+    @Test
+    @DisplayName("Create subscription should succeed when device has an inactive subscription to the same product")
+    void createSubscription_WhenDeviceHasInactiveSubscriptionToSameProduct_ShouldSucceed() {
+        // Given
+        Subscription inactiveSubscription = Subscription.builder()
+                .id(999L)
+                .customer(customer)
+                .product(product)
+                .device(device)
+                .status(SubscriptionStatus.CANCELLED) // Different status
+                .build();
+        
+        when(customerService.findById(1L)).thenReturn(customer);
+        when(productService.findProductById(10L)).thenReturn(product);
+        when(deviceService.findById(100L)).thenReturn(device);
+        when(subscriptionMapper.toEntity(request)).thenReturn(subscription);
+        when(subscriptionHandlerFactory.getHandler(PriceType.MONTHLY)).thenReturn(mockHandler);
+        when(subscriptionRepository.findByDeviceIdAndProductIdAndStatus(100L, 10L, SubscriptionStatus.ACTIVE)).thenReturn(java.util.Optional.empty());
+        when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
+        when(productService.findFeaturesByProduct(10L)).thenReturn(Collections.emptyList());
+        
+        // When
+        Subscription result = subscriptionService.createSubscription(request);
+        
+        // Then
+        assertThat(result).isNotNull();
+        verify(subscriptionRepository).save(any(Subscription.class));
     }
 }

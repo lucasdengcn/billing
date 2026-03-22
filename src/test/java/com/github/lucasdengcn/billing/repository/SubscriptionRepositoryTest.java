@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 @TestPropertySource(properties = {
@@ -81,12 +82,14 @@ class SubscriptionRepositoryTest {
 
         // Create test products
         testProduct1 = Product.builder()
+                .productNo("BASIC_PLAN_001")
                 .title("Basic Plan")
                 .description("Basic service plan")
                 .basePrice(new BigDecimal("29.99"))
                 .build();
 
         testProduct2 = Product.builder()
+                .productNo("PREMIUM_PLAN_001")
                 .title("Premium Plan")
                 .description("Premium service plan")
                 .basePrice(new BigDecimal("59.99"))
@@ -478,5 +481,173 @@ class SubscriptionRepositoryTest {
 
         // Then
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    void findByDeviceIdAndProductIdAndStatus_WhenActiveSubscriptionExists_ShouldReturnSubscription() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        // When
+        Optional<Subscription> foundSubscription = subscriptionRepository.findByDeviceIdAndProductIdAndStatus(
+                testDevice1.getId(), testProduct1.getId(), SubscriptionStatus.ACTIVE);
+
+        // Then
+        assertThat(foundSubscription).isPresent();
+        assertThat(foundSubscription.get().getId()).isEqualTo(testSubscription1.getId());
+        assertThat(foundSubscription.get().getCustomer().getName()).isEqualTo("John Doe");
+        assertThat(foundSubscription.get().getDevice().getDeviceNo()).isEqualTo("DEV001");
+        assertThat(foundSubscription.get().getProduct().getTitle()).isEqualTo("Basic Plan");
+        assertThat(foundSubscription.get().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(foundSubscription.get().getBaseFee()).isEqualByComparingTo(new BigDecimal("29.99"));
+    }
+
+    @Test
+    void findByDeviceIdAndProductIdAndStatus_WhenNoMatchingSubscriptionExists_ShouldReturnEmpty() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        // When - Use a different status
+        Optional<Subscription> foundSubscription = subscriptionRepository.findByDeviceIdAndProductIdAndStatus(
+                testDevice1.getId(), testProduct1.getId(), SubscriptionStatus.CANCELLED);
+
+        // Then
+        assertThat(foundSubscription).isEmpty();
+    }
+
+    @Test
+    void findByDeviceIdAndProductIdAndStatus_WhenDifferentDeviceId_ShouldReturnEmpty() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testCustomer2 = entityManager.persistAndFlush(testCustomer2);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testDevice2 = entityManager.persistAndFlush(testDevice2);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        // When - Use a different device ID
+        Optional<Subscription> foundSubscription = subscriptionRepository.findByDeviceIdAndProductIdAndStatus(
+                testDevice2.getId(), testProduct1.getId(), SubscriptionStatus.ACTIVE);
+
+        // Then
+        assertThat(foundSubscription).isEmpty();
+    }
+
+    @Test
+    void findByDeviceIdAndProductIdAndStatus_WhenDifferentProductId_ShouldReturnEmpty() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testProduct2 = entityManager.persistAndFlush(testProduct2);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        // When - Use a different product ID
+        Optional<Subscription> foundSubscription = subscriptionRepository.findByDeviceIdAndProductIdAndStatus(
+                testDevice1.getId(), testProduct2.getId(), SubscriptionStatus.ACTIVE);
+
+        // Then
+        assertThat(foundSubscription).isEmpty();
+    }
+
+    @Test
+    void findByDeviceIdAndProductIdAndStatus_WhenValidCombinationExists_ShouldReturnSubscription() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        // When
+        Optional<Subscription> foundSubscription = subscriptionRepository.findByDeviceIdAndProductIdAndStatus(
+                testDevice1.getId(), testProduct1.getId(), SubscriptionStatus.ACTIVE);
+
+        // Then - Should return the subscription
+        assertThat(foundSubscription).isPresent();
+        assertThat(foundSubscription.get().getId()).isEqualTo(testSubscription1.getId());
+    }
+
+    @Test
+    void save_WhenSubscriptionHasSameDeviceAndProductAsExisting_ShouldFailDueToUniqueConstraint() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+        
+        // Attempt to create another subscription with same device and product
+        Subscription duplicateSubscription = Subscription.builder()
+                .customer(testCustomer1)
+                .device(testDevice1)
+                .product(testProduct1)
+                .startDate(OffsetDateTime.now().plusDays(1))
+                .endDate(OffsetDateTime.now().plusDays(31))
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
+                .baseFee(new BigDecimal("39.99"))
+                .totalFee(new BigDecimal("39.99"))
+                .status(SubscriptionStatus.PENDING)
+                .build();
+
+        // When & Then - Should fail due to unique constraint
+        assertThatThrownBy(() -> {
+            entityManager.persistAndFlush(duplicateSubscription);
+        }).isInstanceOf(org.hibernate.exception.ConstraintViolationException.class);
+    }
+
+    @Test
+    void save_WhenSubscriptionHasDifferentDeviceOrProduct_ShouldSucceed() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testCustomer2 = entityManager.persistAndFlush(testCustomer2);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testDevice2 = entityManager.persistAndFlush(testDevice2);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testProduct2 = entityManager.persistAndFlush(testProduct2);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+        
+        // Create subscription with same device but different product
+        Subscription differentProductSubscription = Subscription.builder()
+                .customer(testCustomer1)
+                .device(testDevice1)
+                .product(testProduct2) // Different product
+                .startDate(OffsetDateTime.now().plusDays(1))
+                .endDate(OffsetDateTime.now().plusDays(31))
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
+                .baseFee(new BigDecimal("39.99"))
+                .totalFee(new BigDecimal("39.99"))
+                .status(SubscriptionStatus.PENDING)
+                .build();
+
+        // When & Then - Should succeed
+        Subscription savedSubscription = entityManager.persistAndFlush(differentProductSubscription);
+        assertThat(savedSubscription).isNotNull();
+        assertThat(savedSubscription.getId()).isNotNull();
+        
+        // Create subscription with different device but same product
+        Subscription differentDeviceSubscription = Subscription.builder()
+                .customer(testCustomer2)
+                .device(testDevice2) // Different device
+                .product(testProduct1)
+                .startDate(OffsetDateTime.now().plusDays(2))
+                .endDate(OffsetDateTime.now().plusDays(32))
+                .periods(1)
+                .periodUnit(PeriodUnit.MONTHS)
+                .baseFee(new BigDecimal("49.99"))
+                .totalFee(new BigDecimal("49.99"))
+                .status(SubscriptionStatus.PENDING)
+                .build();
+
+        // When & Then - Should also succeed
+        Subscription savedSubscription2 = entityManager.persistAndFlush(differentDeviceSubscription);
+        assertThat(savedSubscription2).isNotNull();
+        assertThat(savedSubscription2.getId()).isNotNull();
     }
 }

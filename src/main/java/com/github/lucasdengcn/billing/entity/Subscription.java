@@ -15,7 +15,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "subscriptions")
+@Table(name = "subscriptions",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_subscription_device_product", columnNames = {"device_id", "product_id"})
+    })
 @Data
 @Builder(toBuilder = true)
 @NoArgsConstructor

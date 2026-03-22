@@ -27,5 +27,9 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     List<Subscription> findByDevice_DeviceNoAndStatus(String deviceNo, SubscriptionStatus status);
 
     List<Subscription> findByDeviceIdAndStatus(Long deviceId, SubscriptionStatus subscriptionStatus);
+    
+    Optional<Subscription> findByDeviceIdAndProductIdAndStatus(Long deviceId, Long productId, SubscriptionStatus status);
+
+
 
 }

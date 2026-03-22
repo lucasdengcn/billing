@@ -61,7 +61,7 @@ class SubscriptionServiceFindSubscriptionWithFeaturesByIdTest {
         // Create a test subscription
         Customer customer = Customer.builder().id(1L).build();
         Device device = Device.builder().id(1L).build();
-        Product product = Product.builder().id(1L).build();
+        Product product = Product.builder().id(1L).productNo("TEST_PRODUCT_001").build();
 
         testSubscription = Subscription.builder()
                 .id(1L)

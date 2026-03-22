@@ -103,7 +103,7 @@ class SubscriptionMapperTest {
         // Given
         Customer customer = Customer.builder().id(1L).name("Test Customer").build();
         Device device = Device.builder().id(10L).deviceName("Test Device").build();
-        Product product = Product.builder().id(100L).title("Premium Plan").build();
+        Product product = Product.builder().id(100L).productNo("MAPPER_TEST_PRODUCT_001").title("Premium Plan").build();
         
         Subscription entity = Subscription.builder()
                 .id(999L)
@@ -171,7 +171,7 @@ class SubscriptionMapperTest {
     void updateEntity_WithValidRequest_ShouldUpdateMappedFields() {
         // Given
         Customer originalCustomer = Customer.builder().id(1L).build();
-        Product originalProduct = Product.builder().id(100L).build();
+        Product originalProduct = Product.builder().id(100L).productNo("MAPPER_TEST_PRODUCT_001").build();
         
         Subscription existingEntity = Subscription.builder()
                 .id(999L)
@@ -211,7 +211,7 @@ class SubscriptionMapperTest {
         Subscription existingEntity = Subscription.builder()
                 .id(999L)
                 .customer(Customer.builder().id(1L).build())
-                .product(Product.builder().id(100L).build())
+                .product(Product.builder().id(100L).productNo("MAPPER_SUBSCRIPTION_PRODUCT_001").build())
                 .startDate(testDateTime.minusDays(10))
                 .endDate(testDateTime.plusDays(30))
                 .periods(1)
@@ -294,7 +294,7 @@ class SubscriptionMapperTest {
         // Given
         Customer customer = Customer.builder().id(1L).name("Test Customer").build();
         Device device = Device.builder().id(10L).deviceName("Test Device").build();
-        Product product = Product.builder().id(100L).title("Premium Plan").build();
+        Product product = Product.builder().id(100L).productNo("MAPPER_TEST_PRODUCT_002").title("Premium Plan").build();
         
         // Create subscription features
         ProductFeature productFeature1 = ProductFeature.builder()
@@ -403,7 +403,7 @@ class SubscriptionMapperTest {
         // Given
         Customer customer = Customer.builder().id(1L).name("Test Customer").build();
         Device device = Device.builder().id(10L).deviceName("Test Device").build();
-        Product product = Product.builder().id(100L).title("Premium Plan").build();
+        Product product = Product.builder().id(100L).productNo("MAPPER_TEST_PRODUCT_003").title("Premium Plan").build();
         
         Subscription entity = Subscription.builder()
                 .id(999L)
@@ -438,7 +438,7 @@ class SubscriptionMapperTest {
         // Given
         Customer customer = Customer.builder().id(1L).name("Test Customer").build();
         Device device = Device.builder().id(10L).deviceName("Test Device").build();
-        Product product = Product.builder().id(100L).title("Premium Plan").build();
+        Product product = Product.builder().id(100L).productNo("MAPPER_TEST_PRODUCT_004").title("Premium Plan").build();
         
         Subscription entity = Subscription.builder()
                 .id(999L)

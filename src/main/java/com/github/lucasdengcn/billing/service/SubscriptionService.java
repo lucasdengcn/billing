@@ -23,6 +23,8 @@ public interface SubscriptionService {
     Subscription cancelSubscription(Long customerId, Long deviceId, Long productId);
     
     List<Subscription> findSubscriptionsByDeviceNo(String deviceNo);
-    
+
+    SubscriptionWithFeaturesResponse findSubscriptionByDeviceNoAndProductNo(String deviceNo, String productNo);
+
     SubscriptionWithFeaturesResponse findSubscriptionWithFeaturesById(Long id);
 }

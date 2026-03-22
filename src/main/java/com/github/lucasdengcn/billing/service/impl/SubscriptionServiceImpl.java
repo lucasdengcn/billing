@@ -132,6 +132,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Product product = productService.findProductById(request.getProductId());
         Device device = deviceService.findById(request.getDeviceId());
         
+        // Check if device already has an active subscription to the same product
+        Optional<Subscription> existingSubscriptionOpt = subscriptionRepository.findByDeviceIdAndProductIdAndStatus(
+            device.getId(), product.getId(), SubscriptionStatus.ACTIVE);
+        
+        if (existingSubscriptionOpt.isPresent()) {
+            throw new IllegalArgumentException(
+                String.format("Device %d already has an active subscription to product %d", 
+                             device.getId(), product.getId()));
+        }
+        
         // Create subscription entity from request
         Subscription subscription = subscriptionMapper.toEntity(request);
         subscription.setCustomer(customer);
@@ -204,6 +214,35 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         log.info("Found {} active subscriptions for device number: {}", activeSubscriptions.size(), deviceNo);
         
         return activeSubscriptions;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SubscriptionWithFeaturesResponse findSubscriptionByDeviceNoAndProductNo(String deviceNo, String productNo) {
+        log.info("Finding active subscription for device number: {} and product number: {}", deviceNo, productNo);
+        
+        // Three separate queries approach to avoid joins:
+        // 1. Find device ID by device number
+        Device device = deviceService.findByDeviceNo(deviceNo);
+        
+        // 2. Find product ID by product number
+        Product product = productService.findProductByProductNo(productNo);
+        
+        // 3. Find subscription by device ID, product ID, and status
+        Optional<Subscription> subscriptionOpt = subscriptionRepository.findByDeviceIdAndProductIdAndStatus(device.getId(), product.getId(), SubscriptionStatus.ACTIVE);
+        
+        if (subscriptionOpt.isPresent()) {
+            Subscription subscription = subscriptionOpt.get();
+            log.info("Found active subscription ID: {} for device number: {} and product number: {}", 
+                     subscription.getId(), deviceNo, productNo);
+            // Then fetch the subscription features separately to avoid N+1 problem
+            List<SubscriptionFeature> subscriptionFeatures = subscriptionFeatureRepository.findBySubscription(subscription);
+            subscription.setSubscriptionFeatures(subscriptionFeatures);
+            return subscriptionMapper.toWithFeaturesResponse(subscription);
+        } else {
+            log.info("No active subscription found for device number: {} and product number: {}", deviceNo, productNo);
+            throw new ResourceNotFoundException("No active subscription found for device number: " + deviceNo + " and product number: " + productNo);
+        }
     }
 
     @Override

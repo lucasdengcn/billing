@@ -3,23 +3,21 @@ package com.github.lucasdengcn.billing.api;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.github.lucasdengcn.billing.entity.Customer;
-import com.github.lucasdengcn.billing.entity.Device;
-import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.model.response.ErrorResponse;
 import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
 import com.github.lucasdengcn.billing.model.response.ValidationErrorResponse;
-import com.github.lucasdengcn.billing.service.DeviceService;
-import com.github.lucasdengcn.billing.service.ProductService;
 import com.github.lucasdengcn.billing.service.SubscriptionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -96,5 +94,16 @@ public class SubscriptionController {
                                 .map(subscriptionMapper::toResponse)
                                 .collect(Collectors.toList());
                 return ResponseEntity.ok(responses);
+        }
+
+        @GetMapping("/device/{deviceNo}/product/{productNo}")
+        @Operation(summary = "Get subscription by device number and product number", description = "Retrieves a subscription associated with a specific device number and product number")
+        @ApiResponse(responseCode = "200", description = "Subscription found")
+        @ApiResponse(responseCode = "404", description = "Subscription not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        public ResponseEntity<SubscriptionWithFeaturesResponse> getSubscriptionByDeviceNoAndProductNo(
+                        @PathVariable String deviceNo,
+                        @PathVariable String productNo) {
+                SubscriptionWithFeaturesResponse subscription = subscriptionService.findSubscriptionByDeviceNoAndProductNo(deviceNo, productNo);
+                return ResponseEntity.ok(subscription);
         }
 }
