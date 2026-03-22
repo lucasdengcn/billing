@@ -25,6 +25,7 @@ import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
 import com.github.lucasdengcn.billing.repository.SubscriptionFeatureRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRenewalRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRepository;
+import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
 import com.github.lucasdengcn.billing.service.SubscriptionService;
 
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionFeatureRepository subscriptionFeatureRepository;
     private final SubscriptionRenewalRepository subscriptionRenewalRepository;
+    private final ProductFeatureRepository productFeatureRepository;
     private final ProductService productService;
     private final CustomerService customerService;
     private final DeviceService deviceService;
@@ -276,12 +278,40 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public SubscriptionFeature findSubscriptionFeaturesByDeviceNoProductNoAndFeatureType(String deviceNo, String productNo, FeatureType featureType) {
-        return null;
+    @Transactional(readOnly = true)
+    public SubscriptionFeature findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(String deviceNo, String featureNo, String productNo) {
+        log.debug("Finding subscription feature by deviceNo: {}, featureNo: {}, productNo: {}", 
+                 deviceNo, featureNo, productNo);
+        
+        // Find device by deviceNo
+        Device device = deviceService.findByDeviceNo(deviceNo);
+        
+        // Find product by productNo
+        Product product = productService.findProductByProductNo(productNo);
+        
+        // Find subscription by device and product
+        Subscription subscription = subscriptionRepository.findByDeviceAndProduct(device, product)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                String.format("Subscription not found for device: %s and product: %s", deviceNo, productNo)));
+        
+        // Find product feature by featureNo
+        ProductFeature productFeature = productFeatureRepository.findByProductAndFeatureNo(product, featureNo)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                String.format("Product feature not found for product: %s and featureNo: %s", productNo, featureNo)));
+        
+        // Find subscription feature by subscription and product feature
+        Optional<SubscriptionFeature> subscriptionFeature = subscriptionFeatureRepository.findBySubscriptionAndProductFeature(subscription, productFeature);
+        if (subscriptionFeature.isPresent()) {
+            SubscriptionFeature feature = subscriptionFeature.get();
+            feature.setSubscription(subscription);
+            feature.setProductFeature(productFeature);
+            feature.setDevice(device);
+            productFeature.setProduct(product);
+            return feature;
+        }
+        throw new ResourceNotFoundException(
+                String.format("Subscription feature not found for device: %s, featureNo: %s, and product: %s",
+                        deviceNo, featureNo, productNo));
     }
 
-    @Override
-    public boolean existsByDeviceIdAndProductIdAndFeatureType(Long deviceId, Long productId, FeatureType featureType) {
-        return false;
-    }
 }

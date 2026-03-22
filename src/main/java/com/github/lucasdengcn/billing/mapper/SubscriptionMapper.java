@@ -56,5 +56,6 @@ public interface SubscriptionMapper {
     @Mapping(target = "subscriptionId", source = "subscription.id")
     @Mapping(target = "deviceId", source = "device.id")
     @Mapping(target = "productFeatureId", source = "productFeature.id")
+    @Mapping(target = "balanceSufficient", expression = "java(subscriptionFeature.getBalance() > 0)")
     SubscriptionFeatureResponse toFeatureResponse(SubscriptionFeature subscriptionFeature);
 }

@@ -29,7 +29,5 @@ public interface SubscriptionService {
 
     SubscriptionWithFeaturesResponse findSubscriptionWithFeaturesById(Long id);
 
-    SubscriptionFeature findSubscriptionFeaturesByDeviceNoProductNoAndFeatureType(String deviceNo, String productNo, FeatureType featureType);
-
-    boolean existsByDeviceIdAndProductIdAndFeatureType(Long deviceId, Long productId, FeatureType featureType);
+    SubscriptionFeature findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(String deviceNo, String featureNo, String productNo);
 }

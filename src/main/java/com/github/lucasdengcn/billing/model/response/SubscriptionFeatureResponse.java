@@ -33,7 +33,7 @@ public class SubscriptionFeatureResponse {
     @Schema(description = "Description of the feature", example = "Provides access to the API with rate limiting")
     private String description;
 
-    @Schema(description = "Type of the feature", example = "API_ACCESS")
+    @Schema(description = "Type of the feature", example = "api_access")
     private FeatureType featureType;
 
     @Schema(description = "Quota limit for the feature", example = "1000")
@@ -44,6 +44,9 @@ public class SubscriptionFeatureResponse {
 
     @Schema(description = "Remaining balance/available quota", example = "850")
     private Integer balance;
+
+    @Schema(description = "Indicates whether the balance is sufficient (balance > 0)", example = "true")
+    private Boolean balanceSufficient;
 
     @Schema(description = "Timestamp when the subscription feature was created")
     private OffsetDateTime createdAt;

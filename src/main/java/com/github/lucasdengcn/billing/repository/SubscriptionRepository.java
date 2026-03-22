@@ -30,6 +30,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     
     Optional<Subscription> findByDeviceIdAndProductIdAndStatus(Long deviceId, Long productId, SubscriptionStatus status);
 
-
+    Optional<Subscription> findByDeviceAndProduct(Device device, Product product);
 
 }

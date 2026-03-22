@@ -1,17 +1,17 @@
 package com.github.lucasdengcn.billing.api;
 
-import com.github.lucasdengcn.billing.entity.Customer;
-import com.github.lucasdengcn.billing.entity.Device;
-import com.github.lucasdengcn.billing.entity.Product;
-import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
+import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
 import com.github.lucasdengcn.billing.repository.CustomerRepository;
 import com.github.lucasdengcn.billing.repository.DeviceRepository;
+import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
 import com.github.lucasdengcn.billing.repository.ProductRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRepository;
 import jakarta.persistence.EntityManager;
@@ -23,6 +23,8 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultHandler;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
@@ -72,12 +74,17 @@ class SubscriptionControllerIntegrationTest {
     private ProductRepository productRepository;
 
     @Autowired
+    private ProductFeatureRepository productFeatureRepository;
+
+    @Autowired
     private EntityManager entityManager;
 
     private Customer testCustomer;
     private Device testDevice;
     private Product testProduct;
     private Product testProduct2;
+    private ProductFeature testFeature1;
+    private ProductFeature testFeature2;
 
     @BeforeEach
     void setUp() {
@@ -132,6 +139,27 @@ class SubscriptionControllerIntegrationTest {
                 .discountStatus(DiscountStatus.INACTIVE)
                 .build();
         testProduct2 = productRepository.save(testProduct2);
+        
+        // Create test product features
+        testFeature1 = ProductFeature.builder()
+                .product(testProduct)
+                .featureNo("FEAT_0001")
+                .title("Storage Feature")
+                .description("Additional storage capacity")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(1000)
+                .build();
+        testFeature1 = productFeatureRepository.save(testFeature1);
+        
+        testFeature2 = ProductFeature.builder()
+                .product(testProduct)
+                .featureNo("FEAT_0002")
+                .title("API Access")
+                .description("API access allowance")
+                .featureType(FeatureType.API_ACCESS)
+                .quota(5000)
+                .build();
+        testFeature2 = productFeatureRepository.save(testFeature2);
     }
 
     @Test
@@ -763,5 +791,53 @@ class SubscriptionControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(secondRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Device " + testDevice.getId() + " already has an active subscription to product " + testProduct.getId()));
+    }
+
+    @Test
+    void getSubscriptionFeatureByDeviceNoFeatureNoAndProductNo_WithNonExistentIdentifiers_ShouldReturnNotFound() throws Exception {
+        // When & Then - Try to get subscription feature with non-existent identifiers
+        mockMvc.perform(get("/api/subscriptions/device/{deviceNo}/product/{productNo}/feature/{featureNo}", 
+                        "NONEXISTENT_DEVICE", "NONEXISTENT_FEATURE", "NONEXISTENT_PRODUCT"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getSubscriptionFeatureByDeviceNoFeatureNoAndProductNo_WithValidIdentifiers_ShouldReturnSubscriptionFeature() throws Exception {
+        // Given - Create a subscription first (this should trigger creation of subscription features)
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
+        subscriptionRequest.setCustomerId(testCustomer.getId());
+        subscriptionRequest.setDeviceId(testDevice.getId());
+        subscriptionRequest.setProductId(testProduct.getId());
+        subscriptionRequest.setStartDate(OffsetDateTime.now().plusDays(1));
+        subscriptionRequest.setEndDate(OffsetDateTime.now().plusMonths(1));
+
+        // Create the subscription via API
+        mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(subscriptionRequest)))
+                .andExpect(status().isOk());
+
+        // Wait briefly to ensure subscription features are created
+        Thread.sleep(100);
+        
+        // When & Then - Get subscription feature by deviceNo, featureNo, and productNo
+        // extract response content as JSON
+        mockMvc.perform(get("/api/subscriptions/device/{deviceNo}/product/{productNo}/feature/{featureNo}", 
+                        testDevice.getDeviceNo(), testProduct.getProductNo(), testFeature1.getFeatureNo()))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.quota").value(testFeature1.getQuota()))
+                .andExpect(jsonPath("$.accessed").exists())
+                .andExpect(jsonPath("$.balance").exists())
+                .andDo(new ResultHandler() {
+                    @Override
+                    public void handle(MvcResult result) throws Exception {
+                        String responseJson = result.getResponse().getContentAsString();
+                        SubscriptionFeatureResponse response = objectMapper.readValue(responseJson, SubscriptionFeatureResponse.class);
+                        boolean ok = response.getBalance() > 0;
+                        assertThat(response.getBalanceSufficient()).isEqualTo(ok);
+                    }
+                });
+
     }
 }

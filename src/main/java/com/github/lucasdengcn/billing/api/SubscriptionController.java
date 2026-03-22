@@ -3,7 +3,7 @@ package com.github.lucasdengcn.billing.api;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
+import com.github.lucasdengcn.billing.model.response.*;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +15,6 @@ import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
-import com.github.lucasdengcn.billing.model.response.ErrorResponse;
-import com.github.lucasdengcn.billing.model.response.SubscriptionResponse;
-import com.github.lucasdengcn.billing.model.response.ValidationErrorResponse;
 import com.github.lucasdengcn.billing.service.SubscriptionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -105,5 +102,22 @@ public class SubscriptionController {
                         @PathVariable String productNo) {
                 SubscriptionWithFeaturesResponse subscription = subscriptionService.findSubscriptionByDeviceNoAndProductNo(deviceNo, productNo);
                 return ResponseEntity.ok(subscription);
+        }
+
+        @GetMapping("/device/{deviceNo}/product/{productNo}/feature/{featureNo}")
+        @Operation(summary = "Get subscription feature by device number, product number, and feature number", 
+                  description = "Retrieves a subscription feature associated with a specific device number, product number, and feature number")
+        @ApiResponse(responseCode = "200", description = "Subscription feature found")
+        @ApiResponse(responseCode = "404", description = "Subscription feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        public ResponseEntity<SubscriptionFeatureResponse> getSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(
+                        @PathVariable String deviceNo,
+                        @PathVariable String featureNo,
+                        @PathVariable String productNo) {
+                
+                com.github.lucasdengcn.billing.entity.SubscriptionFeature subscriptionFeature = 
+                    subscriptionService.findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(deviceNo, featureNo, productNo);
+                
+                SubscriptionFeatureResponse response = subscriptionMapper.toFeatureResponse(subscriptionFeature);
+                return ResponseEntity.ok(response);
         }
 }
