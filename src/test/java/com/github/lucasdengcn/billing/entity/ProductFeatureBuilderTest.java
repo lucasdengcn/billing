@@ -15,6 +15,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product = Product.builder()
                 .id(1L)
+                .productNo("PREMIUM_PLAN_001")
                 .title("Premium Plan")
                 .basePrice(java.math.BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
@@ -43,6 +44,7 @@ class ProductFeatureBuilderTest {
         ProductFeature feature = ProductFeature.builder()
                 .id(100L)
                 .product(product)
+                .featureNo("FEAT_0100")
                 .title("Advanced Analytics")
                 .description("{\"feature\":\"advanced_analytics\"}")
                 .quota(1000)
@@ -74,6 +76,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product = Product.builder()
                 .id(1L)
+                .productNo("BASIC_PLAN_001")
                 .title("Basic Plan")
                 .basePrice(java.math.BigDecimal.valueOf(29.99))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
@@ -82,6 +85,7 @@ class ProductFeatureBuilderTest {
         // When
         ProductFeature feature = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0001")
                 .title("Basic Feature")
                 .build();
 
@@ -103,7 +107,9 @@ class ProductFeatureBuilderTest {
     @Test
     void builder_WithNoFields_ShouldCreateProductFeatureWithNullsAndDefaults() {
         // When
-        ProductFeature feature = ProductFeature.builder().build();
+        ProductFeature feature = ProductFeature.builder()
+                .featureNo("FEAT_0001")
+                .build();
 
         // Then
         assertThat(feature).isNotNull();
@@ -125,6 +131,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product = Product.builder()
                 .id(1L)
+                .productNo("TEST_PLAN_001")
                 .title("Test Plan")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
@@ -133,18 +140,21 @@ class ProductFeatureBuilderTest {
         // When
         ProductFeature featureWithZeroQuota = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0001")
                 .title("Zero Quota Feature")
                 .quota(0)
                 .build();
         
         ProductFeature featureWithPositiveQuota = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0002")
                 .title("Positive Quota Feature")
                 .quota(1000)
                 .build();
         
         ProductFeature featureWithLargeQuota = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0003")
                 .title("Large Quota Feature")
                 .quota(1000000)
                 .build();
@@ -160,6 +170,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product = Product.builder()
                 .id(1L)
+                .productNo("TEST_PLAN_002")
                 .title("Test Plan")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
@@ -168,16 +179,19 @@ class ProductFeatureBuilderTest {
         // When
         ProductFeature feature1 = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0001")
                 .title("API Access")
                 .build();
         
         ProductFeature feature2 = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0002")
                 .title("Storage Space")
                 .build();
         
         ProductFeature feature3 = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0003")
                 .title("Support Hours")
                 .build();
 
@@ -192,6 +206,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product = Product.builder()
                 .id(1L)
+                .productNo("TEST_PLAN_003")
                 .title("Test Plan")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
@@ -200,18 +215,21 @@ class ProductFeatureBuilderTest {
         // When
         ProductFeature feature1 = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0001")
                 .title("Feature 1")
                 .description("{\"type\":\"analytics\",\"level\":\"premium\"}")
                 .build();
         
         ProductFeature feature2 = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0002")
                 .title("Feature 2")
                 .description("{\"type\":\"storage\",\"unit\":\"GB\",\"size\":100}")
                 .build();
         
         ProductFeature feature3 = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0003")
                 .title("Feature 3")
                 .build(); // No description
 
@@ -226,6 +244,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product1 = Product.builder()
                 .id(1L)
+                .productNo("PROD_0001")
                 .title("Product 1")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
@@ -233,6 +252,7 @@ class ProductFeatureBuilderTest {
         
         Product product2 = Product.builder()
                 .id(2L)
+                .productNo("PROD_0002")
                 .title("Product 2")
                 .basePrice(java.math.BigDecimal.valueOf(29.99))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
@@ -241,11 +261,13 @@ class ProductFeatureBuilderTest {
         // When
         ProductFeature feature1 = ProductFeature.builder()
                 .product(product1)
+                .featureNo("FEAT_0001")
                 .title("Feature for Product 1")
                 .build();
         
         ProductFeature feature2 = ProductFeature.builder()
                 .product(product2)
+                .featureNo("FEAT_0002")
                 .title("Feature for Product 2")
                 .build();
 
@@ -259,6 +281,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product = Product.builder()
                 .id(1L)
+                .productNo("TEST_PLAN_004")
                 .title("Test Plan")
                 .basePrice(java.math.BigDecimal.valueOf(19.99))
                 .build();
@@ -277,6 +300,7 @@ class ProductFeatureBuilderTest {
         // When
         ProductFeature feature = ProductFeature.builder()
                 .product(product)
+                .featureNo("FEAT_0001")
                 .title("Feature with Relationships")
                 .subscriptionFeatures(subscriptionFeatures)
                 .accessLogs(accessLogs)
@@ -293,6 +317,7 @@ class ProductFeatureBuilderTest {
     void builder_DefaultQuotaShouldBeZero() {
         // When
         ProductFeature feature = ProductFeature.builder()
+                .featureNo("FEAT_0001")
                 .build();
 
         // Then
@@ -303,14 +328,17 @@ class ProductFeatureBuilderTest {
     void builder_CanOverrideDefaultQuota() {
         // When
         ProductFeature featureWithCustomQuota = ProductFeature.builder()
+                .featureNo("FEAT_0001")
                 .quota(500)
                 .build();
         
         ProductFeature featureWithZeroQuota = ProductFeature.builder()
+                .featureNo("FEAT_0002")
                 .quota(0)
                 .build();
         
         ProductFeature featureWithLargeQuota = ProductFeature.builder()
+                .featureNo("FEAT_0003")
                 .quota(10000)
                 .build();
 
@@ -325,6 +353,7 @@ class ProductFeatureBuilderTest {
         // Given
         Product product = Product.builder()
                 .id(100L)
+                .productNo("CHAINED_PLAN_001")
                 .title("Chained Plan")
                 .basePrice(java.math.BigDecimal.valueOf(49.99))
                 .build();
@@ -340,6 +369,7 @@ class ProductFeatureBuilderTest {
         ProductFeature feature = ProductFeature.builder()
                 .id(200L)
                 .product(product)
+                .featureNo("FEAT_0200")
                 .title("Chained Feature")
                 .description("{\"chained\":true}")
                 .quota(2500)

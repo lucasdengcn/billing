@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.lucasdengcn.billing.entity.*;
+import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
@@ -272,5 +273,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         log.info("Successfully retrieved subscription {} with {} features", id, response.getSubscriptionFeatures().size());
         
         return response;
+    }
+
+    @Override
+    public SubscriptionFeature findSubscriptionFeaturesByDeviceNoProductNoAndFeatureType(String deviceNo, String productNo, FeatureType featureType) {
+        return null;
+    }
+
+    @Override
+    public boolean existsByDeviceIdAndProductIdAndFeatureType(Long deviceId, Long productId, FeatureType featureType) {
+        return false;
     }
 }

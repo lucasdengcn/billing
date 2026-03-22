@@ -1,0 +1,4 @@
+-- V12__remove_unique_constraint_subscription_feature_type_per_subscription.sql
+-- Remove the unique constraint uk_subscription_feature_type_per_subscription from subscription_features table
+
+ALTER TABLE subscription_features DROP CONSTRAINT IF EXISTS uk_subscription_feature_type_per_subscription;

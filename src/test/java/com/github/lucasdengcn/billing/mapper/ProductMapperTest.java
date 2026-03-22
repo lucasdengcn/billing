@@ -48,6 +48,7 @@ class ProductMapperTest {
         // Create test feature
         testFeature = ProductFeature.builder()
                 .id(100L)
+                .featureNo("FEAT_0100")
                 .title("API Access")
                 .description("Access to premium API endpoints")
                 .quota(10000)
@@ -271,6 +272,7 @@ class ProductMapperTest {
         // Given
         ProductFeature featureWithoutProduct = ProductFeature.builder()
                 .id(200L)
+                .featureNo("FEAT_0200")
                 .title("Standalone Feature")
                 .description("Feature without product association")
                 .quota(250)
@@ -296,6 +298,7 @@ class ProductMapperTest {
         // Given
         ProductFeature featureWithNulls = ProductFeature.builder()
                 .id(300L)
+                .featureNo("FEAT_0300")
                 .title("Feature With Nulls")
                 .description(null)
                 .quota(0)

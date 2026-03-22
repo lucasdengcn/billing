@@ -5,6 +5,7 @@ import com.github.lucasdengcn.billing.entity.Device;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,6 +87,7 @@ class SubscriptionRepositoryTest {
                 .title("Basic Plan")
                 .description("Basic service plan")
                 .basePrice(new BigDecimal("29.99"))
+                .priceType(PriceType.MONTHLY)
                 .build();
 
         testProduct2 = Product.builder()
@@ -93,6 +95,7 @@ class SubscriptionRepositoryTest {
                 .title("Premium Plan")
                 .description("Premium service plan")
                 .basePrice(new BigDecimal("59.99"))
+                .priceType(PriceType.MONTHLY)
                 .build();
 
         // Create test subscriptions

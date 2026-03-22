@@ -29,6 +29,9 @@ public class ProductFeature {
     @Column(nullable = false)
     private String title;
 
+    @Column(name = "feature_no", nullable = false, unique = true)
+    private String featureNo;
+
     @Column(columnDefinition = "json")
     private String description;
 

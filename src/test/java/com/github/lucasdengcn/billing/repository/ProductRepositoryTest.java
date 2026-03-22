@@ -189,12 +189,14 @@ class ProductRepositoryTest {
         
         // Create features for the product
         ProductFeature feature1 = ProductFeature.builder()
+                .featureNo("FEAT_0001")
                 .title("Feature 1")
                 .description("First feature")
                 .quota(100)
                 .build();
         
         ProductFeature feature2 = ProductFeature.builder()
+                .featureNo("FEAT_0002")
                 .title("Feature 2")
                 .description("Second feature")
                 .quota(200)

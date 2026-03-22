@@ -349,6 +349,7 @@ class ProductControllerIntegrationTest {
         // Given - Add some features to the product first
         ProductFeature feature1 = ProductFeature.builder()
                 .product(testProduct1)
+                .featureNo("FEAT_0001")
                 .title("API Access")
                 .description("Access to premium API endpoints")
                 .featureType(FeatureType.API_ACCESS)
@@ -358,6 +359,7 @@ class ProductControllerIntegrationTest {
 
         ProductFeature feature2 = ProductFeature.builder()
                 .product(testProduct1)
+                .featureNo("FEAT_0002")
                 .title("Storage Space")
                 .description("Additional cloud storage space")
                 .featureType(FeatureType.STORAGE_SPACE)
@@ -398,6 +400,7 @@ class ProductControllerIntegrationTest {
         // Given - Create a feature first
         ProductFeature feature = ProductFeature.builder()
                 .product(testProduct1)
+                .featureNo("FEAT_0003")
                 .title("Original Feature")
                 .description("Original description")
                 .featureType(FeatureType.API_ACCESS)
@@ -453,6 +456,7 @@ class ProductControllerIntegrationTest {
         // Given - Create a feature first
         ProductFeature feature = ProductFeature.builder()
                 .product(testProduct1)
+                .featureNo("FEAT_0004")
                 .title("Feature to Delete")
                 .description("This feature will be deleted")
                 .featureType(FeatureType.CUSTOMIZATION)

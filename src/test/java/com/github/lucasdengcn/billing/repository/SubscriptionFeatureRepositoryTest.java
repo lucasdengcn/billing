@@ -8,6 +8,7 @@ import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.entity.SubscriptionFeature;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
 import com.github.lucasdengcn.billing.entity.enums.FeatureType;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,23 +75,28 @@ class SubscriptionFeatureRepositoryTest {
 
         // Create test products
         testProduct1 = Product.builder()
+                .productNo("PROD_0001")
                 .title("Basic Plan")
                 .description("Basic service plan")
                 .basePrice(new BigDecimal("29.99"))
+                .priceType(PriceType.MONTHLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
 
         testProduct2 = Product.builder()
+                .productNo("PROD_0002")
                 .title("Premium Plan")
                 .description("Premium service plan")
                 .basePrice(new BigDecimal("59.99"))
+                .priceType(PriceType.MONTHLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
 
         // Create test features
         testFeature1 = ProductFeature.builder()
+                .featureNo("FEAT_0001")
                 .title("Storage Feature")
                 .description("Additional storage capacity")
                 .featureType(FeatureType.STORAGE_SPACE)
@@ -98,6 +104,7 @@ class SubscriptionFeatureRepositoryTest {
                 .build();
 
         testFeature2 = ProductFeature.builder()
+                .featureNo("FEAT_0002")
                 .title("Bandwidth Feature")
                 .description("Additional bandwidth allocation")
                 .featureType(FeatureType.BANDWIDTH_LIMIT)
@@ -105,6 +112,7 @@ class SubscriptionFeatureRepositoryTest {
                 .build();
 
         testFeature3 = ProductFeature.builder()
+                .featureNo("FEAT_0003")
                 .title("API Calls Feature")
                 .description("Additional API call allowance")
                 .featureType(FeatureType.API_ACCESS)
@@ -522,5 +530,161 @@ class SubscriptionFeatureRepositoryTest {
 
         // Then
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    void findBySubscription_subscriptionIdAndFeatureType_WhenFeatureExists_ShouldReturnFeature() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+
+        SubscriptionFeature expectedFeature = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .title("Storage Feature")
+                .description("Additional storage capacity")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(100)
+                .accessed(0)
+                .balance(100)
+                .build();
+        entityManager.persistAndFlush(expectedFeature);
+
+        // When
+        Optional<SubscriptionFeature> foundFeature = subscriptionFeatureRepository
+                .findBySubscription_IdAndFeatureType(testSubscription1.getId(), FeatureType.STORAGE_SPACE);
+
+        // Then
+        assertThat(foundFeature).isPresent();
+        assertThat(foundFeature.get().getTitle()).isEqualTo("Storage Feature");
+        assertThat(foundFeature.get().getFeatureType()).isEqualTo(FeatureType.STORAGE_SPACE);
+        assertThat(foundFeature.get().getSubscription().getId()).isEqualTo(testSubscription1.getId());
+    }
+
+    @Test
+    void findBySubscription_subscriptionIdAndFeatureType_WhenNoMatchBySubscriptionId_ShouldReturnEmpty() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+
+        SubscriptionFeature existingFeature = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .title("Storage Feature")
+                .description("Additional storage capacity")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(100)
+                .accessed(0)
+                .balance(100)
+                .build();
+        entityManager.persistAndFlush(existingFeature);
+
+        // When - Use a non-existent subscription ID
+        Optional<SubscriptionFeature> foundFeature = subscriptionFeatureRepository
+                .findBySubscription_IdAndFeatureType(999L, FeatureType.STORAGE_SPACE);
+
+        // Then
+        assertThat(foundFeature).isEmpty();
+    }
+
+    @Test
+    void findBySubscription_subscriptionIdAndFeatureType_WhenNoMatchByFeatureType_ShouldReturnEmpty() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+
+        SubscriptionFeature existingFeature = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .title("Storage Feature")
+                .description("Additional storage capacity")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(100)
+                .accessed(0)
+                .balance(100)
+                .build();
+        entityManager.persistAndFlush(existingFeature);
+
+        // When - Use a different feature type
+        Optional<SubscriptionFeature> foundFeature = subscriptionFeatureRepository
+                .findBySubscription_IdAndFeatureType(testSubscription1.getId(), FeatureType.API_ACCESS);
+
+        // Then
+        assertThat(foundFeature).isEmpty();
+    }
+
+    @Test
+    void findBySubscription_subscriptionIdAndFeatureType_WhenMultipleFeaturesWithSameTypeExist_ShouldReturnOneFeature() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testCustomer2 = entityManager.persistAndFlush(testCustomer2);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testProduct2 = entityManager.persistAndFlush(testProduct2);
+
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testSubscription2.setCustomer(testCustomer2);
+        testSubscription2.setProduct(testProduct2);
+        testSubscription2 = entityManager.persistAndFlush(testSubscription2);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature2.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+        testFeature2 = entityManager.persistAndFlush(testFeature2);
+
+        SubscriptionFeature subFeature1 = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .title("Storage Feature 1")
+                .description("First storage feature")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(100)
+                .accessed(0)
+                .balance(100)
+                .build();
+
+        SubscriptionFeature subFeature2 = SubscriptionFeature.builder()
+                .subscription(testSubscription2)
+                .productFeature(testFeature2)
+                .title("Storage Feature 2")
+                .description("Second storage feature")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(200)
+                .accessed(0)
+                .balance(200)
+                .build();
+
+        entityManager.persistAndFlush(subFeature1);
+        entityManager.persistAndFlush(subFeature2);
+
+        // When
+        Optional<SubscriptionFeature> foundFeature = subscriptionFeatureRepository
+                .findBySubscription_IdAndFeatureType(testSubscription1.getId(), FeatureType.STORAGE_SPACE);
+
+        // Then
+        assertThat(foundFeature).isPresent();
+        assertThat(foundFeature.get().getTitle()).isEqualTo("Storage Feature 1");
+        assertThat(foundFeature.get().getFeatureType()).isEqualTo(FeatureType.STORAGE_SPACE);
+        assertThat(foundFeature.get().getSubscription().getId()).isEqualTo(testSubscription1.getId());
     }
 }

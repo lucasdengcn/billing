@@ -76,6 +76,7 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
 
         // Create test products
         testProduct = Product.builder()
+                .productNo("PROD_0001")
                 .title("Premium Plan")
                 .description("{\"features\":[\"premium\"]}")
                 .basePrice(new BigDecimal("29.99"))
@@ -86,6 +87,7 @@ class SubscriptionRepositoryFindByDeviceIdAndStatusTest {
         testProduct = productRepository.save(testProduct);
 
         otherProduct = Product.builder()
+                .productNo("PROD_0002")
                 .title("Basic Plan")
                 .description("{\"features\":[\"basic\"]}")
                 .basePrice(new BigDecimal("19.99"))

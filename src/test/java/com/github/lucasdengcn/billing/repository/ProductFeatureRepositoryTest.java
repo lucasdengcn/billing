@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.repository;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.ProductFeature;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,41 +47,49 @@ class ProductFeatureRepositoryTest {
         
         // Create test products
         testProduct1 = Product.builder()
+                .productNo("PROD_0001")
                 .title("Basic Plan")
                 .description("Basic service plan")
                 .basePrice(new BigDecimal("29.99"))
+                .priceType(PriceType.MONTHLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
         
         testProduct2 = Product.builder()
+                .productNo("PROD_0002")
                 .title("Premium Plan")
                 .description("Premium service plan")
                 .basePrice(new BigDecimal("59.99"))
+                .priceType(PriceType.MONTHLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
         
         // Create test features
         testFeature1 = ProductFeature.builder()
+                .featureNo("FEAT_0001")
                 .title("Feature 1")
                 .description("First feature for basic plan")
                 .quota(100)
                 .build();
 
         testFeature2 = ProductFeature.builder()
+                .featureNo("FEAT_0002")
                 .title("Feature 2")
                 .description("Second feature for basic plan")
                 .quota(200)
                 .build();
 
         testFeature3 = ProductFeature.builder()
+                .featureNo("FEAT_0003")
                 .title("Feature 3")
                 .description("Feature for premium plan")
                 .quota(500)
                 .build();
 
         testFeature4 = ProductFeature.builder()
+                .featureNo("FEAT_0004")
                 .title("Feature 4")
                 .description("Another feature for premium plan")
                 .quota(1000)
@@ -148,9 +157,11 @@ class ProductFeatureRepositoryTest {
     void findByProduct_WhenNoFeaturesExist_ShouldReturnEmptyList() {
         // Given
         Product newProduct = Product.builder()
+                .productNo("PROD_0003")
                 .title("New Plan")
                 .description("New service plan")
                 .basePrice(new BigDecimal("39.99"))
+                .priceType(PriceType.MONTHLY)
                 .discountRate(new BigDecimal("1.0000"))
                 .discountStatus(DiscountStatus.ACTIVE)
                 .build();
@@ -168,6 +179,7 @@ class ProductFeatureRepositoryTest {
         // Given
         testProduct1 = entityManager.persistAndFlush(testProduct1);
         ProductFeature newFeature = ProductFeature.builder()
+                .featureNo("FEAT_0005")
                 .title("New Feature")
                 .description("Brand new feature")
                 .quota(300)
@@ -196,6 +208,7 @@ class ProductFeatureRepositoryTest {
         // Given
         testProduct1 = entityManager.persistAndFlush(testProduct1);
         ProductFeature featureWithoutDescription = ProductFeature.builder()
+                .featureNo("FEAT_0006")
                 .title("Feature Without Description")
                 .quota(50)
                 .build();
@@ -281,6 +294,7 @@ class ProductFeatureRepositoryTest {
         
         // Create several features for the same product
         ProductFeature feature1 = ProductFeature.builder()
+                .featureNo("FEAT_0007")
                 .title("API Access")
                 .description("API access quota")
                 .quota(1000)
@@ -288,6 +302,7 @@ class ProductFeatureRepositoryTest {
         feature1.setProduct(testProduct1);
         
         ProductFeature feature2 = ProductFeature.builder()
+                .featureNo("FEAT_0008")
                 .title("Storage")
                 .description("Storage space in MB")
                 .quota(5000)
@@ -295,6 +310,7 @@ class ProductFeatureRepositoryTest {
         feature2.setProduct(testProduct1);
         
         ProductFeature feature3 = ProductFeature.builder()
+                .featureNo("FEAT_0009")
                 .title("Bandwidth")
                 .description("Monthly bandwidth allowance")
                 .quota(10000)
@@ -302,6 +318,7 @@ class ProductFeatureRepositoryTest {
         feature3.setProduct(testProduct1);
         
         ProductFeature feature4 = ProductFeature.builder()
+                .featureNo("FEAT_0010")
                 .title("Users")
                 .description("Number of allowed users")
                 .quota(10)

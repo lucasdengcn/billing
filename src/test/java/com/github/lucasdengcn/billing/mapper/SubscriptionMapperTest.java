@@ -299,6 +299,7 @@ class SubscriptionMapperTest {
         // Create subscription features
         ProductFeature productFeature1 = ProductFeature.builder()
                 .id(101L)
+                .featureNo("FEAT_0101")
                 .featureType(com.github.lucasdengcn.billing.entity.enums.FeatureType.API_ACCESS)
                 .build();
         
@@ -317,6 +318,7 @@ class SubscriptionMapperTest {
         
         ProductFeature productFeature2 = ProductFeature.builder()
                 .id(102L)
+                .featureNo("FEAT_0102")
                 .featureType(FeatureType.STORAGE_SPACE)
                 .build();
         
@@ -473,7 +475,7 @@ class SubscriptionMapperTest {
         // Given
         Subscription subscription = Subscription.builder().id(999L).build();
         Device device = Device.builder().id(10L).build();
-        ProductFeature productFeature = ProductFeature.builder().id(101L).build();
+        ProductFeature productFeature = ProductFeature.builder().id(101L).featureNo("FEAT_0101").build();
         
         SubscriptionFeature entity = SubscriptionFeature.builder()
                 .id(1001L)

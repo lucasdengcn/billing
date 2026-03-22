@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.service;
 
 import com.github.lucasdengcn.billing.entity.*;
+import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
@@ -27,4 +28,8 @@ public interface SubscriptionService {
     SubscriptionWithFeaturesResponse findSubscriptionByDeviceNoAndProductNo(String deviceNo, String productNo);
 
     SubscriptionWithFeaturesResponse findSubscriptionWithFeaturesById(Long id);
+
+    SubscriptionFeature findSubscriptionFeaturesByDeviceNoProductNoAndFeatureType(String deviceNo, String productNo, FeatureType featureType);
+
+    boolean existsByDeviceIdAndProductIdAndFeatureType(Long deviceId, Long productId, FeatureType featureType);
 }

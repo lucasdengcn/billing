@@ -67,6 +67,7 @@ class ProductServiceTest {
         
         sampleFeature = ProductFeature.builder()
                 .id(10L)
+                .featureNo("FEAT_0010")
                 .title("API Access")
                 .description("{\"type\":\"api\"}")
                 .featureType(FeatureType.API_ACCESS)
@@ -388,6 +389,7 @@ class ProductServiceTest {
         List<ProductFeatureRequest> requests = Collections.singletonList(requestWithFeatureType);
         
         ProductFeature expectedFeature = ProductFeature.builder()
+                .featureNo("FEAT_0001")
                 .title("Storage Feature")
                 .description("Storage space feature")
                 .featureType(FeatureType.STORAGE_SPACE)

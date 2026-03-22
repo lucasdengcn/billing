@@ -191,10 +191,12 @@ class SubscriptionCreateSubscriptionTest {
         // Given
         ProductFeature feature1 = ProductFeature.builder()
                 .id(1L)
+                .featureNo("FEAT_0001")
                 .title("Feature 1")
                 .build();
         ProductFeature feature2 = ProductFeature.builder()
                 .id(2L)
+                .featureNo("FEAT_0002")
                 .title("Feature 2")
                 .build();
         List<ProductFeature> productFeatures = Arrays.asList(feature1, feature2);
@@ -356,6 +358,7 @@ class SubscriptionCreateSubscriptionTest {
         // Given
         ProductFeature productFeature = ProductFeature.builder()
                 .id(1L)
+                .featureNo("FEAT_0001")
                 .title("Test Feature")
                 .description("Test Description")
                 .build();

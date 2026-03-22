@@ -83,6 +83,7 @@ class SubscriptionServiceFindSubscriptionWithFeaturesByIdTest {
         // Create test features
         ProductFeature productFeature1 = ProductFeature.builder()
                 .id(101L)
+                .featureNo("FEAT_0101")
                 .featureType(FeatureType.API_ACCESS)
                 .build();
 
@@ -101,6 +102,7 @@ class SubscriptionServiceFindSubscriptionWithFeaturesByIdTest {
 
         ProductFeature productFeature2 = ProductFeature.builder()
                 .id(102L)
+                .featureNo("FEAT_0102")
                 .featureType(FeatureType.STORAGE_SPACE)
                 .build();
 
