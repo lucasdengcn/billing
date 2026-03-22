@@ -15,6 +15,9 @@ public class ProductResponse {
     @Schema(description = "Unique database identifier for the product", example = "1")
     private Long id;
 
+    @Schema(description = "Unique product number identifier", example = "PREMIUM_PLAN_001")
+    private String productNo;
+
     @Schema(description = "Product title", example = "Premium Plan")
     private String title;
 

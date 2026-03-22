@@ -56,6 +56,7 @@ class ProductServiceTest {
     void setUp() {
         sampleProduct = Product.builder()
                 .id(1L)
+                .productNo("PREMIUM_PLAN_001")
                 .title("Premium Plan")
                 .description("{\"features\":[\"premium\"]}")
                 .basePrice(new BigDecimal("29.99"))
@@ -73,6 +74,7 @@ class ProductServiceTest {
                 .build();
         
         productRequest = new ProductRequest();
+        productRequest.setProductNo("UPDATED_PREMIUM_PLAN_001");
         productRequest.setTitle("Updated Premium Plan");
         productRequest.setBasePrice(new BigDecimal("39.99"));
         productRequest.setPriceType(PriceType.YEARLY);
@@ -406,5 +408,129 @@ class ProductServiceTest {
         verify(productRepository, times(1)).findById(1L);
         verify(productMapper, times(1)).toEntity(any(ProductFeatureRequest.class));
         verify(productFeatureRepository, times(1)).saveAll(any(List.class));
+    }
+
+    @Test
+    void findProductByProductNo_WhenProductExists_ShouldReturnProduct() {
+        // Given
+        when(productRepository.findByProductNo("PREMIUM_PLAN_001")).thenReturn(Optional.of(sampleProduct));
+        
+        // When
+        Product result = productService.findProductByProductNo("PREMIUM_PLAN_001");
+        
+        // Then
+        assertThat(result).isEqualTo(sampleProduct);
+        verify(productRepository, times(1)).findByProductNo("PREMIUM_PLAN_001");
+    }
+
+    @Test
+    void findProductByProductNo_WhenProductDoesNotExist_ShouldThrowResourceNotFoundException() {
+        // Given
+        when(productRepository.findByProductNo("NONEXISTENT_PLAN_001")).thenReturn(Optional.empty());
+        
+        // When & Then
+        assertThatThrownBy(() -> productService.findProductByProductNo("NONEXISTENT_PLAN_001"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Product not found with product number: NONEXISTENT_PLAN_001");
+        verify(productRepository, times(1)).findByProductNo("NONEXISTENT_PLAN_001");
+    }
+
+    @Test
+    void existsProductByProductNo_WhenProductExists_ShouldReturnTrue() {
+        // Given
+        when(productRepository.existsByProductNo("PREMIUM_PLAN_001")).thenReturn(true);
+        
+        // When
+        boolean result = productService.existsProductByProductNo("PREMIUM_PLAN_001");
+        
+        // Then
+        assertThat(result).isTrue();
+        verify(productRepository, times(1)).existsByProductNo("PREMIUM_PLAN_001");
+    }
+
+    @Test
+    void existsProductByProductNo_WhenProductDoesNotExist_ShouldReturnFalse() {
+        // Given
+        when(productRepository.existsByProductNo("NONEXISTENT_PLAN_001")).thenReturn(false);
+        
+        // When
+        boolean result = productService.existsProductByProductNo("NONEXISTENT_PLAN_001");
+        
+        // Then
+        assertThat(result).isFalse();
+        verify(productRepository, times(1)).existsByProductNo("NONEXISTENT_PLAN_001");
+    }
+
+    @Test
+    void saveProduct_WhenProductNoAlreadyExists_ShouldThrowIllegalArgumentException() {
+        // Given
+        Product newProduct = Product.builder()
+                .productNo("EXISTING_PLAN_001")
+                .title("New Product")
+                .basePrice(new BigDecimal("19.99"))
+                .priceType(PriceType.MONTHLY)
+                .build();
+        when(productRepository.existsByProductNo("EXISTING_PLAN_001")).thenReturn(true);
+        
+        // When & Then
+        assertThatThrownBy(() -> productService.saveProduct(newProduct))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Product with product number 'EXISTING_PLAN_001' already exists");
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void updateProduct_WhenProductNoChangedToExisting_ShouldThrowIllegalArgumentException() {
+        // Given
+        Product existingProduct = Product.builder()
+                .id(1L)
+                .productNo("OLD_PLAN_001")
+                .title("Old Product")
+                .basePrice(new BigDecimal("19.99"))
+                .priceType(PriceType.MONTHLY)
+                .build();
+        
+        ProductRequest request = new ProductRequest();
+        request.setProductNo("EXISTING_PLAN_002");
+        request.setTitle("Updated Product");
+        
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+        when(productRepository.existsByProductNo("EXISTING_PLAN_002")).thenReturn(true);
+        
+        // When & Then
+        assertThatThrownBy(() -> productService.updateProduct(1L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Product with product number 'EXISTING_PLAN_002' already exists");
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    @Test
+    void updateProduct_WhenProductNoChangedToNewValue_ShouldUpdateSuccessfully() {
+        // Given
+        Product existingProduct = Product.builder()
+                .id(1L)
+                .productNo("OLD_PLAN_001")
+                .title("Old Product")
+                .basePrice(new BigDecimal("19.99"))
+                .priceType(PriceType.MONTHLY)
+                .build();
+        
+        ProductRequest request = new ProductRequest();
+        request.setProductNo("NEW_PLAN_001");
+        request.setTitle("Updated Product");
+        
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+        when(productRepository.existsByProductNo("NEW_PLAN_001")).thenReturn(false);
+        when(productRepository.save(any(Product.class))).thenReturn(existingProduct);
+        
+        // When
+        Product result = productService.updateProduct(1L, request);
+        
+        // Then
+        assertThat(result).isEqualTo(existingProduct);
+        verify(productRepository, times(1)).findById(1L);
+        verify(productRepository, times(1)).existsByProductNo("NEW_PLAN_001");
+        verify(productMapper, times(1)).updateEntity(eq(request), any(Product.class));
+        verify(productRepository, times(1)).save(existingProduct);
     }
 }

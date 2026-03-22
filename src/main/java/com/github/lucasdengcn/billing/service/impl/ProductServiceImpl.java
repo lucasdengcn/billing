@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
@@ -33,6 +34,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product saveProduct(Product product) {
         log.info("Saving product: {}", product.getTitle());
+        
+        // Validate productNo uniqueness if provided
+        if (product.getProductNo() != null && product.getId() == null) { // Only check for new products
+            if (productRepository.existsByProductNo(product.getProductNo())) {
+                throw new IllegalArgumentException("Product with product number '" + product.getProductNo() + "' already exists");
+            }
+        }
+        
         return productRepository.save(product);
     }
 
@@ -42,6 +51,21 @@ public class ProductServiceImpl implements ProductService {
         log.debug("Finding product by ID: {}", id);
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Product findProductByProductNo(String productNo) {
+        log.debug("Finding product by product number: {}", productNo);
+        return productRepository.findByProductNo(productNo)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with product number: " + productNo));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsProductByProductNo(String productNo) {
+        log.debug("Checking existence of product with product number: {}", productNo);
+        return productRepository.existsByProductNo(productNo);
     }
 
     @Override
@@ -68,6 +92,14 @@ public class ProductServiceImpl implements ProductService {
     public Product updateProduct(Long id, ProductRequest request) {
         log.info("Updating product with ID: {}", id);
         Product existingProduct = findProductById(id);
+        
+        // Check if productNo is being updated and ensure uniqueness
+        if (request.getProductNo() != null && !request.getProductNo().equals(existingProduct.getProductNo())) {
+            if (productRepository.existsByProductNo(request.getProductNo())) {
+                throw new IllegalArgumentException("Product with product number '" + request.getProductNo() + "' already exists");
+            }
+        }
+        
         productMapper.updateEntity(request, existingProduct);
         return productRepository.save(existingProduct);
     }

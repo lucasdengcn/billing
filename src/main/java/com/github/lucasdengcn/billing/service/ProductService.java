@@ -12,8 +12,10 @@ import java.util.Optional;
 public interface ProductService {
     Product saveProduct(Product product);
     Product findProductById(Long id);
+    Product findProductByProductNo(String productNo);
     List<Product> findProductsByDiscountStatus(DiscountStatus status);
     List<Product> findAllProducts();
+    boolean existsProductByProductNo(String productNo);
     void deleteProductById(Long id);
     Product updateProduct(Long id, ProductRequest request);
 

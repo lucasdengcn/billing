@@ -33,6 +33,7 @@ class ProductMapperTest {
         // Create test product
         testProduct = Product.builder()
                 .id(1L)
+                .productNo("PREMIUM_PLAN_001")
                 .title("Premium Plan")
                 .description("{\"tier\":\"premium\",\"support\":\"24/7\"}")
                 .basePrice(new BigDecimal("59.99"))
@@ -59,6 +60,7 @@ class ProductMapperTest {
     void toEntity_FromProductRequest_ShouldMapCorrectly() {
         // Given
         ProductRequest request = new ProductRequest();
+        request.setProductNo("BASIC_PLAN_001");
         request.setTitle("Basic Plan");
         request.setDescription("{\"tier\":\"basic\"}");
         request.setBasePrice(new BigDecimal("29.99"));
@@ -72,6 +74,7 @@ class ProductMapperTest {
         // Then
         assertThat(product).isNotNull();
         assertThat(product.getId()).isNull(); // Should be ignored
+        assertThat(product.getProductNo()).isEqualTo("BASIC_PLAN_001");
         assertThat(product.getTitle()).isEqualTo("Basic Plan");
         assertThat(product.getDescription()).isEqualTo("{\"tier\":\"basic\"}");
         assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("29.99"));
@@ -90,6 +93,7 @@ class ProductMapperTest {
     void toEntity_FromProductRequestWithMinimalFields_ShouldMapCorrectly() {
         // Given
         ProductRequest request = new ProductRequest();
+        request.setProductNo("FREE_PLAN_001");
         request.setTitle("Free Plan");
         request.setBasePrice(BigDecimal.ZERO); // Required field
         request.setPriceType(PriceType.ONE_TIME); // Required field
@@ -100,6 +104,7 @@ class ProductMapperTest {
         // Then
         assertThat(product).isNotNull();
         assertThat(product.getId()).isNull();
+        assertThat(product.getProductNo()).isEqualTo("FREE_PLAN_001");
         assertThat(product.getTitle()).isEqualTo("Free Plan");
         assertThat(product.getBasePrice()).isEqualByComparingTo(BigDecimal.ZERO);
         // Default values verification
@@ -118,6 +123,7 @@ class ProductMapperTest {
         // Then
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getProductNo()).isEqualTo("PREMIUM_PLAN_001");
         assertThat(response.getTitle()).isEqualTo("Premium Plan");
         assertThat(response.getDescription()).isEqualTo("{\"tier\":\"premium\",\"support\":\"24/7\"}");
         assertThat(response.getBasePrice()).isEqualByComparingTo(new BigDecimal("59.99"));
@@ -132,6 +138,7 @@ class ProductMapperTest {
         // Given
         Product productWithNulls = Product.builder()
                 .id(2L)
+                .productNo("NULL_FIELDS_PRODUCT_001")
                 .title("Null Fields Product")
                 .description(null)
                 .basePrice(new BigDecimal("19.99"))
@@ -148,6 +155,7 @@ class ProductMapperTest {
         // Then
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(2L);
+        assertThat(response.getProductNo()).isEqualTo("NULL_FIELDS_PRODUCT_001");
         assertThat(response.getTitle()).isEqualTo("Null Fields Product");
         assertThat(response.getDescription()).isNull();
         assertThat(response.getBasePrice()).isEqualByComparingTo(new BigDecimal("19.99"));
@@ -162,6 +170,7 @@ class ProductMapperTest {
         // Given
         Product existingProduct = testProduct; // Original product from setUp
         ProductRequest request = new ProductRequest();
+        request.setProductNo("UPDATED_PREMIUM_PLAN_001");
         request.setTitle("Updated Premium Plan");
         request.setDescription("{\"tier\":\"premium_plus\",\"support\":\"priority\"}");
         request.setBasePrice(new BigDecimal("79.99"));
@@ -175,6 +184,7 @@ class ProductMapperTest {
         // Then
         assertThat(existingProduct).isNotNull();
         assertThat(existingProduct.getId()).isEqualTo(1L); // Should not change
+        assertThat(existingProduct.getProductNo()).isEqualTo("UPDATED_PREMIUM_PLAN_001");
         assertThat(existingProduct.getTitle()).isEqualTo("Updated Premium Plan");
         assertThat(existingProduct.getDescription()).isEqualTo("{\"tier\":\"premium_plus\",\"support\":\"priority\"}");
         assertThat(existingProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("79.99"));

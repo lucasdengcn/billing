@@ -25,6 +25,7 @@ class ProductBuilderTest {
         // When
         Product product = Product.builder()
                 .id(100L)
+                .productNo("PREMIUM_PLAN_001")
                 .title("Premium Plan")
                 .description("{\"tier\":\"premium\"}")
                 .basePrice(new BigDecimal("59.99"))
@@ -39,6 +40,7 @@ class ProductBuilderTest {
         // Then
         assertThat(product).isNotNull();
         assertThat(product.getId()).isEqualTo(100L);
+        assertThat(product.getProductNo()).isEqualTo("PREMIUM_PLAN_001");
         assertThat(product.getTitle()).isEqualTo("Premium Plan");
         assertThat(product.getDescription()).isEqualTo("{\"tier\":\"premium\"}");
         assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("59.99"));
@@ -55,6 +57,7 @@ class ProductBuilderTest {
     void builder_WithMinimalFields_ShouldCreateProductWithDefaults() {
         // When
         Product product = Product.builder()
+                .productNo("BASIC_PLAN_001")
                 .title("Basic Plan")
                 .basePrice(new BigDecimal("29.99"))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
@@ -63,6 +66,7 @@ class ProductBuilderTest {
         // Then
         assertThat(product).isNotNull();
         assertThat(product.getId()).isNull();
+        assertThat(product.getProductNo()).isEqualTo("BASIC_PLAN_001");
         assertThat(product.getTitle()).isEqualTo("Basic Plan");
         assertThat(product.getDescription()).isNull();
         assertThat(product.getBasePrice()).isEqualByComparingTo(new BigDecimal("29.99"));
@@ -77,12 +81,14 @@ class ProductBuilderTest {
     void builder_WithNoFields_ShouldCreateProductWithNullsAndDefaults() {
         // When
         Product product = Product.builder()
+                .productNo("NO_FIELDS_PLAN_001")
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build();
 
         // Then
         assertThat(product).isNotNull();
         assertThat(product.getId()).isNull();
+        assertThat(product.getProductNo()).isEqualTo("NO_FIELDS_PLAN_001");
         assertThat(product.getTitle()).isNull();
         assertThat(product.getDescription()).isNull();
         assertThat(product.getBasePrice()).isEqualByComparingTo(BigDecimal.ZERO); // Default value from @Builder.Default
@@ -99,6 +105,7 @@ class ProductBuilderTest {
     void builder_WithSpecificDiscountStatus_ShouldRespectProvidedStatus() {
         // When
         Product productWithActiveStatus = Product.builder()
+                .productNo("ACTIVE_PRODUCT_001")
                 .title("Active Product")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
@@ -106,6 +113,7 @@ class ProductBuilderTest {
                 .build();
         
         Product productWithInactiveStatus = Product.builder()
+                .productNo("INACTIVE_PRODUCT_001")
                 .title("Inactive Product")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
@@ -113,7 +121,9 @@ class ProductBuilderTest {
                 .build();
 
         // Then
+        assertThat(productWithActiveStatus.getProductNo()).isEqualTo("ACTIVE_PRODUCT_001");
         assertThat(productWithActiveStatus.getDiscountStatus()).isEqualTo(DiscountStatus.ACTIVE);
+        assertThat(productWithInactiveStatus.getProductNo()).isEqualTo("INACTIVE_PRODUCT_001");
         assertThat(productWithInactiveStatus.getDiscountStatus()).isEqualTo(DiscountStatus.INACTIVE);
     }
 
@@ -121,26 +131,32 @@ class ProductBuilderTest {
     void builder_WithDifferentBaseMonthlyFees_ShouldSetCorrectly() {
         // When
         Product freeProduct = Product.builder()
+                .productNo("FREE_PLAN_001")
                 .title("Free Plan")
                 .basePrice(BigDecimal.ZERO)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build();
         
         Product lowCostProduct = Product.builder()
+                .productNo("LOW_COST_PLAN_001")
                 .title("Low Cost Plan")
                 .basePrice(new BigDecimal("9.99"))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         Product highCostProduct = Product.builder()
+                .productNo("HIGH_COST_PLAN_001")
                 .title("High Cost Plan")
                 .basePrice(new BigDecimal("99.99"))
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
 
         // Then
+        assertThat(freeProduct.getProductNo()).isEqualTo("FREE_PLAN_001");
         assertThat(freeProduct.getBasePrice()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(lowCostProduct.getProductNo()).isEqualTo("LOW_COST_PLAN_001");
         assertThat(lowCostProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("9.99"));
+        assertThat(highCostProduct.getProductNo()).isEqualTo("HIGH_COST_PLAN_001");
         assertThat(highCostProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("99.99"));
     }
 
@@ -148,6 +164,7 @@ class ProductBuilderTest {
     void builder_WithDifferentDiscountRates_ShouldSetCorrectly() {
         // When
         Product noDiscountProduct = Product.builder()
+                .productNo("NO_DISCOUNT_PLAN_001")
                 .title("No Discount Plan")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
@@ -155,6 +172,7 @@ class ProductBuilderTest {
                 .build();
         
         Product tenPercentDiscountProduct = Product.builder()
+                .productNo("TEN_PERCENT_DISCOUNT_PLAN_001")
                 .title("10% Discount Plan")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
@@ -162,6 +180,7 @@ class ProductBuilderTest {
                 .build();
         
         Product fiftyPercentDiscountProduct = Product.builder()
+                .productNo("FIFTY_PERCENT_DISCOUNT_PLAN_001")
                 .title("50% Discount Plan")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
@@ -169,8 +188,11 @@ class ProductBuilderTest {
                 .build();
 
         // Then
+        assertThat(noDiscountProduct.getProductNo()).isEqualTo("NO_DISCOUNT_PLAN_001");
         assertThat(noDiscountProduct.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE);
+        assertThat(tenPercentDiscountProduct.getProductNo()).isEqualTo("TEN_PERCENT_DISCOUNT_PLAN_001");
         assertThat(tenPercentDiscountProduct.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.90"));
+        assertThat(fiftyPercentDiscountProduct.getProductNo()).isEqualTo("FIFTY_PERCENT_DISCOUNT_PLAN_001");
         assertThat(fiftyPercentDiscountProduct.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.50"));
     }
 
@@ -178,26 +200,32 @@ class ProductBuilderTest {
     void builder_WithVariousTitles_ShouldSetCorrectly() {
         // When
         Product product1 = Product.builder()
+                .productNo("PREMIUM_PLAN_TEST_001")
                 .title("Premium Plan")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.MONTHLY)
                 .build();
         
         Product product2 = Product.builder()
+                .productNo("BASIC_PLAN_TEST_001")
                 .title("Basic Plan")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY)
                 .build();
         
         Product product3 = Product.builder()
+                .productNo("ENTERPRISE_SOLUTION_TEST_001")
                 .title("Enterprise Solution")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build();
 
         // Then
+        assertThat(product1.getProductNo()).isEqualTo("PREMIUM_PLAN_TEST_001");
         assertThat(product1.getTitle()).isEqualTo("Premium Plan");
+        assertThat(product2.getProductNo()).isEqualTo("BASIC_PLAN_TEST_001");
         assertThat(product2.getTitle()).isEqualTo("Basic Plan");
+        assertThat(product3.getProductNo()).isEqualTo("ENTERPRISE_SOLUTION_TEST_001");
         assertThat(product3.getTitle()).isEqualTo("Enterprise Solution");
     }
 
@@ -205,6 +233,7 @@ class ProductBuilderTest {
     void builder_WithJsonDescriptions_ShouldSetCorrectly() {
         // When
         Product product1 = Product.builder()
+                .productNo("PLAN_1_DESC_001")
                 .title("Plan 1")
                 .description("{\"feature\":\"value\"}")
                 .basePrice(BigDecimal.TEN)
@@ -212,6 +241,7 @@ class ProductBuilderTest {
                 .build();
         
         Product product2 = Product.builder()
+                .productNo("PLAN_2_DESC_001")
                 .title("Plan 2")
                 .description("{\"tier\":\"standard\",\"support\":\"email\"}")
                 .basePrice(BigDecimal.TEN)
@@ -219,14 +249,18 @@ class ProductBuilderTest {
                 .build();
         
         Product product3 = Product.builder()
+                .productNo("PLAN_3_DESC_001")
                 .title("Plan 3")
                 .basePrice(BigDecimal.TEN)
                 .priceType(com.github.lucasdengcn.billing.entity.enums.PriceType.ONE_TIME)
                 .build(); // No description
 
         // Then
+        assertThat(product1.getProductNo()).isEqualTo("PLAN_1_DESC_001");
         assertThat(product1.getDescription()).isEqualTo("{\"feature\":\"value\"}");
+        assertThat(product2.getProductNo()).isEqualTo("PLAN_2_DESC_001");
         assertThat(product2.getDescription()).isEqualTo("{\"tier\":\"standard\",\"support\":\"email\"}");
+        assertThat(product3.getProductNo()).isEqualTo("PLAN_3_DESC_001");
         assertThat(product3.getDescription()).isNull();
     }
 

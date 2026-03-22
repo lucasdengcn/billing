@@ -9,9 +9,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import jakarta.validation.constraints.Pattern;
+
 @Data
 @Schema(description = "Request model for creating or updating a product")
 public class ProductRequest {
+
+    @NotBlank(message = "Product number is required")
+    @Size(min = 2, max = 50, message = "Product number must be between 2 and 50 characters")
+    @Pattern(regexp = "^[A-Z0-9_-]+$", message = "Product number can only contain uppercase letters, numbers, hyphens, and underscores")
+    @Schema(description = "Unique product number identifier", example = "PREMIUM_PLAN_001")
+    private String productNo;
+
     @NotBlank(message = "Title is required")
     @Size(min = 2, max = 255, message = "Title must be between 2 and 255 characters")
     @Schema(description = "Title of the service/product", example = "Premium Plan")
@@ -34,6 +43,6 @@ public class ProductRequest {
     @Schema(description = "Discount rate applied to base price (1.0 = no discount), fee = basePrice * discountRate", example = "0.90")
     private BigDecimal discountRate;
 
-    @Schema(description = "Whether a discount is currently active for this product", example = "ACTIVE")
+    @Schema(description = "Whether a discount is currently active for this product", example = "1")
     private DiscountStatus discountStatus;
 }

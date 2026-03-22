@@ -194,6 +194,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Subscription> findSubscriptionsByDeviceNo(String deviceNo) {
         log.info("Finding active subscriptions for device number: {}", deviceNo);
         Device device = deviceService.findByDeviceNo(deviceNo);
@@ -206,6 +207,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SubscriptionWithFeaturesResponse findSubscriptionWithFeaturesById(Long id) {
         log.info("Finding subscription with features by ID: {}", id);
         

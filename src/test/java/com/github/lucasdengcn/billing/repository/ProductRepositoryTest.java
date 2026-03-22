@@ -44,6 +44,7 @@ class ProductRepositoryTest {
         
         // Create test products with different discount statuses
         testProduct1 = Product.builder()
+                .productNo("BASIC_PLAN_001")
                 .title("Basic Plan")
                 .description("Basic service plan")
                 .basePrice(new BigDecimal("29.99"))
@@ -53,6 +54,7 @@ class ProductRepositoryTest {
                 .build();
 
         testProduct2 = Product.builder()
+                .productNo("PREMIUM_PLAN_001")
                 .title("Premium Plan")
                 .description("Premium service plan")
                 .basePrice(new BigDecimal("59.99"))
@@ -62,6 +64,7 @@ class ProductRepositoryTest {
                 .build();
 
         testProduct3 = Product.builder()
+                .productNo("ENTERPRISE_PLAN_001")
                 .title("Enterprise Plan")
                 .description("Enterprise service plan")
                 .basePrice(new BigDecimal("99.99"))
@@ -71,6 +74,7 @@ class ProductRepositoryTest {
                 .build();
 
         testProduct4 = Product.builder()
+                .productNo("STUDENT_PLAN_001")
                 .title("Student Plan")
                 .description("Discounted student plan")
                 .basePrice(new BigDecimal("9.99"))
@@ -141,6 +145,7 @@ class ProductRepositoryTest {
     void save_ShouldPersistProductCorrectly() {
         // Given
         Product newProduct = Product.builder()
+                .productNo("NEW_PLAN_001")
                 .title("New Plan")
                 .description("Brand new service plan")
                 .basePrice(new BigDecimal("79.99"))
@@ -154,6 +159,7 @@ class ProductRepositoryTest {
 
         // Then
         assertThat(savedProduct.getId()).isNotNull();
+        assertThat(savedProduct.getProductNo()).isEqualTo("NEW_PLAN_001");
         assertThat(savedProduct.getTitle()).isEqualTo("New Plan");
         assertThat(savedProduct.getBasePrice()).isEqualByComparingTo(new BigDecimal("79.99"));
         assertThat(savedProduct.getPriceType()).isEqualTo(com.github.lucasdengcn.billing.entity.enums.PriceType.YEARLY);
@@ -165,12 +171,14 @@ class ProductRepositoryTest {
         Optional<Product> retrievedProduct = productRepository.findById(savedProduct.getId());
         assertThat(retrievedProduct).isPresent();
         assertThat(retrievedProduct.get().getTitle()).isEqualTo("New Plan");
+        assertThat(retrievedProduct.get().getProductNo()).isEqualTo("NEW_PLAN_001");
     }
 
     @Test
     void save_WhenProductHasFeatures_ShouldPersistProductWithFeatures() {
         // Given
         Product product = Product.builder()
+                .productNo("FEATURED_PLAN_001")
                 .title("Plan With Features")
                 .description("A plan with several features")
                 .basePrice(new BigDecimal("49.99"))
@@ -203,6 +211,7 @@ class ProductRepositoryTest {
 
         // Then
         assertThat(savedProduct.getId()).isNotNull();
+        assertThat(savedProduct.getProductNo()).isEqualTo("FEATURED_PLAN_001");
         assertThat(savedProduct.getTitle()).isEqualTo("Plan With Features");
         assertThat(savedProduct.getFeatures()).hasSize(2);
         assertThat(savedProduct.getFeatures()).extracting(ProductFeature::getTitle)
@@ -259,5 +268,73 @@ class ProductRepositoryTest {
 
         // Then
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    void findByProductNo_WhenProductExists_ShouldReturnProduct() {
+        // Given
+        Product savedProduct = entityManager.persistAndFlush(testProduct1);
+
+        // When
+        Optional<Product> foundProduct = productRepository.findByProductNo("BASIC_PLAN_001");
+
+        // Then
+        assertThat(foundProduct).isPresent();
+        assertThat(foundProduct.get().getId()).isEqualTo(savedProduct.getId());
+        assertThat(foundProduct.get().getProductNo()).isEqualTo("BASIC_PLAN_001");
+        assertThat(foundProduct.get().getTitle()).isEqualTo("Basic Plan");
+    }
+
+    @Test
+    void findByProductNo_WhenProductDoesNotExist_ShouldReturnEmpty() {
+        // When
+        Optional<Product> foundProduct = productRepository.findByProductNo("NONEXISTENT_PLAN_001");
+
+        // Then
+        assertThat(foundProduct).isEmpty();
+    }
+
+    @Test
+    void existsByProductNo_WhenProductExists_ShouldReturnTrue() {
+        // Given
+        entityManager.persistAndFlush(testProduct1);
+
+        // When
+        boolean exists = productRepository.existsByProductNo("BASIC_PLAN_001");
+
+        // Then
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    void existsByProductNo_WhenProductDoesNotExist_ShouldReturnFalse() {
+        // When
+        boolean exists = productRepository.existsByProductNo("NONEXISTENT_PLAN_001");
+
+        // Then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void findByProductNo_WithDifferentProductNumbers_ShouldReturnCorrectProduct() {
+        // Given
+        entityManager.persistAndFlush(testProduct1); // BASIC_PLAN_001
+        entityManager.persistAndFlush(testProduct2); // PREMIUM_PLAN_001
+        entityManager.persistAndFlush(testProduct3); // ENTERPRISE_PLAN_001
+
+        // When
+        Optional<Product> basicProduct = productRepository.findByProductNo("BASIC_PLAN_001");
+        Optional<Product> premiumProduct = productRepository.findByProductNo("PREMIUM_PLAN_001");
+        Optional<Product> enterpriseProduct = productRepository.findByProductNo("ENTERPRISE_PLAN_001");
+
+        // Then
+        assertThat(basicProduct).isPresent();
+        assertThat(basicProduct.get().getTitle()).isEqualTo("Basic Plan");
+        
+        assertThat(premiumProduct).isPresent();
+        assertThat(premiumProduct.get().getTitle()).isEqualTo("Premium Plan");
+        
+        assertThat(enterpriseProduct).isPresent();
+        assertThat(enterpriseProduct.get().getTitle()).isEqualTo("Enterprise Plan");
     }
 }
