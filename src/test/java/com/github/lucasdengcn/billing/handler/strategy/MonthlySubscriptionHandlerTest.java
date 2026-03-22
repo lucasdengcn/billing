@@ -210,7 +210,7 @@ class MonthlySubscriptionHandlerTest {
         // When & Then
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> handler.handleRenewal(product, subscription, renewal))
-                .withMessage("Invalid period unit for monthly subscription renewal");
+                .withMessage("Invalid period unit for monthly subscription renewal: YEARS");
     }
     
     @Test
@@ -330,6 +330,35 @@ class MonthlySubscriptionHandlerTest {
         
         // Then
         assertThat(subscription.getEndDate()).isEqualTo(originalEndDate.plusDays(14));
+        verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
+    }
+    
+    @Test
+    @DisplayName("Handle renewal with past end date should extend from current past date")
+    void handleRenewal_WithPastEndDate_ShouldExtendFromPastDate() {
+        // Given
+        OffsetDateTime pastEndDate = OffsetDateTime.now().minusDays(32); // Past date
+        subscription.setEndDate(pastEndDate);
+        subscription.setBaseFee(new BigDecimal("29.99"));
+        subscription.setDiscountRate(new BigDecimal("0.90"));
+        subscription.setPeriods(1);
+        
+        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
+            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
+                .renewalPeriods(1)
+                .renewalPeriodUnit(PeriodUnit.MONTHS)
+                .build();
+        
+        BigDecimal expectedTotalFee = new BigDecimal("26.99");
+        when(pricingCalculator.calculateRenewalTotalFee(eq(product), eq(renewal)))
+                .thenReturn(expectedTotalFee);
+        
+        // When
+        handler.handleRenewal(product, subscription, renewal);
+        
+        // Then, verify is the same date
+        assertThat(subscription.getEndDate().toLocalDate()).isEqualTo(OffsetDateTime.now().plusMonths(1).toLocalDate());
+        assertThat(subscription.getPeriods()).isEqualTo(2); // Original 1 + renewal 1
         verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
     }
 }

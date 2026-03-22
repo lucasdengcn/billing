@@ -209,7 +209,7 @@ class YearlySubscriptionHandlerTest {
         // When & Then
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> handler.handleRenewal(product, subscription, renewal))
-                .withMessage("Invalid period unit for yearly subscription renewal");
+                .withMessage("Invalid period unit for yearly subscription renewal: DAYS");
     }
     
     @Test
@@ -329,6 +329,35 @@ class YearlySubscriptionHandlerTest {
         
         // Then
         assertThat(subscription.getEndDate()).isEqualTo(originalEndDate.plusMonths(6));
+        verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
+    }
+    
+    @Test
+    @DisplayName("Handle renewal with past end date should extend from current past date")
+    void handleRenewal_WithPastEndDate_ShouldExtendFromPastDate() {
+        // Given
+        OffsetDateTime pastEndDate = OffsetDateTime.now().minusDays(365); // Past date
+        subscription.setEndDate(pastEndDate);
+        subscription.setBaseFee(new BigDecimal("199.99"));
+        subscription.setDiscountRate(new BigDecimal("0.85"));
+        subscription.setPeriods(1);
+        
+        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
+            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
+                .renewalPeriods(1)
+                .renewalPeriodUnit(PeriodUnit.YEARS)
+                .build();
+        
+        BigDecimal expectedTotalFee = new BigDecimal("169.99");
+        when(pricingCalculator.calculateRenewalTotalFee(eq(product), eq(renewal)))
+                .thenReturn(expectedTotalFee);
+        
+        // When
+        handler.handleRenewal(product, subscription, renewal);
+        
+        // Then
+        assertThat(subscription.getEndDate().toLocalDate()).isEqualTo(OffsetDateTime.now().plusYears(1).toLocalDate());
+        assertThat(subscription.getPeriods()).isEqualTo(2); // Original 1 + renewal 1
         verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
     }
 }
