@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.api;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalRequest;
 import com.github.lucasdengcn.billing.model.response.*;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -118,6 +119,20 @@ public class SubscriptionController {
                     subscriptionService.findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(deviceNo, featureNo, productNo);
                 
                 SubscriptionFeatureResponse response = subscriptionMapper.toFeatureResponse(subscriptionFeature);
+                return ResponseEntity.ok(response);
+        }
+
+        @PostMapping("/renew")
+        @Operation(summary = "Renew subscription with renewal request", 
+                  description = "Renews a subscription based on the provided renewal request")
+        @ApiResponse(responseCode = "200", description = "Subscription renewed successfully")
+        @ApiResponse(responseCode = "400", description = "Invalid request or subscription cannot be renewed", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+        @ApiResponse(responseCode = "404", description = "Subscription not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        public ResponseEntity<SubscriptionResponse> renewSubscription(
+                        @Valid @RequestBody SubscriptionRenewalRequest request) {
+                
+                Subscription renewedSubscription = subscriptionService.renewSubscription(request);
+                SubscriptionResponse response = subscriptionMapper.toResponse(renewedSubscription);
                 return ResponseEntity.ok(response);
         }
 }

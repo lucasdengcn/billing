@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 
 import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.entity.enums.FeatureType;
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
+import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
 import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
@@ -17,11 +19,13 @@ import com.github.lucasdengcn.billing.service.CustomerService;
 import com.github.lucasdengcn.billing.service.DeviceService;
 import com.github.lucasdengcn.billing.service.ProductService;
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.exception.BusinessException;
 import com.github.lucasdengcn.billing.exception.SubscriptionAlreadyActiveException;
 import com.github.lucasdengcn.billing.exception.InvalidSubscriptionDateRangeException;
 import com.github.lucasdengcn.billing.repository.SubscriptionFeatureRepository;
@@ -313,5 +317,72 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 String.format("Subscription feature not found for device: %s, featureNo: %s, and product: %s",
                         deviceNo, featureNo, productNo));
     }
+    
+    @Override
+    @Transactional
+    public Subscription renewSubscription(SubscriptionRenewalRequest request) {
+        log.info("Renewing subscription for device: {} and product: {} with {} {}", 
+                 request.getDeviceNo(), request.getProductNo(), request.getRenewalPeriods(), request.getRenewalPeriodUnit());
+        
+        // Find device by deviceNo
+        Device device = deviceService.findByDeviceNo(request.getDeviceNo());
+        
+        // Find product by productNo
+        Product product = productService.findProductByProductNo(request.getProductNo());
+        
+        // Find existing subscription by device and product
+        Subscription subscription = subscriptionRepository.findByDeviceAndProduct(device, product)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                String.format("Subscription not found for device: %s and product: %s", 
+                            request.getDeviceNo(), request.getProductNo())));
+        
+        // Check if subscription is active or expired
+        if (subscription.getStatus() != SubscriptionStatus.ACTIVE && 
+            subscription.getStatus() != SubscriptionStatus.EXPIRED) {
+            throw new BusinessException(
+                String.format("Cannot renew subscription with status: %s. Only active or expired subscriptions can be renewed.", 
+                             subscription.getStatus().getValue()), 
+                HttpStatus.BAD_REQUEST);
+        }
+        
+        // Determine renewal period based on the request or fallback to original subscription
+        Integer renewalPeriods = request.getRenewalPeriods() != null ? request.getRenewalPeriods() : subscription.getPeriods();
+        PeriodUnit renewalPeriodUnit = request.getRenewalPeriodUnit();
 
+        // Create renewal record
+        SubscriptionRenewal renewal = SubscriptionRenewal.builder()
+            .device(device)
+            .subscription(subscription)
+            .previousEndDate(subscription.getEndDate())
+            .renewalPeriods(renewalPeriods != null ? renewalPeriods : 1)
+            .renewalPeriodUnit(renewalPeriodUnit)
+            .baseFee(subscription.getBaseFee())
+            .discountRate(subscription.getDiscountRate())
+            .build();
+        
+        // Get the appropriate handler based on product price type
+        SubscriptionHandler handler = subscriptionHandlerFactory.getHandler(product.getPriceType());
+        if (handler == null) {
+            throw new BusinessException(
+                String.format("No handler found for price type: %s", product.getPriceType()), 
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+        // Use the handler to process the renewal
+        handler.handleRenewal(product, subscription, renewal);
+        
+        // Save the renewal record
+        subscriptionRenewalRepository.save(renewal);
+        
+        // Reset status to ACTIVE after renewal
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        
+        // Save updated subscription
+        Subscription updatedSubscription = subscriptionRepository.save(subscription);
+        
+        log.info("Successfully renewed subscription: {} for device: {} and product: {}. New end date: {}", 
+                 updatedSubscription.getId(), request.getDeviceNo(), request.getProductNo(), subscription.getEndDate());
+        
+        return updatedSubscription;
+    }
 }

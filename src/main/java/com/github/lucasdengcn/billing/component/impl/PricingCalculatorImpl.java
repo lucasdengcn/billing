@@ -4,6 +4,7 @@ import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 
+import com.github.lucasdengcn.billing.entity.SubscriptionRenewal;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -53,5 +54,27 @@ public class PricingCalculatorImpl implements PricingCalculator {
         subscription.setTotalFee(totalPrice);
         return totalPrice;
     }
-
+    
+    @Override
+    public BigDecimal calculateRenewalTotalFee(Product product, SubscriptionRenewal renewal) {
+        if (renewal == null || renewal.getBaseFee() == null || renewal.getDiscountRate() == null) {
+            throw new IllegalArgumentException("SubscriptionRenewal and required fields cannot be null");
+        }
+        
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+        
+        BigDecimal baseFee = renewal.getBaseFee();
+        BigDecimal discountRate = renewal.getDiscountRate();
+        
+        // Get renewal periods from renewal object
+        int renewalPeriods = renewal.getRenewalPeriods() != null ? renewal.getRenewalPeriods() : 1;
+        
+        // Calculate renewal fee based on renewal periods
+        BigDecimal renewalFee = baseFee.multiply(discountRate).multiply(new BigDecimal(renewalPeriods))
+            .setScale(SCALE, RoundingMode.HALF_UP);
+        renewal.setTotalFee(renewalFee);
+        return renewalFee;
+    }
 }

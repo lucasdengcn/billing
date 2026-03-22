@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.service;
 import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
+import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
 import org.jspecify.annotations.NonNull;
@@ -30,4 +31,6 @@ public interface SubscriptionService {
     SubscriptionWithFeaturesResponse findSubscriptionWithFeaturesById(Long id);
 
     SubscriptionFeature findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(String deviceNo, String featureNo, String productNo);
+
+    Subscription renewSubscription(SubscriptionRenewalRequest request);
 }

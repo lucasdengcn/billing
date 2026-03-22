@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.handler.strategy;
 import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.entity.SubscriptionRenewal;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.exception.InvalidSubscriptionDateRangeException;
 import com.github.lucasdengcn.billing.handler.SubscriptionHandler;
@@ -57,5 +58,74 @@ public class YearlySubscriptionHandler implements SubscriptionHandler {
         // Calculate total fee
         BigDecimal totalPrice = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
         subscription.setTotalFee(totalPrice);
+    }
+    
+    @Override
+    public void handleRenewal(Product product, Subscription subscription, SubscriptionRenewal renewal) {
+        if (subscription == null) {
+            throw new IllegalArgumentException("Subscription cannot be null");
+        }
+        
+        if (renewal == null) {
+            throw new IllegalArgumentException("Renewal cannot be null");
+        }
+        
+        // Validate renewal period unit is compatible (should be year-based)
+        PeriodUnit renewalPeriodUnit = renewal.getRenewalPeriodUnit();
+        if (renewalPeriodUnit != PeriodUnit.YEARS && renewalPeriodUnit != PeriodUnit.MONTHS) {
+            throw new IllegalArgumentException("Invalid period unit for yearly subscription renewal");
+        }
+        
+        // Use renewal periods from renewal object or default to 1
+        int periods = (renewal.getRenewalPeriods() != null && renewal.getRenewalPeriods() > 0) ? renewal.getRenewalPeriods() : 1;
+        
+        // Extend the subscription end date from the current end date
+        OffsetDateTime currentEndDate = subscription.getEndDate();
+        if (currentEndDate.isBefore(OffsetDateTime.now())) {
+            currentEndDate = OffsetDateTime.now();
+        }
+        OffsetDateTime newEndDate = calculateRenewalEndDate(currentEndDate, periods, renewalPeriodUnit);
+        
+        // Update subscription with new end date
+        subscription.setEndDate(newEndDate);
+        subscription.setPeriods(subscription.getPeriods() + periods);
+        
+        // Recalculate fees for renewal
+        subscription.setBaseFee(product.getBasePrice());
+        subscription.setDiscountRate(product.getDiscountRate());
+        
+        // Calculate renewal fee based on renewal period
+        BigDecimal renewalFee = pricingCalculator.calculateRenewalTotalFee(product, renewal);
+        subscription.setTotalFee(renewalFee.add(subscription.getTotalFee()));
+        
+        // Update renewal object with calculated values
+        renewal.setNewEndDate(newEndDate);
+        renewal.setTotalFee(renewalFee);
+    }
+    
+    private OffsetDateTime calculateRenewalEndDate(OffsetDateTime currentEndDate, int periods, PeriodUnit periodUnit) {
+        switch (periodUnit) {
+            case DAYS:
+                return currentEndDate.plusDays(periods);
+            case WEEKS:
+                return currentEndDate.plusWeeks(periods);
+            case MONTHS:
+                return currentEndDate.plusMonths(periods);
+            case YEARS:
+                return currentEndDate.plusYears(periods);
+            default:
+                return currentEndDate.plusYears(periods); // Default to years
+        }
+    }
+
+    private int translatePeriodsToYears(int periods, PeriodUnit periodUnit) {
+        switch (periodUnit) {
+            case YEARS:
+                return periods;
+            case MONTHS:
+                return (int) (periods / 12);
+            default:
+                return 0;
+        }
     }
 }
