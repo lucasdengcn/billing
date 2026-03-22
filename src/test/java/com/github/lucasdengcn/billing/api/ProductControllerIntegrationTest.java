@@ -80,6 +80,7 @@ class ProductControllerIntegrationTest {
 
         // Create test products
         testProduct1 = Product.builder()
+                .productNo("PREMIUM_PLAN_001")
                 .title("Premium Plan")
                 .description("{\"tier\":\"premium\",\"support\":\"24/7\"}")
                 .basePrice(new BigDecimal("59.99"))
@@ -90,6 +91,7 @@ class ProductControllerIntegrationTest {
         testProduct1 = productRepository.save(testProduct1);
 
         testProduct2 = Product.builder()
+                .productNo("BASIC_PLAN_001")
                 .title("Basic Plan")
                 .description("{\"tier\":\"basic\",\"support\":\"business hours\"}")
                 .basePrice(new BigDecimal("29.99"))
@@ -104,6 +106,7 @@ class ProductControllerIntegrationTest {
     void createProduct_WithValidRequest_ShouldCreateProduct() throws Exception {
         // Given
         ProductRequest request = new ProductRequest();
+        request.setProductNo("ENTERPRISE_PLAN_001");
         request.setTitle("Enterprise Plan");
         request.setDescription("{\"tier\":\"enterprise\",\"support\":\"dedicated\"}");
         request.setBasePrice(new BigDecimal("99.99"));
@@ -118,6 +121,7 @@ class ProductControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.productNo").value("ENTERPRISE_PLAN_001"))
                 .andExpect(jsonPath("$.title").value("Enterprise Plan"))
                 .andExpect(jsonPath("$.description").value("{\"tier\":\"enterprise\",\"support\":\"dedicated\"}"))
                 .andExpect(jsonPath("$.basePrice").value(("99.99")))
@@ -169,6 +173,7 @@ class ProductControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.id").value(testProduct1.getId()))
+                .andExpect(jsonPath("$.productNo").value("PREMIUM_PLAN_001"))
                 .andExpect(jsonPath("$.title").value("Premium Plan"))
                 .andExpect(jsonPath("$.basePrice").value(59.99))
                 .andExpect(jsonPath("$.priceType").value(testProduct1.getPriceType().getValue()))
@@ -191,7 +196,9 @@ class ProductControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].productNo").value("PREMIUM_PLAN_001"))
                 .andExpect(jsonPath("$[0].title").value("Premium Plan"))
+                .andExpect(jsonPath("$[1].productNo").value("BASIC_PLAN_001"))
                 .andExpect(jsonPath("$[1].title").value("Basic Plan"));
     }
 
@@ -211,6 +218,7 @@ class ProductControllerIntegrationTest {
     void updateProduct_WithValidRequest_ShouldUpdateProduct() throws Exception {
         // Given
         ProductRequest request = new ProductRequest();
+        request.setProductNo("UPDATED_PREMIUM_PLAN_001");
         request.setTitle("Updated Premium Plan");
         request.setDescription("{\"tier\":\"premium\",\"support\":\"24/7\",\"updated\":true}");
         request.setBasePrice(new BigDecimal("69.99"));
@@ -223,6 +231,7 @@ class ProductControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productNo").value("UPDATED_PREMIUM_PLAN_001"))
                 .andExpect(jsonPath("$.title").value("Updated Premium Plan"))
                 .andExpect(jsonPath("$.basePrice").value(69.99))
                 .andExpect(jsonPath("$.priceType").value(PriceType.YEARLY.getValue()))
@@ -230,6 +239,7 @@ class ProductControllerIntegrationTest {
 
         // Verify database update
         Product updatedProduct = productRepository.findById(testProduct1.getId()).orElseThrow();
+        assertThat(updatedProduct.getProductNo()).isEqualTo("UPDATED_PREMIUM_PLAN_001");
         assertThat(updatedProduct.getTitle()).isEqualTo("Updated Premium Plan");
         assertThat(updatedProduct.getBasePrice()).isEqualByComparingTo(("69.99"));
         assertThat(updatedProduct.getPriceType()).isEqualTo(PriceType.YEARLY);
@@ -240,6 +250,7 @@ class ProductControllerIntegrationTest {
     void updateProduct_WhenProductNotFound_ShouldReturnNotFound() throws Exception {
         // Given
         ProductRequest request = new ProductRequest();
+        request.setProductNo("NONEXISTENT_PRODUCT_001");
         request.setTitle("Non-existent Product");
         request.setBasePrice(new BigDecimal("29.99"));
         request.setPriceType(PriceType.MONTHLY);
@@ -472,6 +483,7 @@ class ProductControllerIntegrationTest {
     void createProduct_WithMinimalValidRequest_ShouldCreateProduct() throws Exception {
         // Given - Minimal valid request
         ProductRequest request = new ProductRequest();
+        request.setProductNo("MINIMAL_PRODUCT_001");
         request.setTitle("Minimal Product");
         request.setBasePrice(BigDecimal.ZERO);
         request.setPriceType(PriceType.MONTHLY);
@@ -481,6 +493,7 @@ class ProductControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productNo").value("MINIMAL_PRODUCT_001"))
                 .andExpect(jsonPath("$.title").value("Minimal Product"))
                 .andExpect(jsonPath("$.basePrice").value(0))
                 .andExpect(jsonPath("$.priceType").value(PriceType.MONTHLY.getValue()));
@@ -490,6 +503,7 @@ class ProductControllerIntegrationTest {
     void createProduct_WithZeroBasePrice_ShouldCreateProduct() throws Exception {
         // Given - Zero base price (free product)
         ProductRequest request = new ProductRequest();
+        request.setProductNo("FREE_TIER_001");
         request.setTitle("Free Tier");
         request.setBasePrice(BigDecimal.ZERO);
         request.setPriceType(PriceType.MONTHLY);
@@ -499,6 +513,7 @@ class ProductControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productNo").value("FREE_TIER_001"))
                 .andExpect(jsonPath("$.title").value("Free Tier"))
                 .andExpect(jsonPath("$.basePrice").value(0));
     }
@@ -507,6 +522,7 @@ class ProductControllerIntegrationTest {
     void updateProduct_WithZeroDiscountRate_ShouldUpdateProduct() throws Exception {
         // Given
         ProductRequest request = new ProductRequest();
+        request.setProductNo("UPDATED_PRODUCT_ZERO_DISCOUNT_001");
         request.setTitle("Updated Product");
         request.setBasePrice(new BigDecimal("29.99"));
         request.setPriceType(PriceType.MONTHLY);
@@ -517,6 +533,7 @@ class ProductControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productNo").value("UPDATED_PRODUCT_ZERO_DISCOUNT_001"))
                 .andExpect(jsonPath("$.discountRate").value(0));
     }
 }
