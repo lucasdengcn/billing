@@ -15,7 +15,4 @@ import java.util.List;
 @Repository
 public interface FeatureAccessLogRepository extends JpaRepository<FeatureAccessLog, Long> {
     Page<FeatureAccessLog> findBySubscription(Subscription subscription, Pageable pageable);
-    Page<FeatureAccessLog> findByProductFeature(ProductFeature productFeature, Pageable pageable);
-    List<FeatureAccessLog> findByAccessTimeBetween(OffsetDateTime start, OffsetDateTime end);
-    List<FeatureAccessLog> findByDetailType(AccessDetailType type);
 }

@@ -4,7 +4,6 @@ import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.github.lucasdengcn.billing.entity.enums.AccessDetailType;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,9 +43,6 @@ public class FeatureAccessLog {
     @Builder.Default
     private OffsetDateTime accessTime = OffsetDateTime.now();
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "detail_type", length = 100)
-    private AccessDetailType detailType;
 
     @Column(name = "detail_value", columnDefinition = "TEXT")
     private String detailValue;

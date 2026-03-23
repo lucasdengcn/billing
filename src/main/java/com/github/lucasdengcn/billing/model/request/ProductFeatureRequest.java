@@ -41,6 +41,7 @@ public class ProductFeatureRequest {
     private Integer quota = 0;
 
     @NotBlank(message = "Feature number is required")
+    @Pattern(regexp = "^[A-Z0-9_-]+$", message = "Feature number can only contain uppercase letters, numbers, hyphens, and underscores")
     @Size(min = 2, max = 50, message = "Feature number must be between 2 and 50 characters")
     @Schema(description = "Unique identifier for the feature", example = "FEAT_0001", required = true)
     private String featureNo;
