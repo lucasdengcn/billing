@@ -4,6 +4,7 @@ import com.github.lucasdengcn.billing.component.impl.PricingCalculatorImpl;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -77,11 +78,11 @@ class PricingCalculatorTest {
                 .product(product)
                 .baseFee(new BigDecimal("99.99"))
                 .discountRate(new BigDecimal("0.90"))
-                .periods(3)
+                .periodUnit(PeriodUnit.MONTHS)
                 .build();
         
         // When
-        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
+        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription, 3);
         
         // Then
         assertThat(totalFee).isEqualByComparingTo(new BigDecimal("269.97")); // 99.99 * 0.90 * 3
@@ -102,11 +103,11 @@ class PricingCalculatorTest {
                 .product(product)
                 .baseFee(new BigDecimal("1000.00"))
                 .discountRate(new BigDecimal("0.85"))
-                .periods(2)
+                .periodUnit(PeriodUnit.YEARS)
                 .build();
         
         // When
-        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
+        BigDecimal totalFee = pricingCalculator.calculateSubscriptionTotalFee(product, subscription, 2);
         
         // Then
         assertThat(totalFee).isEqualByComparingTo(new BigDecimal("1700.00")); // 1000.00 * 0.85 * 2
@@ -142,7 +143,7 @@ class PricingCalculatorTest {
     void calculateSubscriptionTotalFee_WithNullSubscription_ShouldThrowException() {
         // When & Then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pricingCalculator.calculateSubscriptionTotalFee(null, null))
+                .isThrownBy(() -> pricingCalculator.calculateSubscriptionTotalFee(null, null, 0))
                 .withMessage("Product Invalid");
     }
 

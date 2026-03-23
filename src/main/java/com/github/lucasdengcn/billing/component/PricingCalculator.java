@@ -27,7 +27,7 @@ public interface PricingCalculator {
      * @param subscription The subscription to calculate the fee for
      * @return The calculated total fee for the subscription
      */
-    BigDecimal calculateSubscriptionTotalFee(Product product, Subscription subscription);
+    BigDecimal calculateSubscriptionTotalFee(Product product, Subscription subscription, int amount);
     
     /**
      * Calculates the total fee for a subscription renewal based on the renewal periods and unit,

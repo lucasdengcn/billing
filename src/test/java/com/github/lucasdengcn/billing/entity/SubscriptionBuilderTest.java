@@ -76,7 +76,6 @@ class SubscriptionBuilderTest {
                 .product(mockProduct)
                 .startDate(testStartDate)
                 .endDate(endDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))
@@ -93,7 +92,6 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getProduct()).isEqualTo(mockProduct);
         assertThat(subscription.getStartDate()).isEqualTo(testStartDate);
         assertThat(subscription.getEndDate()).isEqualTo(endDate);
-        assertThat(subscription.getPeriods()).isEqualTo(1);
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS);
         assertThat(subscription.getBaseFee()).isEqualByComparingTo(new BigDecimal("29.99"));
         assertThat(subscription.getDiscountRate()).isEqualByComparingTo(new BigDecimal("0.90"));
@@ -110,7 +108,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .build();
         
@@ -118,7 +115,6 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getCustomer()).isEqualTo(mockCustomer);
         assertThat(subscription.getProduct()).isEqualTo(mockProduct);
         assertThat(subscription.getStartDate()).isEqualTo(testStartDate);
-        assertThat(subscription.getPeriods()).isEqualTo(1);
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS);
         
         // Verify defaults
@@ -140,7 +136,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .build();
         
@@ -161,7 +156,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(customBaseFee)
                 .build();
@@ -183,7 +177,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .discountRate(customDiscountRate)
                 .build();
@@ -205,7 +198,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .status(customStatus)
                 .build();
@@ -227,7 +219,6 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getCustomer()).isNull();
         assertThat(subscription.getProduct()).isNull();
         assertThat(subscription.getStartDate()).isNull();
-        assertThat(subscription.getPeriods()).isEqualTo(1);
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS); // default value
         
         // But defaults still apply for fields with @Builder.Default
@@ -248,7 +239,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .endDate(endDate)
                 .device(mockDevice)
@@ -263,7 +253,6 @@ class SubscriptionBuilderTest {
         assertThat(subscription.getCustomer()).isEqualTo(mockCustomer);
         assertThat(subscription.getProduct()).isEqualTo(mockProduct);
         assertThat(subscription.getStartDate()).isEqualTo(testStartDate);
-        assertThat(subscription.getPeriods()).isEqualTo(1);
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.MONTHS);
         assertThat(subscription.getEndDate()).isEqualTo(endDate);
         assertThat(subscription.getDevice()).isEqualTo(mockDevice);
@@ -280,7 +269,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(testStartDate)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .subscriptionFeatures(mockFeatures)
                 .subscriptionRenewals(mockRenewals)
@@ -307,7 +295,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(startDate1)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .status(SubscriptionStatus.ACTIVE)
                 .build();
@@ -317,7 +304,6 @@ class SubscriptionBuilderTest {
                 .customer(mockCustomer)
                 .product(mockProduct)
                 .startDate(startDate2)
-                .periods(2)
                 .periodUnit(PeriodUnit.MONTHS)
                 .status(SubscriptionStatus.EXPIRED)
                 .build();
@@ -325,7 +311,6 @@ class SubscriptionBuilderTest {
         // Then
         assertThat(sub1.getId()).isNotEqualTo(sub2.getId());
         assertThat(sub1.getStartDate()).isNotEqualTo(sub2.getStartDate());
-        assertThat(sub1.getPeriods()).isNotEqualTo(sub2.getPeriods());
         assertThat(sub1.getPeriodUnit()).isEqualTo(sub2.getPeriodUnit()); // both use default
         assertThat(sub1.getStatus()).isNotEqualTo(sub2.getStatus());
         

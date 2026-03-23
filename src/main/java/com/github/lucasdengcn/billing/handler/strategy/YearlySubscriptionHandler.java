@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.handler.strategy;
 
 import com.github.lucasdengcn.billing.component.PricingCalculator;
+import com.github.lucasdengcn.billing.component.TimeDurations;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 import com.github.lucasdengcn.billing.entity.SubscriptionRenewal;
@@ -32,20 +33,14 @@ public class YearlySubscriptionHandler implements SubscriptionHandler {
         if (subscription == null) {
             throw new IllegalArgumentException("Subscription cannot be null");
         }
-
+        subscription.setPeriodUnit(PeriodUnit.YEARS);
         // Set default periods if not provided
         if (null == subscription.getStartDate()){
             subscription.setStartDate(OffsetDateTime.now());
         }
+
         if (null == subscription.getEndDate()) {
             subscription.setEndDate(subscription.getStartDate().plusYears(1));
-            subscription.setPeriods(1);
-            subscription.setPeriodUnit(PeriodUnit.YEARS);
-        } else {
-            long totalDays = Duration.between(subscription.getStartDate(), subscription.getEndDate()).toDays();
-            int years = (int) (totalDays / 365);
-            subscription.setPeriods(years);
-            subscription.setPeriodUnit(PeriodUnit.YEARS);
         }
 
         // Validate date logic
@@ -56,7 +51,8 @@ public class YearlySubscriptionHandler implements SubscriptionHandler {
         subscription.setBaseFee(product.getBasePrice());
         subscription.setDiscountRate(product.getDiscountRate());
         // Calculate total fee
-        BigDecimal totalPrice = pricingCalculator.calculateSubscriptionTotalFee(product, subscription);
+        int amount = TimeDurations.translateDurationToUnits(subscription);
+        BigDecimal totalPrice = pricingCalculator.calculateSubscriptionTotalFee(product, subscription, amount);
         subscription.setTotalFee(totalPrice);
     }
     
@@ -73,7 +69,7 @@ public class YearlySubscriptionHandler implements SubscriptionHandler {
         // Validate renewal period unit is compatible (should be year-based)
         PeriodUnit renewalPeriodUnit = renewal.getRenewalPeriodUnit();
         if (renewalPeriodUnit != PeriodUnit.YEARS && renewalPeriodUnit != PeriodUnit.MONTHS) {
-            throw new IllegalArgumentException("Invalid period unit for yearly subscription renewal");
+            throw new IllegalArgumentException("Invalid period unit");
         }
         
         // Use renewal periods from renewal object or default to 1
@@ -81,14 +77,10 @@ public class YearlySubscriptionHandler implements SubscriptionHandler {
         
         // Extend the subscription end date from the current end date
         OffsetDateTime currentEndDate = subscription.getEndDate();
-        if (currentEndDate.isBefore(OffsetDateTime.now())) {
-            currentEndDate = OffsetDateTime.now();
-        }
-        OffsetDateTime newEndDate = calculateRenewalEndDate(currentEndDate, periods, renewalPeriodUnit);
+        OffsetDateTime newEndDate = TimeDurations.renewalEndDate(currentEndDate, periods, renewalPeriodUnit);
         
         // Update subscription with new end date
         subscription.setEndDate(newEndDate);
-        subscription.setPeriods(subscription.getPeriods() + periods);
         
         // Recalculate fees for renewal
         subscription.setBaseFee(product.getBasePrice());
@@ -102,30 +94,5 @@ public class YearlySubscriptionHandler implements SubscriptionHandler {
         renewal.setNewEndDate(newEndDate);
         renewal.setTotalFee(renewalFee);
     }
-    
-    private OffsetDateTime calculateRenewalEndDate(OffsetDateTime currentEndDate, int periods, PeriodUnit periodUnit) {
-        switch (periodUnit) {
-            case DAYS:
-                return currentEndDate.plusDays(periods);
-            case WEEKS:
-                return currentEndDate.plusWeeks(periods);
-            case MONTHS:
-                return currentEndDate.plusMonths(periods);
-            case YEARS:
-                return currentEndDate.plusYears(periods);
-            default:
-                return currentEndDate.plusYears(periods); // Default to years
-        }
-    }
 
-    private int translatePeriodsToYears(int periods, PeriodUnit periodUnit) {
-        switch (periodUnit) {
-            case YEARS:
-                return periods;
-            case MONTHS:
-                return (int) (periods / 12);
-            default:
-                return 0;
-        }
-    }
 }

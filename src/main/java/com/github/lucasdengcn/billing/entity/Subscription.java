@@ -50,10 +50,6 @@ public class Subscription {
     @Column(name = "end_date")
     private OffsetDateTime endDate;
 
-    @Column(name = "periods", nullable = false)
-    @Builder.Default
-    private Integer periods = 1;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "period_unit", nullable = false)
     @Builder.Default

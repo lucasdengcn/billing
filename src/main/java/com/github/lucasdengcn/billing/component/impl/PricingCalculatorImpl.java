@@ -5,10 +5,12 @@ import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
 
 import com.github.lucasdengcn.billing.entity.SubscriptionRenewal;
+import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 
 /**
  * Implementation of the PricingCalculator interface that uses strategy pattern
@@ -33,7 +35,7 @@ public class PricingCalculatorImpl implements PricingCalculator {
     }
     
     @Override
-    public BigDecimal calculateSubscriptionTotalFee(Product product, Subscription subscription) {
+    public BigDecimal calculateSubscriptionTotalFee(Product product, Subscription subscription, int amount) {
 
         if (product == null || product.getBasePrice() == null || product.getDiscountRate() == null) {
             throw new IllegalArgumentException("Product Invalid");
@@ -47,10 +49,8 @@ public class PricingCalculatorImpl implements PricingCalculator {
         BigDecimal baseFee = product.getBasePrice();
         BigDecimal discountRate = product.getDiscountRate();
 
-        // time based subscription calculation
-        int periods = subscription.getPeriods();
         // For monthly subscriptions, calculate based on number of months
-        BigDecimal totalPrice = baseFee.multiply(discountRate).multiply(new BigDecimal(periods)).setScale(SCALE, RoundingMode.HALF_UP);
+        BigDecimal totalPrice = baseFee.multiply(discountRate).multiply(new BigDecimal(amount)).setScale(SCALE, ROUNDING_MODE);
         subscription.setTotalFee(totalPrice);
         return totalPrice;
     }

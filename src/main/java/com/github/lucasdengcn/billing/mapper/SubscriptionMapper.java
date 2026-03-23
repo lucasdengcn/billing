@@ -31,7 +31,6 @@ public interface SubscriptionMapper {
     @Mapping(target = "customerId", source = "customer.id")
     @Mapping(target = "deviceId", source = "device.id")
     @Mapping(target = "productId", source = "product.id")
-    @Mapping(target = "periods", source = "periods")
     @Mapping(target = "periodUnit", source = "periodUnit")
     SubscriptionResponse toResponse(Subscription subscription);
 

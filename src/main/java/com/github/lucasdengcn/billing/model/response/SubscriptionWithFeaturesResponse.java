@@ -38,8 +38,6 @@ public class SubscriptionWithFeaturesResponse {
     @Schema(description = "Expiry date")
     private OffsetDateTime endDate;
 
-    @Schema(description = "Subscription period quantity", example = "1")
-    private Integer periods;
 
     @Schema(description = "Unit of subscription period", example = "MONTHS")
     private PeriodUnit periodUnit;

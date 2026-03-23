@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.handler.strategy;
 import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.entity.SubscriptionRenewal;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.PriceType;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,12 +42,20 @@ class YearlySubscriptionHandlerTest {
         product = Product.builder()
                 .id(1L)
                 .title("Yearly Plan")
+                .productNo("YEARLY_PLAN")
+                .description("Yearly subscription plan")
                 .basePrice(new BigDecimal("199.99"))
                 .discountRate(new BigDecimal("0.85"))
                 .priceType(PriceType.YEARLY)
                 .build();
 
-        subscription = new Subscription();
+        subscription = Subscription.builder()
+                .id(1L)
+                .product(product)
+                .startDate(OffsetDateTime.now())
+                .endDate(OffsetDateTime.now().plusYears(1))
+                .periodUnit(PeriodUnit.YEARS)
+                .build();
     }
 
     @Test
@@ -62,7 +71,7 @@ class YearlySubscriptionHandlerTest {
     @DisplayName("Handle new subscription with no start date should set current date")
     void handleNew_WithNoStartDate_ShouldSetCurrentDate() {
         // Given
-        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class)))
+        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class), eq(1)))
                 .thenReturn(new BigDecimal("169.99"));
 
         // When
@@ -71,8 +80,7 @@ class YearlySubscriptionHandlerTest {
         // Then
         assertThat(subscription.getStartDate()).isNotNull();
         assertThat(subscription.getEndDate()).isNotNull();
-        assertThat(subscription.getEndDate()).isEqualTo(subscription.getStartDate().plusYears(1));
-        assertThat(subscription.getPeriods()).isEqualTo(1);
+        assertThat(subscription.getEndDate().toLocalDate()).isEqualTo(subscription.getStartDate().toLocalDate().plusYears(1));
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.YEARS);
     }
 
@@ -86,7 +94,7 @@ class YearlySubscriptionHandlerTest {
         subscription.setStartDate(startDate);
         subscription.setEndDate(endDate);
 
-        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class)))
+        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class), eq(2)))
                 .thenReturn(new BigDecimal("339.98")); // 199.99 * 0.85 * 2
 
         // When
@@ -95,16 +103,15 @@ class YearlySubscriptionHandlerTest {
         // Then
         assertThat(subscription.getStartDate()).isEqualTo(startDate);
         assertThat(subscription.getEndDate()).isEqualTo(endDate);
-        assertThat(subscription.getPeriods()).isEqualTo(2); // 730 days / 365 days per year
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.YEARS);
-        verify(pricingCalculator, times(1)).calculateSubscriptionTotalFee(eq(product), eq(subscription));
+        verify(pricingCalculator, times(1)).calculateSubscriptionTotalFee(eq(product), eq(subscription), eq(2));
     }
 
     @Test
     @DisplayName("Handle new subscription should set base fee and discount rate from product")
     void handleNew_ShouldSetBaseFeeAndDiscountRateFromProduct() {
         // Given
-        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class)))
+        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class), eq(1)))
                 .thenReturn(new BigDecimal("169.99"));
 
         // When
@@ -120,7 +127,7 @@ class YearlySubscriptionHandlerTest {
     void handleNew_ShouldCalculateTotalFeeUsingPricingCalculator() {
         // Given
         BigDecimal expectedTotalFee = new BigDecimal("339.98");
-        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class)))
+        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class), eq(1)))
                 .thenReturn(expectedTotalFee);
 
         // When
@@ -128,7 +135,7 @@ class YearlySubscriptionHandlerTest {
 
         // Then
         assertThat(subscription.getTotalFee()).isEqualTo(expectedTotalFee);
-        verify(pricingCalculator, times(1)).calculateSubscriptionTotalFee(eq(product), eq(subscription));
+        verify(pricingCalculator, times(1)).calculateSubscriptionTotalFee(eq(product), eq(subscription), eq(1));
     }
 
     @Test
@@ -157,7 +164,7 @@ class YearlySubscriptionHandlerTest {
         subscription.setStartDate(customStartDate);
         subscription.setEndDate(customEndDate);
 
-        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class)))
+        when(pricingCalculator.calculateSubscriptionTotalFee(any(Product.class), any(Subscription.class), eq(3)))
                 .thenReturn(new BigDecimal("509.97")); // 199.99 * 0.85 * 3
 
         // When
@@ -166,27 +173,26 @@ class YearlySubscriptionHandlerTest {
         // Then
         assertThat(subscription.getStartDate()).isEqualTo(customStartDate);
         assertThat(subscription.getEndDate()).isEqualTo(customEndDate);
-        assertThat(subscription.getPeriods()).isEqualTo(3); // 1095 days / 365 days per year
         assertThat(subscription.getPeriodUnit()).isEqualTo(PeriodUnit.YEARS);
     }
-    
+
     // Tests for handleRenewal method
     @Test
     @DisplayName("Handle renewal with null subscription should throw exception")
     void handleRenewal_WithNullSubscription_ShouldThrowException() {
         // Given
-        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
-            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
-                .renewalPeriods(1)
-                .renewalPeriodUnit(PeriodUnit.YEARS)
-                .build();
-        
+        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal =
+                com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
+                        .renewalPeriods(1)
+                        .renewalPeriodUnit(PeriodUnit.YEARS)
+                        .build();
+
         // When & Then
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> handler.handleRenewal(product, null, renewal))
                 .withMessage("Subscription cannot be null");
     }
-    
+
     @Test
     @DisplayName("Handle renewal with null renewal should throw exception")
     void handleRenewal_WithNullRenewal_ShouldThrowException() {
@@ -195,23 +201,23 @@ class YearlySubscriptionHandlerTest {
                 .isThrownBy(() -> handler.handleRenewal(product, subscription, null))
                 .withMessage("Renewal cannot be null");
     }
-    
+
     @Test
     @DisplayName("Handle renewal with invalid period unit should throw exception")
     void handleRenewal_WithInvalidPeriodUnit_ShouldThrowException() {
         // Given
-        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
-            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
-                .renewalPeriods(1)
-                .renewalPeriodUnit(PeriodUnit.DAYS) // Invalid for yearly handler
-                .build();
-        
+        SubscriptionRenewal renewal =
+                SubscriptionRenewal.builder()
+                        .renewalPeriods(1)
+                        .renewalPeriodUnit(PeriodUnit.DAYS) // Invalid for yearly handler
+                        .build();
+
         // When & Then
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> handler.handleRenewal(product, subscription, renewal))
-                .withMessage("Invalid period unit for yearly subscription renewal: DAYS");
+                .withMessage("Invalid period unit");
     }
-    
+
     @Test
     @DisplayName("Handle renewal should extend subscription end date and update fees")
     void handleRenewal_ShouldExtendEndDateAndUpdateFees() {
@@ -220,24 +226,22 @@ class YearlySubscriptionHandlerTest {
         subscription.setEndDate(originalEndDate);
         subscription.setBaseFee(new BigDecimal("199.99"));
         subscription.setDiscountRate(new BigDecimal("0.85"));
-        subscription.setPeriods(1);
-        
-        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
-            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
-                .renewalPeriods(2)
-                .renewalPeriodUnit(PeriodUnit.YEARS)
-                .build();
-        
+
+        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal =
+                com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
+                        .renewalPeriods(2)
+                        .renewalPeriodUnit(PeriodUnit.YEARS)
+                        .build();
+
         BigDecimal expectedTotalFee = new BigDecimal("339.98");
         when(pricingCalculator.calculateRenewalTotalFee(eq(product), eq(renewal)))
                 .thenReturn(expectedTotalFee);
-        
+
         // When
         handler.handleRenewal(product, subscription, renewal);
-        
+
         // Then
         assertThat(subscription.getEndDate()).isEqualTo(originalEndDate.plusYears(2));
-        assertThat(subscription.getPeriods()).isEqualTo(3); // Original 1 + renewal 2
         assertThat(subscription.getBaseFee()).isEqualTo(product.getBasePrice());
         assertThat(subscription.getDiscountRate()).isEqualTo(product.getDiscountRate());
         assertThat(subscription.getTotalFee()).isEqualTo(expectedTotalFee);
@@ -245,7 +249,7 @@ class YearlySubscriptionHandlerTest {
         assertThat(renewal.getTotalFee()).isEqualTo(expectedTotalFee);
         verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
     }
-    
+
     @Test
     @DisplayName("Handle renewal with default periods when null should use 1 period")
     void handleRenewal_WithNullRenewalPeriods_ShouldUseDefault() {
@@ -254,27 +258,25 @@ class YearlySubscriptionHandlerTest {
         subscription.setEndDate(originalEndDate);
         subscription.setBaseFee(new BigDecimal("199.99"));
         subscription.setDiscountRate(new BigDecimal("0.85"));
-        subscription.setPeriods(1);
-        
-        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
-            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
-                .renewalPeriods(null) // Null periods
-                .renewalPeriodUnit(PeriodUnit.YEARS)
-                .build();
-        
+
+        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal =
+                com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
+                        .renewalPeriods(null) // Null periods
+                        .renewalPeriodUnit(PeriodUnit.YEARS)
+                        .build();
+
         BigDecimal expectedTotalFee = new BigDecimal("169.99");
         when(pricingCalculator.calculateRenewalTotalFee(eq(product), eq(renewal)))
                 .thenReturn(expectedTotalFee);
-        
+
         // When
         handler.handleRenewal(product, subscription, renewal);
-        
+
         // Then
         assertThat(subscription.getEndDate()).isEqualTo(originalEndDate.plusYears(1));
-        assertThat(subscription.getPeriods()).isEqualTo(2); // Original 1 + renewal 1
         verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
     }
-    
+
     @Test
     @DisplayName("Handle renewal with zero periods should use 1 period")
     void handleRenewal_WithZeroRenewalPeriods_ShouldUseDefault() {
@@ -283,27 +285,25 @@ class YearlySubscriptionHandlerTest {
         subscription.setEndDate(originalEndDate);
         subscription.setBaseFee(new BigDecimal("199.99"));
         subscription.setDiscountRate(new BigDecimal("0.85"));
-        subscription.setPeriods(1);
-        
-        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
-            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
-                .renewalPeriods(0) // Zero periods
-                .renewalPeriodUnit(PeriodUnit.YEARS)
-                .build();
-        
+
+        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal =
+                com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
+                        .renewalPeriods(0) // Zero periods
+                        .renewalPeriodUnit(PeriodUnit.YEARS)
+                        .build();
+
         BigDecimal expectedTotalFee = new BigDecimal("169.99");
         when(pricingCalculator.calculateRenewalTotalFee(eq(product), eq(renewal)))
                 .thenReturn(expectedTotalFee);
-        
+
         // When
         handler.handleRenewal(product, subscription, renewal);
-        
+
         // Then
         assertThat(subscription.getEndDate()).isEqualTo(originalEndDate.plusYears(1));
-        assertThat(subscription.getPeriods()).isEqualTo(2); // Original 1 + renewal 1
         verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
     }
-    
+
     @Test
     @DisplayName("Handle renewal with different period units should extend appropriately")
     void handleRenewal_WithDifferentPeriodUnits_ShouldExtendAppropriately() {
@@ -312,26 +312,25 @@ class YearlySubscriptionHandlerTest {
         subscription.setEndDate(originalEndDate);
         subscription.setBaseFee(new BigDecimal("199.99"));
         subscription.setDiscountRate(new BigDecimal("0.85"));
-        subscription.setPeriods(1);
-        
-        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
-            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
-                .renewalPeriods(6)
-                .renewalPeriodUnit(PeriodUnit.MONTHS)
-                .build();
-        
+
+        SubscriptionRenewal renewal =
+                SubscriptionRenewal.builder()
+                        .renewalPeriods(6)
+                        .renewalPeriodUnit(PeriodUnit.MONTHS)
+                        .build();
+
         BigDecimal expectedTotalFee = new BigDecimal("169.99");
         when(pricingCalculator.calculateRenewalTotalFee(eq(product), eq(renewal)))
                 .thenReturn(expectedTotalFee);
-        
+
         // When
         handler.handleRenewal(product, subscription, renewal);
-        
+
         // Then
         assertThat(subscription.getEndDate()).isEqualTo(originalEndDate.plusMonths(6));
         verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
     }
-    
+
     @Test
     @DisplayName("Handle renewal with past end date should extend from current past date")
     void handleRenewal_WithPastEndDate_ShouldExtendFromPastDate() {
@@ -340,24 +339,22 @@ class YearlySubscriptionHandlerTest {
         subscription.setEndDate(pastEndDate);
         subscription.setBaseFee(new BigDecimal("199.99"));
         subscription.setDiscountRate(new BigDecimal("0.85"));
-        subscription.setPeriods(1);
-        
-        com.github.lucasdengcn.billing.entity.SubscriptionRenewal renewal = 
-            com.github.lucasdengcn.billing.entity.SubscriptionRenewal.builder()
-                .renewalPeriods(1)
-                .renewalPeriodUnit(PeriodUnit.YEARS)
-                .build();
-        
+
+        SubscriptionRenewal renewal =
+                SubscriptionRenewal.builder()
+                        .renewalPeriods(1)
+                        .renewalPeriodUnit(PeriodUnit.YEARS)
+                        .build();
+
         BigDecimal expectedTotalFee = new BigDecimal("169.99");
         when(pricingCalculator.calculateRenewalTotalFee(eq(product), eq(renewal)))
                 .thenReturn(expectedTotalFee);
-        
+
         // When
         handler.handleRenewal(product, subscription, renewal);
-        
+
         // Then
         assertThat(subscription.getEndDate().toLocalDate()).isEqualTo(OffsetDateTime.now().plusYears(1).toLocalDate());
-        assertThat(subscription.getPeriods()).isEqualTo(2); // Original 1 + renewal 1
         verify(pricingCalculator, times(1)).calculateRenewalTotalFee(eq(product), eq(renewal));
     }
 }

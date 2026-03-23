@@ -345,8 +345,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 HttpStatus.BAD_REQUEST);
         }
         
-        // Determine renewal period based on the request or fallback to original subscription
-        Integer renewalPeriods = request.getRenewalPeriods() != null ? request.getRenewalPeriods() : subscription.getPeriods();
+        // Determine renewal period based on the request or default to 1
+        Integer renewalPeriods = request.getRenewalPeriods() != null ? request.getRenewalPeriods() : 1;
         PeriodUnit renewalPeriodUnit = request.getRenewalPeriodUnit();
 
         // Create renewal record

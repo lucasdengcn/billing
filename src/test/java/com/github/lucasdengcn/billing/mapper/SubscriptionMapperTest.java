@@ -112,7 +112,6 @@ class SubscriptionMapperTest {
                 .product(product)
                 .startDate(testDateTime)
                 .endDate(testDateTime.plusDays(30))
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))
@@ -131,7 +130,6 @@ class SubscriptionMapperTest {
         assertThat(response.getProductId()).isEqualTo(entity.getProduct().getId());
         assertThat(response.getStartDate()).isEqualTo(entity.getStartDate());
         assertThat(response.getEndDate()).isEqualTo(entity.getEndDate());
-        assertThat(response.getPeriods()).isEqualTo(entity.getPeriods());
         assertThat(response.getPeriodUnit()).isEqualTo(entity.getPeriodUnit());
         assertThat(response.getBaseFee()).isEqualByComparingTo(entity.getBaseFee());
         assertThat(response.getDiscountRate()).isEqualByComparingTo(entity.getDiscountRate());
@@ -148,7 +146,6 @@ class SubscriptionMapperTest {
                 .device(null)   // No device
                 .product(null)  // No product
                 .startDate(testDateTime)
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .status(SubscriptionStatus.ACTIVE)
@@ -179,7 +176,6 @@ class SubscriptionMapperTest {
                 .product(originalProduct)
                 .startDate(testDateTime.minusDays(10))
                 .endDate(testDateTime.plusDays(20))
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("19.99"))
                 .status(SubscriptionStatus.ACTIVE)
@@ -214,7 +210,6 @@ class SubscriptionMapperTest {
                 .product(Product.builder().id(100L).productNo("MAPPER_SUBSCRIPTION_PRODUCT_001").build())
                 .startDate(testDateTime.minusDays(10))
                 .endDate(testDateTime.plusDays(30))
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))
@@ -342,7 +337,6 @@ class SubscriptionMapperTest {
                 .product(product)
                 .startDate(testDateTime)
                 .endDate(testDateTime.plusDays(30))
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))
@@ -362,7 +356,6 @@ class SubscriptionMapperTest {
         assertThat(response.getProductId()).isEqualTo(entity.getProduct().getId());
         assertThat(response.getStartDate()).isEqualTo(entity.getStartDate());
         assertThat(response.getEndDate()).isEqualTo(entity.getEndDate());
-        assertThat(response.getPeriods()).isEqualTo(entity.getPeriods());
         assertThat(response.getPeriodUnit()).isEqualTo(entity.getPeriodUnit());
         assertThat(response.getBaseFee()).isEqualByComparingTo(entity.getBaseFee());
         assertThat(response.getDiscountRate()).isEqualByComparingTo(entity.getDiscountRate());
@@ -414,7 +407,6 @@ class SubscriptionMapperTest {
                 .product(product)
                 .startDate(testDateTime)
                 .endDate(testDateTime.plusDays(30))
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))
@@ -449,7 +441,6 @@ class SubscriptionMapperTest {
                 .product(product)
                 .startDate(testDateTime)
                 .endDate(testDateTime.plusDays(30))
-                .periods(1)
                 .periodUnit(PeriodUnit.MONTHS)
                 .baseFee(new BigDecimal("29.99"))
                 .discountRate(new BigDecimal("0.90"))

@@ -123,7 +123,6 @@ class SubscriptionFeatureRepositoryTest {
         testSubscription1 = Subscription.builder()
                 .startDate(OffsetDateTime.now())
                 .endDate(OffsetDateTime.now().plusMonths(1))
-                .periods(1)
                 .baseFee(new BigDecimal("29.99"))
                 .totalFee(new BigDecimal("29.99"))
                 .build();
@@ -131,7 +130,6 @@ class SubscriptionFeatureRepositoryTest {
         testSubscription2 = Subscription.builder()
                 .startDate(OffsetDateTime.now())
                 .endDate(OffsetDateTime.now().plusMonths(1))
-                .periods(1)
                 .baseFee(new BigDecimal("59.99"))
                 .totalFee(new BigDecimal("59.99"))
                 .build();
