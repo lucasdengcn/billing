@@ -1,12 +1,14 @@
 package com.github.lucasdengcn.billing.service.impl;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingRequest;
 import com.github.lucasdengcn.billing.service.SubscriptionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,4 +57,16 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
         return logRepository.save(accessLog);
     }
 
+    @Override
+    @Async
+    @Transactional
+    public CompletableFuture<FeatureAccessLog> trackFeatureUsageAsync(FeatureUsageTrackingRequest request) {
+        try {
+            FeatureAccessLog savedLog = trackFeatureUsage(request);
+            return CompletableFuture.completedFuture(savedLog);
+        } catch (Exception e) {
+            log.error("Error tracking feature usage asynchronously", e);
+            throw e;
+        }
+    }
 }

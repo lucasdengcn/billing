@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.CompletableFuture;
+
 @RestController
 @RequestMapping("/api/feature")
 @RequiredArgsConstructor
@@ -35,5 +37,16 @@ public class FeatureAccessController {
             @Valid @RequestBody FeatureUsageTrackingRequest request) {
         FeatureAccessLog log = featureAccessService.trackFeatureUsage(request);
         return ResponseEntity.ok("OK");
+    }
+    
+    @PostMapping("/usage-async")
+    @Operation(summary = "Asynchronously track feature usage", description = "Asynchronously tracks usage of a specific feature from a device identified by device number")
+    @ApiResponse(responseCode = "202", description = "Feature usage tracking initiated successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Device, Product, or Feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<String> trackFeatureUsageAsync(
+            @Valid @RequestBody FeatureUsageTrackingRequest request) {
+        featureAccessService.trackFeatureUsageAsync(request);
+        return ResponseEntity.accepted().body("Accepted");
     }
 }
