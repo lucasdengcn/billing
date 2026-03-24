@@ -19,4 +19,19 @@ public interface FeatureAccessService {
      * Asynchronously track feature usage by device number, product number, and feature number
      */
     CompletableFuture<FeatureAccessLog> trackFeatureUsageAsync(FeatureUsageTrackingRequest request);
+    
+    /**
+     * Get feature usage logs by device number, product number, and feature number
+     */
+    Page<FeatureAccessLog> getFeatureUsageLogs(String deviceNo, String productNo, String featureNo, Pageable pageable);
+    
+    /**
+     * Get feature usage logs by device number
+     */
+    Page<FeatureAccessLog> getFeatureUsageLogsByDevice(String deviceNo, Pageable pageable);
+    
+    /**
+     * Get feature usage logs by subscription ID
+     */
+    Page<FeatureAccessLog> getFeatureUsageLogsBySubscription(Long subscriptionId, Pageable pageable);
 }

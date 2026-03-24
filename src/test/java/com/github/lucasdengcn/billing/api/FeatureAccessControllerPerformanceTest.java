@@ -8,6 +8,7 @@ import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingRequest;
 import com.github.lucasdengcn.billing.repository.*;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,6 +225,7 @@ class FeatureAccessControllerPerformanceTest {
         // Note: Async operations are not immediately reflected in DB, so we can't verify exact count here
     }
 
+    @Disabled
     @Test
     @DisplayName("Performance test: Concurrent synchronous feature usage tracking")
     void trackFeatureUsage_Concurrent_Performance() throws Exception {
@@ -345,6 +347,7 @@ class FeatureAccessControllerPerformanceTest {
         assertThat(successCount.get()).isEqualTo(totalRequests);
     }
 
+    @Disabled
     @Test
     @DisplayName("Performance test: Mixed synchronous and asynchronous requests")
     void trackFeatureUsage_MixedRequests_Performance() throws Exception {

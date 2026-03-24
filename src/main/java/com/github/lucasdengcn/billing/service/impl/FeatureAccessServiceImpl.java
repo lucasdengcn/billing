@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.github.lucasdengcn.billing.entity.*;
@@ -33,6 +34,8 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
     private final FeatureAccessLogRepository logRepository;
     private final SubscriptionUsageStatsRepository statsRepository;
     private final SubscriptionService subscriptionService;
+    private final DeviceService deviceService;
+    private final SubscriptionRepository subscriptionRepository;
 
     @Override
     @Transactional
@@ -68,5 +71,50 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
             log.error("Error tracking feature usage asynchronously", e);
             throw e;
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FeatureAccessLog> getFeatureUsageLogs(String deviceNo, String productNo, String featureNo, Pageable pageable) {
+        // Find the subscription feature to get the IDs needed for filtering logs
+        SubscriptionFeature subscriptionFeature = subscriptionService.
+                findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(deviceNo, featureNo, productNo);
+        
+        if (subscriptionFeature == null) {
+            throw new ResourceNotFoundException("Subscription feature not found for device: " + deviceNo + 
+                    ", feature: " + featureNo + ", product: " + productNo);
+        }
+        
+        // Query logs by the subscription ID and product feature ID, ordered by access time descending
+        return logRepository.findBySubscriptionIdAndProductFeatureIdOrderByAccessTimeDesc(
+                subscriptionFeature.getSubscription().getId(), 
+                subscriptionFeature.getProductFeature().getId(), 
+                pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FeatureAccessLog> getFeatureUsageLogsByDevice(String deviceNo, Pageable pageable) {
+        // Find device by device number
+        Device device = deviceService.findByDeviceNo(deviceNo);
+        if (device == null) {
+            throw new ResourceNotFoundException("Device not found: " + deviceNo);
+        }
+        
+        // Query logs by device, ordered by access time descending
+        return logRepository.findByDeviceIdOrderByAccessTimeDesc(device.getId(), pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FeatureAccessLog> getFeatureUsageLogsBySubscription(Long subscriptionId, Pageable pageable) {
+        // Find subscription by ID
+        Optional<Subscription> subscriptionOpt = subscriptionRepository.findById(subscriptionId);
+        if (subscriptionOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Subscription not found: " + subscriptionId);
+        }
+        
+        // Query logs by subscription ID, ordered by access time descending
+        return logRepository.findBySubscriptionIdOrderByAccessTimeDesc(subscriptionId, pageable);
     }
 }
