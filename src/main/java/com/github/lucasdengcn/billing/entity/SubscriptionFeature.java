@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.entity;
 
+import com.github.f4b6a3.ulid.Ulid;
 import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -52,21 +53,39 @@ public class SubscriptionFeature {
 
     @Column(nullable = false)
     @Builder.Default
-    private Integer accessed = 0;
+    private Integer balance = 0;
 
     @Column(nullable = false)
     @Builder.Default
-    private Integer balance = 0;
-
+    private Integer accessed = 0;
+    
+    @Column(name = "track_id", nullable = false, unique = true, updatable = false)
+    private String trackId;
+    
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
     
     @PrePersist
+    private void prePersist() {
+        if (this.trackId == null) {
+            this.trackId = generateTrackId();
+        }
+        populateFeatureType();
+    }
+    
     @PreUpdate
+    private void preUpdate() {
+        populateFeatureType();
+    }
+    
     private void populateFeatureType() {
         if (this.productFeature != null && this.productFeature.getFeatureType() != null && this.featureType == null) {
             this.featureType = this.productFeature.getFeatureType();
         }
+    }
+    
+    private String generateTrackId() {
+        return Ulid.fast().toLowerCase();
     }
 }

@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.service;
 
 import com.github.lucasdengcn.billing.entity.*;
+import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingByTrackIdRequest;
 import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +35,19 @@ public interface FeatureAccessService {
      * Get feature usage logs by subscription ID
      */
     Page<FeatureAccessLog> getFeatureUsageLogsBySubscription(Long subscriptionId, Pageable pageable);
+    
+    /**
+     * Track feature usage by track ID
+     */
+    FeatureAccessLog trackFeatureUsageByTrackId(String trackId, FeatureUsageTrackingByTrackIdRequest request);
+    
+    /**
+     * Asynchronously track feature usage by track ID
+     */
+    CompletableFuture<FeatureAccessLog> trackFeatureUsageByTrackIdAsync(String trackId, FeatureUsageTrackingByTrackIdRequest request);
+    
+    /**
+     * Get feature usage logs by track ID
+     */
+    Page<FeatureAccessLog> getFeatureUsageLogsByTrackId(String trackId, Pageable pageable);
 }

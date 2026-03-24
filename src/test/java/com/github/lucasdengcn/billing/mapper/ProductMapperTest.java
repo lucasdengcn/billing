@@ -86,8 +86,6 @@ class ProductMapperTest {
         assertThat(product.getCreatedAt()).isNull();
         assertThat(product.getUpdatedAt()).isNull();
         assertThat(product.getFeatures()).isNull();
-        assertThat(product.getSubscriptions()).isNull();
-        assertThat(product.getBillDetails()).isNull();
     }
 
     @Test
@@ -196,8 +194,6 @@ class ProductMapperTest {
         // Verify that ignored fields remain unchanged
         assertThat(existingProduct.getCreatedAt()).isEqualTo(testProduct.getCreatedAt()); // Unchanged
         assertThat(existingProduct.getFeatures()).isEqualTo(testProduct.getFeatures()); // Ignored
-        assertThat(existingProduct.getSubscriptions()).isEqualTo(testProduct.getSubscriptions()); // Ignored
-        assertThat(existingProduct.getBillDetails()).isEqualTo(testProduct.getBillDetails()); // Ignored
     }
 
     @Test
@@ -224,10 +220,6 @@ class ProductMapperTest {
         assertThat(feature.getProduct()).isNull(); // Should be ignored
         assertThat(feature.getCreatedAt()).isNull(); // Should be ignored
         assertThat(feature.getUpdatedAt()).isNull(); // Should be ignored
-        assertThat(feature.getSubscriptionFeatures()).isNull(); // Should be ignored
-        assertThat(feature.getAccessLogs()).isNull(); // Should be ignored
-        assertThat(feature.getUsageStats()).isNull(); // Should be ignored
-        assertThat(feature.getBillDetails()).isNull(); // Should be ignored
     }
 
     @Test

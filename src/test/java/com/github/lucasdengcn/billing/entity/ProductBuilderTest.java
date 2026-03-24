@@ -49,8 +49,6 @@ class ProductBuilderTest {
         assertThat(product.getCreatedAt()).isEqualTo(now);
         assertThat(product.getUpdatedAt()).isEqualTo(now);
         assertThat(product.getFeatures()).hasSize(2);
-        assertThat(product.getSubscriptions()).isNull();
-        assertThat(product.getBillDetails()).isNull();
     }
 
     @Test
@@ -97,8 +95,6 @@ class ProductBuilderTest {
         assertThat(product.getCreatedAt()).isNull();
         assertThat(product.getUpdatedAt()).isNull();
         assertThat(product.getFeatures()).isNull();
-        assertThat(product.getSubscriptions()).isNull();
-        assertThat(product.getBillDetails()).isNull();
     }
 
     @Test

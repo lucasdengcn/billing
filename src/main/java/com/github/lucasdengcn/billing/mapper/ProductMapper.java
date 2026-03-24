@@ -38,8 +38,6 @@ public interface ProductMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "features", ignore = true)
-    @Mapping(target = "subscriptions", ignore = true)
-    @Mapping(target = "billDetails", ignore = true)
     Product toEntity(ProductRequest request);
 
     ProductResponse toResponse(Product product);
@@ -48,8 +46,6 @@ public interface ProductMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "features", ignore = true)
-    @Mapping(target = "subscriptions", ignore = true)
-    @Mapping(target = "billDetails", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(ProductRequest request, @MappingTarget Product product);
 
@@ -58,10 +54,6 @@ public interface ProductMapper {
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "subscriptionFeatures", ignore = true)
-    @Mapping(target = "accessLogs", ignore = true)
-    @Mapping(target = "usageStats", ignore = true)
-    @Mapping(target = "billDetails", ignore = true)
     ProductFeature toEntity(ProductFeatureRequest request);
 
     @Mapping(source = "product.id", target = "productId")
@@ -71,10 +63,6 @@ public interface ProductMapper {
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "subscriptionFeatures", ignore = true)
-    @Mapping(target = "accessLogs", ignore = true)
-    @Mapping(target = "usageStats", ignore = true)
-    @Mapping(target = "billDetails", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(ProductFeatureRequest request, @MappingTarget ProductFeature productFeature);
 

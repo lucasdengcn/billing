@@ -182,9 +182,9 @@ class FeatureAccessControllerIntegrationTest {
         List<FeatureAccessLog> logs = featureAccessLogRepository.findAll();
         assertThat(logs).hasSize(1);
         FeatureAccessLog log = logs.get(0);
-        assertThat(log.getSubscription().getId()).isEqualTo(testSubscription.getId());
-        assertThat(log.getProductFeature().getId()).isEqualTo(testFeature.getId());
-        assertThat(log.getDevice().getId()).isEqualTo(testDevice.getId());
+        assertThat(log.getSubscriptionId()).isEqualTo(testSubscription.getId());
+        assertThat(log.getProductFeatureId()).isEqualTo(testFeature.getId());
+        assertThat(log.getDeviceId()).isEqualTo(testDevice.getId());
         assertThat(log.getUsageAmount()).isEqualTo(1);
         assertThat(log.getDetailValue()).isEqualTo("Test access detail");
     }

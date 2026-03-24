@@ -61,9 +61,7 @@ class SubscriptionMapperTest {
         assertThat(entity.getUpdatedAt()).isNull();
         assertThat(entity.getSubscriptionFeatures()).isNull();
         assertThat(entity.getSubscriptionRenewals()).isNull();
-        assertThat(entity.getAccessLogs()).isNull();
-        assertThat(entity.getUsageStats()).isNull();
-        
+
         // Default values should be applied
         assertThat(entity.getBaseFee()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(entity.getDiscountRate()).isEqualByComparingTo(BigDecimal.ONE);

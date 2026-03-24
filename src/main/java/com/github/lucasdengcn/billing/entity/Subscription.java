@@ -89,11 +89,4 @@ public class Subscription {
     @ToString.Exclude
     private List<SubscriptionRenewal> subscriptionRenewals;
 
-    @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<FeatureAccessLog> accessLogs;
-
-    @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<SubscriptionUsageStats> usageStats;
 }

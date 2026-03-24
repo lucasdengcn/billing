@@ -50,10 +50,6 @@ class ProductFeatureBuilderTest {
                 .quota(1000)
                 .createdAt(now)
                 .updatedAt(now)
-                .subscriptionFeatures(subscriptionFeatures)
-                .accessLogs(accessLogs)
-                .usageStats(usageStats)
-                .billDetails(billDetails)
                 .build();
 
         // Then
@@ -65,10 +61,6 @@ class ProductFeatureBuilderTest {
         assertThat(feature.getQuota()).isEqualTo(1000);
         assertThat(feature.getCreatedAt()).isEqualTo(now);
         assertThat(feature.getUpdatedAt()).isEqualTo(now);
-        assertThat(feature.getSubscriptionFeatures()).hasSize(2);
-        assertThat(feature.getAccessLogs()).hasSize(1);
-        assertThat(feature.getUsageStats()).hasSize(1);
-        assertThat(feature.getBillDetails()).hasSize(1);
     }
 
     @Test
@@ -98,10 +90,6 @@ class ProductFeatureBuilderTest {
         assertThat(feature.getQuota()).isEqualTo(0); // Default value from @Builder.Default
         assertThat(feature.getCreatedAt()).isNull();
         assertThat(feature.getUpdatedAt()).isNull();
-        assertThat(feature.getSubscriptionFeatures()).isNull();
-        assertThat(feature.getAccessLogs()).isNull();
-        assertThat(feature.getUsageStats()).isNull();
-        assertThat(feature.getBillDetails()).isNull();
     }
 
     @Test
@@ -120,10 +108,6 @@ class ProductFeatureBuilderTest {
         assertThat(feature.getQuota()).isEqualTo(0); // Default value from @Builder.Default
         assertThat(feature.getCreatedAt()).isNull();
         assertThat(feature.getUpdatedAt()).isNull();
-        assertThat(feature.getSubscriptionFeatures()).isNull();
-        assertThat(feature.getAccessLogs()).isNull();
-        assertThat(feature.getUsageStats()).isNull();
-        assertThat(feature.getBillDetails()).isNull();
     }
 
     @Test
@@ -302,15 +286,7 @@ class ProductFeatureBuilderTest {
                 .product(product)
                 .featureNo("FEAT_0001")
                 .title("Feature with Relationships")
-                .subscriptionFeatures(subscriptionFeatures)
-                .accessLogs(accessLogs)
                 .build();
-
-        // Then
-        assertThat(feature.getSubscriptionFeatures()).hasSize(3);
-        assertThat(feature.getAccessLogs()).hasSize(2);
-        assertThat(feature.getUsageStats()).isNull(); // Not set
-        assertThat(feature.getBillDetails()).isNull(); // Not set
     }
 
     @Test
@@ -375,7 +351,6 @@ class ProductFeatureBuilderTest {
                 .quota(2500)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
-                .subscriptionFeatures(subscriptionFeatures)
                 .build();
 
         // Then
@@ -386,6 +361,5 @@ class ProductFeatureBuilderTest {
         assertThat(feature.getQuota()).isEqualTo(2500);
         assertThat(feature.getCreatedAt()).isEqualTo(createdAt);
         assertThat(feature.getUpdatedAt()).isEqualTo(updatedAt);
-        assertThat(feature.getSubscriptionFeatures()).hasSize(1);
     }
 }

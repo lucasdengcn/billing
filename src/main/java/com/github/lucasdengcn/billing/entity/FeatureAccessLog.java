@@ -20,20 +20,14 @@ public class FeatureAccessLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscription_id", nullable = false)
-    @ToString.Exclude
-    private Subscription subscription;
+    @Column(name = "subscription_id", nullable = false)
+    private Long subscriptionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_feature_id", nullable = false)
-    @ToString.Exclude
-    private ProductFeature productFeature;
+    @Column(name = "product_feature_id", nullable = false)
+    private Long productFeatureId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "device_id")
-    @ToString.Exclude
-    private Device device;
+    @Column(name = "device_id")
+    private Long deviceId;
 
     @Column(name = "usage_amount", nullable = false)
     @Builder.Default
@@ -43,11 +37,11 @@ public class FeatureAccessLog {
     @Builder.Default
     private OffsetDateTime accessTime = OffsetDateTime.now();
 
-
     @Column(name = "detail_value", columnDefinition = "TEXT")
     private String detailValue;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
+
 }

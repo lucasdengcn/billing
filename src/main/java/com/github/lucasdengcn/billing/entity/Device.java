@@ -65,11 +65,4 @@ public class Device {
     @ToString.Exclude
     private List<SubscriptionRenewal> subscriptionRenewals;
 
-    @OneToMany(mappedBy = "device")
-    @ToString.Exclude
-    private List<FeatureAccessLog> featureAccessLogs;
-
-    @OneToMany(mappedBy = "device")
-    @ToString.Exclude
-    private List<SubscriptionUsageStats> usageStats;
 }

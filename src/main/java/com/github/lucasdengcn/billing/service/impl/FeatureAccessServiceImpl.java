@@ -1,11 +1,12 @@
 package com.github.lucasdengcn.billing.service.impl;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.github.lucasdengcn.billing.entity.*;
+import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingByTrackIdRequest;
 import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingRequest;
+import com.github.lucasdengcn.billing.repository.*;
 import com.github.lucasdengcn.billing.service.SubscriptionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,13 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
-import com.github.lucasdengcn.billing.repository.FeatureAccessLogRepository;
-import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
-import com.github.lucasdengcn.billing.repository.SubscriptionRepository;
-import com.github.lucasdengcn.billing.repository.SubscriptionUsageStatsRepository;
 import com.github.lucasdengcn.billing.service.DeviceService;
 import com.github.lucasdengcn.billing.service.FeatureAccessService;
-import com.github.lucasdengcn.billing.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 public class FeatureAccessServiceImpl implements FeatureAccessService {
 
     private final FeatureAccessLogRepository logRepository;
-    private final SubscriptionUsageStatsRepository statsRepository;
     private final SubscriptionService subscriptionService;
     private final DeviceService deviceService;
     private final SubscriptionRepository subscriptionRepository;
+    private final SubscriptionFeatureRepository subscriptionFeatureRepository;
 
     @Override
     @Transactional
@@ -49,9 +45,9 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
         }
         // Create feature access log
         FeatureAccessLog accessLog = FeatureAccessLog.builder()
-                .subscription(subscriptionFeature.getSubscription())
-                .productFeature(subscriptionFeature.getProductFeature())
-                .device(subscriptionFeature.getDevice())
+                .subscriptionId(subscriptionFeature.getSubscription().getId())
+                .productFeatureId(subscriptionFeature.getProductFeature().getId())
+                .deviceId(subscriptionFeature.getDevice().getId())
                 .usageAmount(request.getUsageAmount())
                 .detailValue(request.getDetailValue())
                 .build();
@@ -116,5 +112,56 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
         
         // Query logs by subscription ID, ordered by access time descending
         return logRepository.findBySubscriptionIdOrderByAccessTimeDesc(subscriptionId, pageable);
+    }
+
+    @Override
+    @Transactional
+    public FeatureAccessLog trackFeatureUsageByTrackId(String trackId, FeatureUsageTrackingByTrackIdRequest request) {
+        // Find subscription feature by track ID
+        SubscriptionFeatureProjection subscriptionFeature = findSubscriptionFeatureByTrackId(trackId);
+        
+        // Create feature access log
+        FeatureAccessLog accessLog = FeatureAccessLog.builder()
+                .subscriptionId(subscriptionFeature.subscriptionId())
+                .productFeatureId(subscriptionFeature.productFeatureId())
+                .deviceId(subscriptionFeature.deviceId())
+                .usageAmount(request.getUsageAmount())
+                .detailValue(request.getDetailValue())
+                .build();
+
+        // Log the access
+        return logRepository.save(accessLog);
+    }
+
+    @Override
+    @Async
+    @Transactional
+    public CompletableFuture<FeatureAccessLog> trackFeatureUsageByTrackIdAsync(String trackId, FeatureUsageTrackingByTrackIdRequest request) {
+        try {
+            FeatureAccessLog savedLog = trackFeatureUsageByTrackId(trackId, request);
+            return CompletableFuture.completedFuture(savedLog);
+        } catch (Exception e) {
+            log.error("Error tracking feature usage by trackId asynchronously", e);
+            throw e;
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FeatureAccessLog> getFeatureUsageLogsByTrackId(String trackId, Pageable pageable) {
+        // Find subscription feature by track ID to get the subscription ID
+        SubscriptionFeatureProjection subscriptionFeature = findSubscriptionFeatureByTrackId(trackId);
+        
+        // Query logs by subscription ID
+        return logRepository.findBySubscriptionIdOrderByAccessTimeDesc(
+                subscriptionFeature.subscriptionId(), pageable);
+    }
+    
+    private SubscriptionFeatureProjection findSubscriptionFeatureByTrackId(String trackId) {
+        Optional<SubscriptionFeatureProjection> subscriptionFeatureOpt = subscriptionFeatureRepository.findProjectionByTrackId(trackId);
+        if (subscriptionFeatureOpt.isEmpty()) {
+            throw new ResourceNotFoundException("Subscription feature not found for trackId: " + trackId);
+        }
+        return subscriptionFeatureOpt.get();
     }
 }

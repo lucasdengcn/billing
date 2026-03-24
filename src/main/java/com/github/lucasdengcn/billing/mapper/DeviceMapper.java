@@ -22,8 +22,6 @@ public interface DeviceMapper {
     @Mapping(target = "subscriptions", ignore = true)
     @Mapping(target = "subscriptionFeatures", ignore = true)
     @Mapping(target = "subscriptionRenewals", ignore = true)
-    @Mapping(target = "featureAccessLogs", ignore = true)
-    @Mapping(target = "usageStats", ignore = true)
     Device toEntity(DeviceRegisterRequest request);
 
 
@@ -34,8 +32,6 @@ public interface DeviceMapper {
     @Mapping(target = "subscriptions", ignore = true)
     @Mapping(target = "subscriptionFeatures", ignore = true)
     @Mapping(target = "subscriptionRenewals", ignore = true)
-    @Mapping(target = "featureAccessLogs", ignore = true)
-    @Mapping(target = "usageStats", ignore = true)
     Device toEntity(DeviceUpdateRequest request);
 
     DeviceResponse toResponse(Device device);
@@ -48,8 +44,6 @@ public interface DeviceMapper {
     @Mapping(target = "subscriptions", ignore = true)
     @Mapping(target = "subscriptionFeatures", ignore = true)
     @Mapping(target = "subscriptionRenewals", ignore = true)
-    @Mapping(target = "featureAccessLogs", ignore = true)
-    @Mapping(target = "usageStats", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(DeviceUpdateRequest request, @MappingTarget Device device);
 }

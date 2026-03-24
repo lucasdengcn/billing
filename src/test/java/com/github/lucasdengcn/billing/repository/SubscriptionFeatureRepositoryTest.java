@@ -66,11 +66,15 @@ class SubscriptionFeatureRepositoryTest {
 
         // Create test devices
         testDevice1 = Device.builder()
+                .deviceNo("DEV_0001")
                 .deviceName("Device 1")
+                .customer(testCustomer1)
                 .build();
 
         testDevice2 = Device.builder()
+                .deviceNo("DEV_0002")
                 .deviceName("Device 2")
+                .customer(testCustomer2)
                 .build();
 
         // Create test products
@@ -530,4 +534,214 @@ class SubscriptionFeatureRepositoryTest {
         assertThat(exists).isFalse();
     }
 
+    @Test
+    void findByTrackId_WhenFeatureExists_ShouldReturnFeature() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1.setDevice(testDevice1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+
+        SubscriptionFeature subscriptionFeature = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .device(testDevice1)
+                .title("Storage Feature")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(100)
+                .accessed(0)
+                .balance(100)
+                .build();
+        SubscriptionFeature savedFeature = entityManager.persistAndFlush(subscriptionFeature);
+        String trackId = savedFeature.getTrackId();
+
+        // When
+        SubscriptionFeature foundFeature = subscriptionFeatureRepository.findByTrackId(trackId);
+
+        // Then
+        assertThat(foundFeature).isNotNull();
+        assertThat(foundFeature.getId()).isEqualTo(savedFeature.getId());
+        assertThat(foundFeature.getTrackId()).isEqualTo(trackId);
+        assertThat(foundFeature.getTitle()).isEqualTo("Storage Feature");
+        assertThat(foundFeature.getQuota()).isEqualTo(100);
+        assertThat(foundFeature.getSubscription().getId()).isEqualTo(testSubscription1.getId());
+        assertThat(foundFeature.getProductFeature().getId()).isEqualTo(testFeature1.getId());
+        assertThat(foundFeature.getDevice().getId()).isEqualTo(testDevice1.getId());
+    }
+
+    @Test
+    void findByTrackId_WhenFeatureNotExists_ShouldReturnNull() {
+        // When
+        SubscriptionFeature foundFeature = subscriptionFeatureRepository.findByTrackId("TRK-NONEXISTENT123456789");
+
+        // Then
+        assertThat(foundFeature).isNull();
+    }
+
+    @Test
+    void findByTrackIdWithRelatedEntities_WhenFeatureExists_ShouldReturnFeatureWithEagerLoadedEntities() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1.setDevice(testDevice1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+
+        SubscriptionFeature subscriptionFeature = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .device(testDevice1)
+                .title("API Feature")
+                .featureType(FeatureType.API_ACCESS)
+                .quota(500)
+                .accessed(0)
+                .balance(500)
+                .build();
+        SubscriptionFeature savedFeature = entityManager.persistAndFlush(subscriptionFeature);
+        String trackId = savedFeature.getTrackId();
+
+        // When
+        Optional<SubscriptionFeature> foundFeatureOpt = subscriptionFeatureRepository.findByTrackIdWithRelatedEntities(trackId);
+
+        // Then
+        assertThat(foundFeatureOpt).isPresent();
+        SubscriptionFeature foundFeature = foundFeatureOpt.get();
+        assertThat(foundFeature.getId()).isEqualTo(savedFeature.getId());
+        assertThat(foundFeature.getTrackId()).isEqualTo(trackId);
+        assertThat(foundFeature.getTitle()).isEqualTo("API Feature");
+        assertThat(foundFeature.getQuota()).isEqualTo(500);
+        
+        // Verify that related entities are loaded (should not trigger lazy loading)
+        assertThat(foundFeature.getSubscription().getId()).isEqualTo(testSubscription1.getId());
+        assertThat(foundFeature.getSubscription().getStartDate()).isNotNull();
+        assertThat(foundFeature.getProductFeature().getId()).isEqualTo(testFeature1.getId());
+        assertThat(foundFeature.getProductFeature().getTitle()).isNotNull();
+        assertThat(foundFeature.getDevice().getId()).isEqualTo(testDevice1.getId());
+        assertThat(foundFeature.getDevice().getDeviceName()).isNotNull();
+    }
+
+    @Test
+    void findByTrackIdWithRelatedEntities_WhenFeatureNotExists_ShouldReturnEmpty() {
+        // When
+        Optional<SubscriptionFeature> foundFeature = subscriptionFeatureRepository.findByTrackIdWithRelatedEntities("TRK-NONEXISTENT123456789");
+
+        // Then
+        assertThat(foundFeature).isEmpty();
+    }
+
+    @Test
+    void findByTrackIdOptional_WhenFeatureExists_ShouldReturnFeatureWithRelatedEntities() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1.setDevice(testDevice1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+
+        SubscriptionFeature subscriptionFeature = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .device(testDevice1)
+                .title("Bandwidth Feature")
+                .featureType(FeatureType.BANDWIDTH_LIMIT)
+                .quota(1000)
+                .accessed(0)
+                .balance(1000)
+                .build();
+        SubscriptionFeature savedFeature = entityManager.persistAndFlush(subscriptionFeature);
+        String trackId = savedFeature.getTrackId();
+
+        // When
+        Optional<SubscriptionFeature> foundFeature = subscriptionFeatureRepository.findByTrackIdOptional(trackId);
+
+        // Then
+        assertThat(foundFeature).isPresent();
+        assertThat(foundFeature.get().getId()).isEqualTo(savedFeature.getId());
+        assertThat(foundFeature.get().getTrackId()).isEqualTo(trackId);
+        assertThat(foundFeature.get().getTitle()).isEqualTo("Bandwidth Feature");
+        assertThat(foundFeature.get().getQuota()).isEqualTo(1000);
+        
+        // Verify related entities are loaded
+        assertThat(foundFeature.get().getSubscription().getId()).isEqualTo(testSubscription1.getId());
+        assertThat(foundFeature.get().getProductFeature().getId()).isEqualTo(testFeature1.getId());
+        assertThat(foundFeature.get().getDevice().getId()).isEqualTo(testDevice1.getId());
+    }
+
+    @Test
+    void findByTrackIdOptional_WhenFeatureNotExists_ShouldReturnEmpty() {
+        // When
+        Optional<SubscriptionFeature> foundFeature = subscriptionFeatureRepository.findByTrackIdOptional("TRK-NONEXISTENT123456789");
+
+        // Then
+        assertThat(foundFeature).isEmpty();
+    }
+
+    @Test
+    void findProjectionByTrackId_WhenFeatureExists_ShouldReturnProjectionWithIds() {
+        // Given
+        testCustomer1 = entityManager.persistAndFlush(testCustomer1);
+        testProduct1 = entityManager.persistAndFlush(testProduct1);
+        testDevice1 = entityManager.persistAndFlush(testDevice1);
+        testSubscription1.setCustomer(testCustomer1);
+        testSubscription1.setProduct(testProduct1);
+        testSubscription1.setDevice(testDevice1);
+        testSubscription1 = entityManager.persistAndFlush(testSubscription1);
+
+        testFeature1.setProduct(testProduct1);
+        testFeature1 = entityManager.persistAndFlush(testFeature1);
+
+        SubscriptionFeature subscriptionFeature = SubscriptionFeature.builder()
+                .subscription(testSubscription1)
+                .productFeature(testFeature1)
+                .device(testDevice1)
+                .title("API Feature")
+                .featureType(FeatureType.API_ACCESS)
+                .quota(500)
+                .accessed(10)
+                .balance(490)
+                .build();
+        SubscriptionFeature savedFeature = entityManager.persistAndFlush(subscriptionFeature);
+        String trackId = savedFeature.getTrackId();
+
+        // When
+        Optional<SubscriptionFeatureProjection> foundProjection = subscriptionFeatureRepository.findProjectionByTrackId(trackId);
+
+        // Then
+        assertThat(foundProjection).isPresent();
+        SubscriptionFeatureProjection projection = foundProjection.get();
+        assertThat(projection.id()).isEqualTo(savedFeature.getId());
+        assertThat(projection.trackId()).isEqualTo(trackId);
+        assertThat(projection.subscriptionId()).isEqualTo(testSubscription1.getId());
+        assertThat(projection.productFeatureId()).isEqualTo(testFeature1.getId());
+        assertThat(projection.deviceId()).isEqualTo(testDevice1.getId());
+        assertThat(projection.title()).isEqualTo("API Feature");
+        assertThat(projection.quota()).isEqualTo(500);
+        assertThat(projection.accessed()).isEqualTo(10);
+        assertThat(projection.balance()).isEqualTo(490);
+    }
+
+    @Test
+    void findProjectionByTrackId_WhenFeatureNotExists_ShouldReturnEmpty() {
+        // When
+        Optional<SubscriptionFeatureProjection> foundProjection = subscriptionFeatureRepository.findProjectionByTrackId("TRK-NONEXISTENT123456789");
+
+        // Then
+        assertThat(foundProjection).isEmpty();
+    }
 }

@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Schema(description = "Response model representing a subscription feature")
 public class SubscriptionFeatureResponse {
+
     @Schema(description = "Unique database identifier for the subscription feature", example = "1")
     private Long id;
 
@@ -47,6 +48,9 @@ public class SubscriptionFeatureResponse {
 
     @Schema(description = "Indicates whether the balance is sufficient (balance > 0)", example = "true")
     private Boolean balanceSufficient;
+
+    @Schema(description = "Globally unique track ID for this subscription feature", example = "01hjdz4vg7jyqrxp8mn89p9xsc")
+    private String trackId;
 
     @Schema(description = "Timestamp when the subscription feature was created")
     private OffsetDateTime createdAt;

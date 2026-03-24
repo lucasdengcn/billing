@@ -24,8 +24,6 @@ public interface SubscriptionMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "subscriptionFeatures", ignore = true)
     @Mapping(target = "subscriptionRenewals", ignore = true)
-    @Mapping(target = "accessLogs", ignore = true)
-    @Mapping(target = "usageStats", ignore = true)
     Subscription toEntity(SubscriptionRequest request);
 
     @Mapping(target = "customerId", source = "customer.id")
@@ -42,8 +40,6 @@ public interface SubscriptionMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "subscriptionFeatures", ignore = true)
     @Mapping(target = "subscriptionRenewals", ignore = true)
-    @Mapping(target = "accessLogs", ignore = true)
-    @Mapping(target = "usageStats", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(SubscriptionRequest request, @MappingTarget Subscription subscription);
     
@@ -55,6 +51,7 @@ public interface SubscriptionMapper {
     @Mapping(target = "subscriptionId", source = "subscription.id")
     @Mapping(target = "deviceId", source = "device.id")
     @Mapping(target = "productFeatureId", source = "productFeature.id")
+    @Mapping(target = "trackId", source = "trackId")
     @Mapping(target = "balanceSufficient", expression = "java(subscriptionFeature.getBalance() > 0)")
     SubscriptionFeatureResponse toFeatureResponse(SubscriptionFeature subscriptionFeature);
 }

@@ -1,6 +1,7 @@
 package com.github.lucasdengcn.billing.api;
 
 import com.github.lucasdengcn.billing.entity.FeatureAccessLog;
+import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingByTrackIdRequest;
 import com.github.lucasdengcn.billing.model.request.FeatureUsageTrackingRequest;
 import com.github.lucasdengcn.billing.model.response.ErrorResponse;
 import com.github.lucasdengcn.billing.model.response.ValidationErrorResponse;
@@ -89,6 +90,42 @@ public class FeatureAccessController {
             @PathVariable Long subscriptionId,
             Pageable pageable) {
         Page<FeatureAccessLog> logs = featureAccessService.getFeatureUsageLogsBySubscription(subscriptionId, pageable);
+        return ResponseEntity.ok(logs);
+    }
+    
+    @PostMapping("/usage/{trackId}")
+    @Operation(summary = "Track feature usage by track ID", description = "Tracks usage of a specific feature identified by track ID")
+    @ApiResponse(responseCode = "200", description = "Feature usage tracked successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Subscription feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<String> trackFeatureUsageByTrackId(
+            @PathVariable String trackId,
+            @Valid @RequestBody FeatureUsageTrackingByTrackIdRequest request) {
+        FeatureAccessLog log = featureAccessService.trackFeatureUsageByTrackId(trackId, request);
+        return ResponseEntity.ok("OK");
+    }
+    
+    @PostMapping("/usage/{trackId}/async")
+    @Operation(summary = "Asynchronously track feature usage by track ID", description = "Asynchronously tracks usage of a specific feature identified by track ID")
+    @ApiResponse(responseCode = "202", description = "Feature usage tracking initiated successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Subscription feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<String> trackFeatureUsageByTrackIdAsync(
+            @PathVariable String trackId,
+            @Valid @RequestBody FeatureUsageTrackingByTrackIdRequest request) {
+        featureAccessService.trackFeatureUsageByTrackIdAsync(trackId, request);
+        return ResponseEntity.accepted().body("Accepted");
+    }
+    
+    @GetMapping("/usage/trackId/{trackId}")
+    @Operation(summary = "Get feature usage logs by track ID", 
+              description = "Retrieves all feature usage logs for a specific subscription feature identified by track ID")
+    @ApiResponse(responseCode = "200", description = "Feature usage logs retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "No usage logs found for the specified track ID", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Page<FeatureAccessLog>> getFeatureUsageLogsByTrackId(
+            @PathVariable String trackId,
+            Pageable pageable) {
+        Page<FeatureAccessLog> logs = featureAccessService.getFeatureUsageLogsByTrackId(trackId, pageable);
         return ResponseEntity.ok(logs);
     }
 }

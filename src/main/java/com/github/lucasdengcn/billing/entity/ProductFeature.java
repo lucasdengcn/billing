@@ -51,19 +51,4 @@ public class ProductFeature {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    @OneToMany(mappedBy = "productFeature")
-    @ToString.Exclude
-    private List<SubscriptionFeature> subscriptionFeatures;
-
-    @OneToMany(mappedBy = "productFeature")
-    @ToString.Exclude
-    private List<FeatureAccessLog> accessLogs;
-
-    @OneToMany(mappedBy = "productFeature")
-    @ToString.Exclude
-    private List<SubscriptionUsageStats> usageStats;
-
-    @OneToMany(mappedBy = "productFeature")
-    @ToString.Exclude
-    private List<BillDetail> billDetails;
 }

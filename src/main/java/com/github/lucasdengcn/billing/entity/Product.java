@@ -67,11 +67,4 @@ public class Product {
     @ToString.Exclude
     private List<ProductFeature> features;
 
-    @OneToMany(mappedBy = "product")
-    @ToString.Exclude
-    private List<Subscription> subscriptions;
-
-    @OneToMany(mappedBy = "product")
-    @ToString.Exclude
-    private List<BillDetail> billDetails;
 }
