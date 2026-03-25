@@ -744,4 +744,5 @@ class SubscriptionFeatureRepositoryTest {
         // Then
         assertThat(foundProjection).isEmpty();
     }
+
 }
