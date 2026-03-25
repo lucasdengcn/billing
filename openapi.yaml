@@ -14,6 +14,8 @@ tags:
     name: Subscription Management
   - description: APIs for registering and managing customer devices
     name: Device Management
+  - description: APIs for tracking feature usage from devices
+    name: Feature Usage Tracking
   - description: APIs for generating and managing customer bills
     name: Billing Management
   - description: Monitor and interact
@@ -469,10 +471,221 @@ paths:
       summary: Update an existing device
       tags:
         - Device Management
+  /api/feature/usage:
+    post:
+      description: Tracks usage of a specific feature from a device identified by device number
+      operationId: trackFeatureUsage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureUsageTrackingRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+          description: Feature usage tracked successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Device, Product, or Feature not found
+      summary: Track feature usage
+      tags:
+        - Feature Usage Tracking
+  /api/feature/usage/device/{deviceNo}:
+    get:
+      description: Retrieves all feature usage logs for a specific device
+      operationId: getFeatureUsageLogsByDevice
+      parameters:
+        - in: path
+          name: deviceNo
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: pageable
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageFeatureAccessLog'
+          description: Feature usage logs retrieved successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No usage logs found for the specified device
+      summary: Get feature usage logs by device
+      tags:
+        - Feature Usage Tracking
+  /api/feature/usage/device/{deviceNo}/product/{productNo}/feature/{featureNo}:
+    get:
+      description: Retrieves feature usage logs for a specific device, product, and feature combination
+      operationId: getFeatureUsageLogs
+      parameters:
+        - in: path
+          name: deviceNo
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: productNo
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: featureNo
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: pageable
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageFeatureAccessLog'
+          description: Feature usage logs retrieved successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No usage logs found for the specified combination
+      summary: Get feature usage logs by device, product, and feature
+      tags:
+        - Feature Usage Tracking
+  /api/feature/usage/subscription/{subscriptionId}:
+    get:
+      description: Retrieves all feature usage logs for a specific subscription
+      operationId: getFeatureUsageLogsBySubscription
+      parameters:
+        - in: path
+          name: subscriptionId
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: pageable
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageFeatureAccessLog'
+          description: Feature usage logs retrieved successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No usage logs found for the specified subscription
+      summary: Get feature usage logs by subscription
+      tags:
+        - Feature Usage Tracking
+  /api/feature/usage/trackId/{trackId}:
+    get:
+      description: Retrieves all feature usage logs for a specific subscription feature identified by track ID
+      operationId: getFeatureUsageLogsByTrackId
+      parameters:
+        - in: path
+          name: trackId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: pageable
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageFeatureAccessLog'
+          description: Feature usage logs retrieved successfully
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No usage logs found for the specified track ID
+      summary: Get feature usage logs by track ID
+      tags:
+        - Feature Usage Tracking
+  /api/feature/usage/{trackId}:
+    post:
+      description: Tracks usage of a specific feature identified by track ID
+      operationId: trackFeatureUsageByTrackId
+      parameters:
+        - in: path
+          name: trackId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureUsageTrackingByTrackIdRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+          description: Feature usage tracked successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Subscription feature not found
+      summary: Track feature usage by track ID
+      tags:
+        - Feature Usage Tracking
   /api/products:
     get:
-      description: Retrieves all products available in the catalog
+      description: Retrieves details of a specific product by its product number
       operationId: getAllProducts
+      parameters:
+        - in: query
+          name: productNo
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           content:
@@ -481,8 +694,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProductResponse'
-          description: Successfully retrieved catalog
-      summary: List all products
+          description: Product found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Product not found
+      summary: Get product by product number
       tags:
         - Product Catalog
     post:
@@ -680,9 +899,7 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/ProductFeatureRequest'
+              $ref: '#/components/schemas/ProductFeatureRequestBulk'
         required: true
       responses:
         "200":
@@ -710,7 +927,7 @@ paths:
         - Product Catalog
   /api/subscriptions:
     post:
-      description: Subscribes a customer to a specific product, optionally linked to a device
+      description: Subscribes a customer to a specific product, linked to a device
       operationId: createSubscription
       requestBody:
         content:
@@ -738,6 +955,38 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Customer, Product, or Device not found
       summary: Create a subscription
+      tags:
+        - Subscription Management
+  /api/subscriptions/cancel:
+    post:
+      description: Cancels a subscription identified by customer ID, device ID, and product ID
+      operationId: cancelSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelSubscriptionRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+          description: Subscription cancelled successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request data
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Subscription not found
+      summary: Cancel a subscription
       tags:
         - Subscription Management
   /api/subscriptions/customer/{customerId}:
@@ -769,6 +1018,133 @@ paths:
       summary: List customer subscriptions
       tags:
         - Subscription Management
+  /api/subscriptions/device/{deviceNo}:
+    get:
+      description: Retrieves all subscriptions associated with a specific device number
+      operationId: getSubscriptionsByDeviceNo
+      parameters:
+        - in: path
+          name: deviceNo
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionResponse'
+          description: Successfully retrieved subscriptions
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Device not found
+      summary: List subscriptions by device number
+      tags:
+        - Subscription Management
+  /api/subscriptions/device/{deviceNo}/product/{productNo}:
+    get:
+      description: Retrieves a subscription associated with a specific device number and product number
+      operationId: getSubscriptionByDeviceNoAndProductNo
+      parameters:
+        - in: path
+          name: deviceNo
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: productNo
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SubscriptionWithFeaturesResponse'
+          description: Subscription found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Subscription not found
+      summary: Get subscription by device number and product number
+      tags:
+        - Subscription Management
+  /api/subscriptions/device/{deviceNo}/product/{productNo}/feature/{featureNo}:
+    get:
+      description: Retrieves a subscription feature associated with a specific device number, product number, and feature number
+      operationId: getSubscriptionFeatureByDeviceNoFeatureNoAndProductNo
+      parameters:
+        - in: path
+          name: deviceNo
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: featureNo
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: productNo
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SubscriptionFeatureResponse'
+          description: Subscription feature found
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Subscription feature not found
+      summary: Get subscription feature by device number, product number, and feature number
+      tags:
+        - Subscription Management
+  /api/subscriptions/renew:
+    post:
+      description: Renews a subscription based on the provided renewal request
+      operationId: renewSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRenewalRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+          description: Subscription renewed successfully
+        "400":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Invalid request or subscription cannot be renewed
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Subscription not found
+      summary: Renew subscription with renewal request
+      tags:
+        - Subscription Management
   /api/subscriptions/{id}:
     get:
       description: Retrieves details of a specific subscription
@@ -798,21 +1174,6 @@ paths:
         - Subscription Management
 components:
   schemas:
-    DiscountStatus:
-      type: string
-      description: Status of discount for the product
-      enum:
-        - ACTIVE
-        - INACTIVE
-    PriceType:
-      type: string
-      description: Type of pricing model for the product
-      enum:
-        - MONTHLY
-        - YEARLY
-        - ONE_TIME
-        - USAGE_BASED
-        - CUSTOM
     BillRequest:
       type: object
       description: Request model for generating or updating a bill
@@ -841,10 +1202,10 @@ components:
           type: string
           description: Current payment state of the bill
           enum:
-            - PENDING
-            - PAID
-            - OVERDUE
-            - PARTIALLY_PAID
+            - "0"
+            - "1"
+            - "2"
+            - "3"
           example: PENDING
         usageFees:
           type: number
@@ -891,10 +1252,10 @@ components:
           type: string
           description: Current payment state
           enum:
-            - PENDING
-            - PAID
-            - OVERDUE
-            - PARTIALLY_PAID
+            - "0"
+            - "1"
+            - "2"
+            - "3"
           example: PAID
         totalFees:
           type: number
@@ -904,6 +1265,29 @@ components:
           type: number
           description: Total usage-based variable fees
           example: "5.50"
+    CancelSubscriptionRequest:
+      type: object
+      description: Request model for canceling a subscription
+      properties:
+        customerId:
+          type: integer
+          format: int64
+          description: ID of the customer whose subscription should be canceled
+          example: 1
+        deviceId:
+          type: integer
+          format: int64
+          description: ID of the device associated with the subscription
+          example: 1
+        productId:
+          type: integer
+          format: int64
+          description: ID of the product associated with the subscription
+          example: 1
+      required:
+        - customerId
+        - deviceId
+        - productId
     CustomerInfo:
       type: object
       description: Customer information for lookup or creation within a request
@@ -1046,10 +1430,10 @@ components:
           type: string
           description: Current status of the device
           enum:
-            - INACTIVE
-            - DEACTIVATED
-            - ACTIVE
-            - SUSPENDED
+            - "0"
+            - "3"
+            - "1"
+            - "2"
           example: ACTIVE
       required:
         - deviceNo
@@ -1087,10 +1471,10 @@ components:
           type: string
           description: Current activation status of the device
           enum:
-            - INACTIVE
-            - DEACTIVATED
-            - ACTIVE
-            - SUSPENDED
+            - "0"
+            - "3"
+            - "1"
+            - "2"
           example: ACTIVE
         updatedAt:
           type: string
@@ -1123,10 +1507,10 @@ components:
           type: string
           description: Current status of the device
           enum:
-            - INACTIVE
-            - DEACTIVATED
-            - ACTIVE
-            - SUSPENDED
+            - "0"
+            - "3"
+            - "1"
+            - "2"
           example: ACTIVE
       required:
         - deviceNo
@@ -1152,6 +1536,85 @@ components:
           type: string
           format: date-time
           description: Timestamp of the error
+    FeatureAccessLog:
+      type: object
+      properties:
+        accessTime:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        detailValue:
+          type: string
+        deviceId:
+          type: integer
+          format: int64
+        id:
+          type: integer
+          format: int64
+        productFeatureId:
+          type: integer
+          format: int64
+        subscriptionId:
+          type: integer
+          format: int64
+        usageAmount:
+          type: integer
+          format: int32
+    FeatureUsageTrackingByTrackIdRequest:
+      type: object
+      description: Request model for tracking feature usage from a device using track ID
+      properties:
+        detailValue:
+          type: string
+          description: Access detail value
+        usageAmount:
+          type: integer
+          format: int32
+          default: 1
+          description: Amount of usage to track
+          example: 1
+          minimum: 1
+    FeatureUsageTrackingRequest:
+      type: object
+      description: Request model for tracking feature usage from a device
+      properties:
+        detailValue:
+          type: string
+          description: Access detail value
+        deviceNo:
+          type: string
+          description: Device number to identify the device
+          example: DEV001
+          maxLength: 255
+          minLength: 0
+          pattern: ^[A-Z]{2,4}-\d{6,12}$
+        featureNo:
+          type: string
+          description: Feature number to identify the feature being used
+          example: FEATURE001
+          maxLength: 50
+          minLength: 2
+          pattern: ^[A-Z0-9_-]+$
+        productNo:
+          type: string
+          description: Product number to identify the product
+          example: PROD001
+          maxLength: 50
+          minLength: 2
+          pattern: ^[A-Z0-9_-]+$
+        usageAmount:
+          type: integer
+          format: int32
+          default: 1
+          description: Amount of usage to track
+          example: 1
+          minimum: 1
+      required:
+        - deviceNo
+        - featureNo
+        - productNo
     Link:
       type: object
       properties:
@@ -1159,46 +1622,194 @@ components:
           type: string
         templated:
           type: boolean
+    PageFeatureAccessLog:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureAccessLog'
+        empty:
+          type: boolean
+        first:
+          type: boolean
+        last:
+          type: boolean
+        number:
+          type: integer
+          format: int32
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        size:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
+        sort:
+          $ref: '#/components/schemas/SortObject'
+        unpaged:
+          type: boolean
     ProductFeatureRequest:
       type: object
+      description: Request model for creating or updating a product feature
       properties:
         description:
           type: string
+          description: Description of the feature
+          example: Provides access to the API with rate limiting
+          maxLength: 1000
+          minLength: 0
+        featureNo:
+          type: string
+          description: Unique identifier for the feature
+          example: FEAT_0001
+          maxLength: 50
+          minLength: 2
+          pattern: ^[A-Z0-9_-]+$
+        featureType:
+          type: string
+          description: Type of the feature
+          enum:
+            - api_access
+            - storage_space
+            - support_level
+            - bandwidth_limit
+            - user_limit
+            - customization
+            - integration
+            - analytics
+            - security
+            - backup
+            - monitoring
+            - token
+            - credit
+            - other
+          example: API_ACCESS
         productId:
           type: integer
           format: int64
+          description: ID of the parent product
+          example: 1
         quota:
           type: integer
           format: int32
+          description: Quota limit for the feature
+          example: 1000
+          maximum: 999999999
+          minimum: 0
         title:
           type: string
-          minLength: 1
+          description: Title of the product feature
+          example: API Access
+          maxLength: 255
+          minLength: 2
       required:
+        - featureNo
+        - featureType
         - productId
         - quota
         - title
+    ProductFeatureRequestBulk:
+      type: object
+      description: Request model for creating or updating product feature in bulk
+      properties:
+        items:
+          type: array
+          description: List of product feature requests
+          items:
+            $ref: '#/components/schemas/ProductFeatureRequest'
     ProductFeatureResponse:
       type: object
+      description: Response model representing a product feature
       properties:
         createdAt:
           type: string
           format: date-time
+          description: Timestamp when the feature was created
         description:
           type: string
+          description: Description of the feature
+          example: Provides access to the API with rate limiting
+        featureType:
+          type: string
+          description: Type of the feature
+          enum:
+            - api_access
+            - storage_space
+            - support_level
+            - bandwidth_limit
+            - user_limit
+            - customization
+            - integration
+            - analytics
+            - security
+            - backup
+            - monitoring
+            - token
+            - credit
+            - other
+          example: API_ACCESS
         id:
           type: integer
           format: int64
+          description: Unique database identifier for the feature
+          example: 1
         productId:
           type: integer
           format: int64
+          description: ID of the parent product
+          example: 1
         quota:
           type: integer
           format: int32
+          description: Quota limit for the feature
+          example: 1000
         title:
           type: string
+          description: Title of the product feature
+          example: API Access
         updatedAt:
           type: string
           format: date-time
+          description: Timestamp when the feature was last updated
     ProductRequest:
       type: object
       description: Request model for creating or updating a product
@@ -1208,8 +1819,6 @@ components:
           description: Standard price before any discounts
           example: "29.99"
           minimum: 0.0
-        priceType:
-          $ref: '#/components/schemas/PriceType'
         description:
           type: string
           description: JSON description of the product
@@ -1218,18 +1827,34 @@ components:
             support: 24/7
         discountRate:
           type: number
-          description: Discount rate applied to base fee (1.0 = no discount)
+          description: Discount rate applied to base price (1.0 = no discount), fee = basePrice * discountRate
           example: "0.90"
+          maximum: 1.0
           minimum: 0.0
         discountStatus:
           type: string
           description: Whether a discount is currently active for this product
           enum:
-            - INACTIVE
-            - ACTIVE
-          example: ACTIVE
+            - "0"
+            - "1"
+          example: "1"
         priceType:
-          $ref: '#/components/schemas/PriceType'
+          type: string
+          description: Type of pricing model for the product
+          enum:
+            - monthly
+            - yearly
+            - one_time
+            - usage_based
+            - custom
+          example: MONTHLY
+        productNo:
+          type: string
+          description: Unique product number identifier
+          example: PREMIUM_PLAN_001
+          maxLength: 50
+          minLength: 2
+          pattern: ^[A-Z0-9_-]+$
         title:
           type: string
           description: Title of the service/product
@@ -1239,6 +1864,7 @@ components:
       required:
         - basePrice
         - priceType
+        - productNo
         - title
     ProductResponse:
       type: object
@@ -1265,27 +1891,157 @@ components:
           type: string
           description: Whether a discount is active
           enum:
-            - INACTIVE
-            - ACTIVE
+            - "0"
+            - "1"
           example: ACTIVE
         id:
           type: integer
           format: int64
           description: Unique database identifier for the product
           example: 1
+        priceType:
+          type: string
+          description: Type of pricing model for the product
+          enum:
+            - monthly
+            - yearly
+            - one_time
+            - usage_based
+            - custom
+          example: MONTHLY
+        productNo:
+          type: string
+          description: Unique product number identifier
+          example: PREMIUM_PLAN_001
         title:
           type: string
           description: Product title
           example: Premium Plan
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    SubscriptionFeatureResponse:
+      type: object
+      description: Response model representing a subscription feature
+      properties:
+        accessed:
+          type: integer
+          format: int32
+          description: Number of accesses made to this feature
+          example: 150
+        balance:
+          type: integer
+          format: int32
+          description: Remaining balance/available quota
+          example: 850
+        balanceSufficient:
+          type: boolean
+          description: Indicates whether the balance is sufficient (balance > 0)
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the subscription feature was created
+        description:
+          type: string
+          description: Description of the feature
+          example: Provides access to the API with rate limiting
+        deviceId:
+          type: integer
+          format: int64
+          description: ID of the associated device (if any)
+          example: 1
+        featureType:
+          type: string
+          description: Type of the feature
+          enum:
+            - api_access
+            - storage_space
+            - support_level
+            - bandwidth_limit
+            - user_limit
+            - customization
+            - integration
+            - analytics
+            - security
+            - backup
+            - monitoring
+            - token
+            - credit
+            - other
+          example: api_access
+        id:
+          type: integer
+          format: int64
+          description: Unique database identifier for the subscription feature
+          example: 1
+        productFeatureId:
+          type: integer
+          format: int64
+          description: ID of the original product feature
+          example: 1
+        quota:
+          type: integer
+          format: int32
+          description: Quota limit for the feature
+          example: 1000
+        subscriptionId:
+          type: integer
+          format: int64
+          description: ID of the parent subscription
+          example: 1
+        title:
+          type: string
+          description: Title of the subscription feature
+          example: API Access
+        trackId:
+          type: string
+          description: Globally unique track ID for this subscription feature
+          example: 01hjdz4vg7jyqrxp8mn89p9xsc
+    SubscriptionRenewalRequest:
+      type: object
+      description: Request model for subscription renewal
+      properties:
+        deviceNo:
+          type: string
+          description: Device number
+          example: DEV001
+          minLength: 1
+        productNo:
+          type: string
+          description: Product number
+          example: PROD001
+          minLength: 1
+        renewalPeriodUnit:
+          type: string
+          default: months
+          description: Unit of renewal period
+          enum:
+            - days
+            - weeks
+            - months
+            - years
+          example: months
+        renewalPeriods:
+          type: integer
+          format: int32
+          default: 1
+          description: Number of renewal periods
+          example: 1
+      required:
+        - deviceNo
+        - productNo
+        - renewalPeriods
     SubscriptionRequest:
       type: object
       description: Request model for creating a new subscription
       properties:
-        baseFee:
-          type: number
-          description: Base fee at time of subscription
-          example: "29.99"
-          minimum: 0.0
         customerId:
           type: integer
           format: int64
@@ -1294,19 +2050,13 @@ components:
         deviceId:
           type: integer
           format: int64
-          description: Optional ID of the primary device for this subscription
+          description: ID of the primary device for this subscription
           example: 1
-        discountRate:
-          type: number
-          description: Applied discount rate
-          example: "0.90"
-          minimum: 0.0
         endDate:
           type: string
           format: date-time
           description: When the subscription expires
           example: "2027-03-16T00:00:00Z"
-
         productId:
           type: integer
           format: int64
@@ -1317,19 +2067,10 @@ components:
           format: date-time
           description: When the subscription begins
           example: "2026-03-16T00:00:00Z"
-        status:
-          type: string
-          description: Current state of the subscription
-          enum:
-            - PENDING
-            - ACTIVE
-            - CANCELLED
-            - EXPIRED
-          example: ACTIVE
       required:
         - customerId
+        - deviceId
         - productId
-        - startDate
     SubscriptionResponse:
       type: object
       description: Response model representing a customer's subscription
@@ -1361,20 +2102,15 @@ components:
           format: int64
           description: Unique database identifier for the subscription
           example: 1
-        periods:
-          type: integer
-          format: int32
-          description: Subscription period quantity
-          example: 1
         periodUnit:
           type: string
           description: Unit of subscription period
-          example: "MONTHS"
           enum:
-            - DAYS
-            - WEEKS
-            - MONTHS
-            - YEARS
+            - days
+            - weeks
+            - months
+            - years
+          example: MONTHS
         productId:
           type: integer
           format: int64
@@ -1385,18 +2121,93 @@ components:
           format: date-time
           description: Activation date
         status:
-          type: string
+          type: integer
+          format: int32
           description: Current lifecycle status of the subscription
           enum:
-            - PENDING
-            - ACTIVE
-            - CANCELLED
-            - EXPIRED
+            - 0
+            - 1
+            - 2
+            - 3
           example: ACTIVE
         totalFee:
           type: number
-          description: Total fee (baseFee * discountRate)
+          description: Total fee (baseFee * discountRate * periods)
           example: "26.99"
+    SubscriptionWithFeaturesResponse:
+      type: object
+      description: Response model representing a subscription with its associated features
+      properties:
+        baseFee:
+          type: number
+          description: Base fee at subscription time
+          example: "29.99"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the subscription was created
+        customerId:
+          type: integer
+          format: int64
+          description: ID of the customer
+          example: 1
+        deviceId:
+          type: integer
+          format: int64
+          description: ID of the primary device (if any)
+          example: 1
+        discountRate:
+          type: number
+          description: Locked-in discount rate
+          example: "0.90"
+        endDate:
+          type: string
+          format: date-time
+          description: Expiry date
+        id:
+          type: integer
+          format: int64
+          description: Unique database identifier for the subscription
+          example: 1
+        periodUnit:
+          type: string
+          description: Unit of subscription period
+          enum:
+            - days
+            - weeks
+            - months
+            - years
+          example: MONTHS
+        productId:
+          type: integer
+          format: int64
+          description: ID of the subscribed product
+          example: 1
+        startDate:
+          type: string
+          format: date-time
+          description: Activation date
+        status:
+          type: integer
+          format: int32
+          description: Current lifecycle status of the subscription
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+          example: ACTIVE
+        subscriptionFeatures:
+          $ref: '#/components/schemas/SubscriptionFeatureResponse'
+          description: List of features associated with this subscription
+        totalFee:
+          type: number
+          description: Total fee (baseFee * discountRate * periods)
+          example: "26.99"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the subscription was last updated
     ValidationErrorResponse:
       type: object
       description: Response model for validation errors (400 Bad Request)

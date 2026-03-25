@@ -43,6 +43,8 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
         if (subscriptionFeature == null) {
             throw new ResourceNotFoundException("Subscription feature not found for device: " + request.getDeviceNo() + ", feature: " + request.getFeatureNo() + ", product: " + request.getProductNo());
         }
+        // Update balance and accessed
+        subscriptionFeatureRepository.updateBalanceAndAccessed(subscriptionFeature.getTrackId(), request.getUsageAmount());
         // Create feature access log
         FeatureAccessLog accessLog = FeatureAccessLog.builder()
                 .subscriptionId(subscriptionFeature.getSubscription().getId())
@@ -117,9 +119,16 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
     @Override
     @Transactional
     public FeatureAccessLog trackFeatureUsageByTrackId(String trackId, FeatureUsageTrackingByTrackIdRequest request) {
-        // Find subscription feature by track ID
+        Integer usageAmount = request.getUsageAmount();
         SubscriptionFeatureProjection subscriptionFeature = findSubscriptionFeatureByTrackId(trackId);
+
+        // Update balance and accessed amounts using JPQL
+        int rowsUpdated = subscriptionFeatureRepository.updateBalanceAndAccessed(trackId, usageAmount);
         
+        if (rowsUpdated == 0) {
+            throw new IllegalArgumentException("Insufficient balance for trackId.");
+        }
+
         // Create feature access log
         FeatureAccessLog accessLog = FeatureAccessLog.builder()
                 .subscriptionId(subscriptionFeature.subscriptionId())
@@ -164,4 +173,5 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
         }
         return subscriptionFeatureOpt.get();
     }
+
 }
