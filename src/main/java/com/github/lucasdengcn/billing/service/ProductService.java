@@ -16,6 +16,7 @@ public interface ProductService {
     List<Product> findProductsByDiscountStatus(DiscountStatus status);
     List<Product> findAllProducts();
     boolean existsProductByProductNo(String productNo);
+    Product findProductByProductNoOrNull(String productNo);
     void deleteProductById(Long id);
     Product updateProduct(Long id, ProductRequest request);
 

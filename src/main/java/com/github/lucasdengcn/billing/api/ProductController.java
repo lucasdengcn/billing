@@ -40,6 +40,14 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Product created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid product data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
+        // Check if productNo exists, if so return existing product
+        if (request.getProductNo() != null && !request.getProductNo().trim().isEmpty()) {
+            Product existingProduct = productService.findProductByProductNoOrNull(request.getProductNo());
+            if (existingProduct != null) {
+                return ResponseEntity.ok(productMapper.toResponse(existingProduct));
+            }
+        }
+        
         Product product = productMapper.toEntity(request);
         Product saved = productService.saveProduct(product);
         return ResponseEntity.ok(productMapper.toResponse(saved));

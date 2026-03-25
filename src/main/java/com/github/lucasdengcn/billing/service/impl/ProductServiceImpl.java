@@ -64,6 +64,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    public Product findProductByProductNoOrNull(String productNo) {
+        log.debug("Finding product by product number (null-safe): {}", productNo);
+        return productRepository.findByProductNo(productNo).orElse(null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean existsProductByProductNo(String productNo) {
         log.debug("Checking existence of product with product number: {}", productNo);
         return productRepository.existsByProductNo(productNo);
