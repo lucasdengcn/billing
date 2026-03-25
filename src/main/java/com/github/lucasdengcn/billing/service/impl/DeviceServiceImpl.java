@@ -1,6 +1,5 @@
 package com.github.lucasdengcn.billing.service.impl;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 import com.github.lucasdengcn.billing.model.request.CustomerInfo;
@@ -61,7 +60,7 @@ public class DeviceServiceImpl implements DeviceService {
         Customer customer = resolveCustomer(request.getCustomer());
         // check if any deviceNo exist, if so return existing devices
         List<String> deviceNos = request.getDevices().stream().map(DeviceUpdateRequest::getDeviceNo).toList();
-        List<Device> existingDevices = deviceRepository.findByDeviceNosIn(deviceNos);
+        List<Device> existingDevices = deviceRepository.findByDeviceNoIn(deviceNos);
         // collect existing deviceNos
         List<String> existingDeviceNos = existingDevices.stream()
                 .map(Device::getDeviceNo)
@@ -76,7 +75,7 @@ public class DeviceServiceImpl implements DeviceService {
                     return device;
                 })
                 .toList();
-        if (!devices.isEmpty()) {
+        if (devices.isEmpty()) {
             return existingDevices;
         }
         List<Device> deviceList = deviceRepository.saveAll(devices);

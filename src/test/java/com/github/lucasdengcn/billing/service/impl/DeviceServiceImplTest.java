@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -205,7 +206,8 @@ class DeviceServiceImplTest {
         
         DeviceBatchRegisterRequest batchRequest = new DeviceBatchRegisterRequest();
         batchRequest.setCustomer(customerInfo);
-        batchRequest.setDevices(List.of(updateRequest, updateRequest));
+        List<DeviceUpdateRequest> devices = new ArrayList<>(List.of(updateRequest, updateRequest));
+        batchRequest.setDevices(devices);
 
         Device mappedDevice = Device.builder()
                 .deviceName("New Device")

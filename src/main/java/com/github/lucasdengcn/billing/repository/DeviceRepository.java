@@ -15,5 +15,5 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findByCustomer(Customer customer);
     List<Device> findByStatus(DeviceStatus status);
 
-    List<Device> findByDeviceNosIn(List<String> deviceNos);
+    List<Device> findByDeviceNoIn(List<String> deviceNos);
 }
