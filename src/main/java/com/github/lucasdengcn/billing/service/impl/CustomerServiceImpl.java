@@ -43,6 +43,13 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
+    public Customer findByCustomerNoOrNull(String customerNo) {
+        log.debug("Finding customer by customerNo (null-safe): {}", customerNo);
+        return customerRepository.findByCustomerNo(customerNo).orElse(null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Customer findByWechatId(String wechatId) {
         log.debug("Finding customer by WeChat ID: {}", wechatId);
         return customerRepository.findByWechatId(wechatId)

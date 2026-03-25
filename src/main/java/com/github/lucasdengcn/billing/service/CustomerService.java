@@ -15,6 +15,9 @@ public interface CustomerService {
 
   Customer findByMobileNo(String mobileNo);
 
+  // Methods that return null instead of throwing exceptions
+  Customer findByCustomerNoOrNull(String customerNo);
+
   List<Customer> findAll();
 
   void deleteById(Long id);
