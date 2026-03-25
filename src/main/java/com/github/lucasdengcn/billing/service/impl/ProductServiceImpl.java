@@ -70,6 +70,27 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
+    public Product createOrGetProduct(ProductRequest request) {
+        log.debug("Creating or getting product with product number: {}", request.getProductNo());
+        
+        // Check if productNo exists, if so return existing product
+        if (request.getProductNo() != null && !request.getProductNo().trim().isEmpty()) {
+            Product existingProduct = findProductByProductNoOrNull(request.getProductNo());
+            if (existingProduct != null) {
+                log.info("Product with productNo {} already exists, returning existing product", request.getProductNo());
+                return existingProduct;
+            }
+        }
+        
+        // Create new product
+        Product product = productMapper.toEntity(request);
+        Product saved = productRepository.save(product);
+        log.info("Created new product with productNo: {}", saved.getProductNo());
+        return saved;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public boolean existsProductByProductNo(String productNo) {
         log.debug("Checking existence of product with product number: {}", productNo);

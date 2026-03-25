@@ -17,6 +17,7 @@ public interface ProductService {
     List<Product> findAllProducts();
     boolean existsProductByProductNo(String productNo);
     Product findProductByProductNoOrNull(String productNo);
+    Product createOrGetProduct(ProductRequest request);
     void deleteProductById(Long id);
     Product updateProduct(Long id, ProductRequest request);
 
