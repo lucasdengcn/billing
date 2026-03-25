@@ -36,17 +36,8 @@ public class CustomerController {
     @ApiResponse(responseCode = "200", description = "Customer created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
     public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
-        // Check if customerNo exists, if so return existing customer
-        if (request.getCustomerNo() != null && !request.getCustomerNo().trim().isEmpty()) {
-            Customer existingCustomer = customerService.findByCustomerNoOrNull(request.getCustomerNo());
-            if (existingCustomer != null) {
-                return ResponseEntity.ok(customerMapper.toResponse(existingCustomer));
-            }
-        }
-        
-        Customer customer = customerMapper.toEntity(request);
-        Customer saved = customerService.save(customer);
-        return ResponseEntity.ok(customerMapper.toResponse(saved));
+        Customer result = customerService.createOrGetCustomer(request);
+        return ResponseEntity.ok(customerMapper.toResponse(result));
     }
 
     @GetMapping("/{id}")

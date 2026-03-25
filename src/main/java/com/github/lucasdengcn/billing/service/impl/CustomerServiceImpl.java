@@ -2,6 +2,8 @@ package com.github.lucasdengcn.billing.service.impl;
 
 import com.github.lucasdengcn.billing.entity.Customer;
 import com.github.lucasdengcn.billing.exception.ResourceNotFoundException;
+import com.github.lucasdengcn.billing.mapper.CustomerMapper;
+import com.github.lucasdengcn.billing.model.request.CustomerRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.github.lucasdengcn.billing.repository.CustomerRepository;
@@ -18,6 +20,7 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final CustomerMapper customerMapper;
 
     @Override
     public Customer save(Customer customer) {
@@ -46,6 +49,27 @@ public class CustomerServiceImpl implements CustomerService {
     public Customer findByCustomerNoOrNull(String customerNo) {
         log.debug("Finding customer by customerNo (null-safe): {}", customerNo);
         return customerRepository.findByCustomerNo(customerNo).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public Customer createOrGetCustomer(CustomerRequest request) {
+        log.debug("Creating or getting customer with customer number: {}", request.getCustomerNo());
+        
+        // Check if customerNo exists, if so return existing customer
+        if (request.getCustomerNo() != null && !request.getCustomerNo().trim().isEmpty()) {
+            Customer existingCustomer = findByCustomerNoOrNull(request.getCustomerNo());
+            if (existingCustomer != null) {
+                log.info("Customer with customerNo {} already exists, returning existing customer", request.getCustomerNo());
+                return existingCustomer;
+            }
+        }
+        
+        // Create new customer
+        Customer customer = customerMapper.toEntity(request);
+        Customer saved = save(customer);
+        log.info("Created new customer with customerNo: {}", saved.getCustomerNo());
+        return saved;
     }
 
     @Override

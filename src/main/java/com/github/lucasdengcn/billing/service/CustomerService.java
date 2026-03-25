@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.service;
 import java.util.List;
 
 import com.github.lucasdengcn.billing.entity.Customer;
+import com.github.lucasdengcn.billing.model.request.CustomerRequest;
 
 public interface CustomerService {
   Customer save(Customer customer);
@@ -17,6 +18,8 @@ public interface CustomerService {
 
   // Methods that return null instead of throwing exceptions
   Customer findByCustomerNoOrNull(String customerNo);
+
+  Customer createOrGetCustomer(CustomerRequest request);
 
   List<Customer> findAll();
 
