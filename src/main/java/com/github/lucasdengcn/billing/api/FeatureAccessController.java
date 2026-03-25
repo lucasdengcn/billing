@@ -44,16 +44,16 @@ public class FeatureAccessController {
         return ResponseEntity.ok("OK");
     }
     
-    @PostMapping("/usage-async")
-    @Operation(summary = "Asynchronously track feature usage", description = "Asynchronously tracks usage of a specific feature from a device identified by device number")
-    @ApiResponse(responseCode = "202", description = "Feature usage tracking initiated successfully")
-    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Device, Product, or Feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<String> trackFeatureUsageAsync(
-            @Valid @RequestBody FeatureUsageTrackingRequest request) {
-        featureAccessService.trackFeatureUsageAsync(request);
-        return ResponseEntity.accepted().body("Accepted");
-    }
+//    @PostMapping("/usage-async")
+//    @Operation(summary = "Asynchronously track feature usage", description = "Asynchronously tracks usage of a specific feature from a device identified by device number")
+//    @ApiResponse(responseCode = "202", description = "Feature usage tracking initiated successfully")
+//    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+//    @ApiResponse(responseCode = "404", description = "Device, Product, or Feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+//    public ResponseEntity<String> trackFeatureUsageAsync(
+//            @Valid @RequestBody FeatureUsageTrackingRequest request) {
+//        featureAccessService.trackFeatureUsageAsync(request);
+//        return ResponseEntity.accepted().body("Accepted");
+//    }
     
     @GetMapping("/usage/device/{deviceNo}/product/{productNo}/feature/{featureNo}")
     @Operation(summary = "Get feature usage logs by device, product, and feature", 
@@ -105,17 +105,17 @@ public class FeatureAccessController {
         return ResponseEntity.ok("OK");
     }
     
-    @PostMapping("/usage/{trackId}/async")
-    @Operation(summary = "Asynchronously track feature usage by track ID", description = "Asynchronously tracks usage of a specific feature identified by track ID")
-    @ApiResponse(responseCode = "202", description = "Feature usage tracking initiated successfully")
-    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Subscription feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<String> trackFeatureUsageByTrackIdAsync(
-            @PathVariable String trackId,
-            @Valid @RequestBody FeatureUsageTrackingByTrackIdRequest request) {
-        featureAccessService.trackFeatureUsageByTrackIdAsync(trackId, request);
-        return ResponseEntity.accepted().body("Accepted");
-    }
+//    @PostMapping("/usage/{trackId}/async")
+//    @Operation(summary = "Asynchronously track feature usage by track ID", description = "Asynchronously tracks usage of a specific feature identified by track ID")
+//    @ApiResponse(responseCode = "202", description = "Feature usage tracking initiated successfully")
+//    @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+//    @ApiResponse(responseCode = "404", description = "Subscription feature not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+//    public ResponseEntity<String> trackFeatureUsageByTrackIdAsync(
+//            @PathVariable String trackId,
+//            @Valid @RequestBody FeatureUsageTrackingByTrackIdRequest request) {
+//        featureAccessService.trackFeatureUsageByTrackIdAsync(trackId, request);
+//        return ResponseEntity.accepted().body("Accepted");
+//    }
     
     @GetMapping("/usage/trackId/{trackId}")
     @Operation(summary = "Get feature usage logs by track ID", 
