@@ -1,4 +1,4 @@
-package com.github.lucasdengcn.billing.service;
+package com.github.lucasdengcn.billing.service.impl;
 
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.ProductFeature;
@@ -11,11 +11,9 @@ import com.github.lucasdengcn.billing.model.request.ProductFeatureRequest;
 import com.github.lucasdengcn.billing.model.request.ProductRequest;
 import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
 import com.github.lucasdengcn.billing.repository.ProductRepository;
-import com.github.lucasdengcn.billing.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,7 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductServiceTest {
+class ProductServiceImplTest {
 
     @Mock
     private ProductRepository productRepository;
@@ -536,5 +534,158 @@ class ProductServiceTest {
         verify(productRepository, times(1)).existsByProductNo("NEW_PLAN_001");
         verify(productMapper, times(1)).updateEntity(eq(request), any(Product.class));
         verify(productRepository, times(1)).save(existingProduct);
+    }
+
+    @Test
+    void findProductByProductNoOrNull_WhenProductExists_ShouldReturnProduct() {
+        // Given
+        when(productRepository.findByProductNo("PREMIUM_PLAN_001")).thenReturn(Optional.of(sampleProduct));
+        
+        // When
+        Product result = productService.findProductByProductNoOrNull("PREMIUM_PLAN_001");
+        
+        // Then
+        assertThat(result).isEqualTo(sampleProduct);
+        verify(productRepository, times(1)).findByProductNo("PREMIUM_PLAN_001");
+    }
+
+    @Test
+    void findProductByProductNoOrNull_WhenProductDoesNotExist_ShouldReturnNull() {
+        // Given
+        when(productRepository.findByProductNo("NONEXISTENT_PLAN_001")).thenReturn(Optional.empty());
+        
+        // When
+        Product result = productService.findProductByProductNoOrNull("NONEXISTENT_PLAN_001");
+        
+        // Then
+        assertThat(result).isNull();
+        verify(productRepository, times(1)).findByProductNo("NONEXISTENT_PLAN_001");
+    }
+
+    @Test
+    void createOrGetProduct_WhenProductNoExists_ShouldReturnExistingProduct() {
+        // Given
+        ProductRequest request = new ProductRequest();
+        request.setProductNo("EXISTING_PRODUCT_NO");
+        request.setTitle("New Title");
+        
+        Product existingProduct = Product.builder()
+                .id(2L)
+                .productNo("EXISTING_PRODUCT_NO")
+                .title("Existing Product")
+                .build();
+        
+        when(productRepository.findByProductNo("EXISTING_PRODUCT_NO")).thenReturn(Optional.of(existingProduct));
+        
+        // When
+        Product result = productService.createOrGetProduct(request);
+        
+        // Then
+        assertThat(result).isEqualTo(existingProduct);
+        verify(productRepository).findByProductNo("EXISTING_PRODUCT_NO");
+        verify(productMapper, never()).toEntity(any(ProductRequest.class)); // Should not create new product
+        verify(productRepository, never()).save(any()); // Should not save new product
+    }
+
+    @Test
+    void createOrGetProduct_WhenProductNoDoesNotExist_ShouldCreateNewProduct() {
+        // Given
+        ProductRequest request = new ProductRequest();
+        request.setProductNo("NEW_PRODUCT_NO");
+        request.setTitle("New Product");
+        
+        Product newProduct = Product.builder()
+                .id(3L)
+                .productNo("NEW_PRODUCT_NO")
+                .title("New Product")
+                .build();
+        
+        when(productRepository.findByProductNo("NEW_PRODUCT_NO")).thenReturn(Optional.empty());
+        when(productMapper.toEntity(request)).thenReturn(newProduct);
+        when(productRepository.save(newProduct)).thenReturn(newProduct);
+        
+        // When
+        Product result = productService.createOrGetProduct(request);
+        
+        // Then
+        assertThat(result).isEqualTo(newProduct);
+        verify(productRepository).findByProductNo("NEW_PRODUCT_NO");
+        verify(productMapper).toEntity(request);
+        verify(productRepository).save(newProduct);
+    }
+
+    @Test
+    void createOrGetProduct_WhenProductNoIsNull_ShouldCreateNewProduct() {
+        // Given
+        ProductRequest request = new ProductRequest();
+        request.setProductNo(null);
+        request.setTitle("New Product Without Number");
+        
+        Product newProduct = Product.builder()
+                .id(4L)
+                .title("New Product Without Number")
+                .build();
+        
+        when(productMapper.toEntity(request)).thenReturn(newProduct);
+        when(productRepository.save(newProduct)).thenReturn(newProduct);
+        
+        // When
+        Product result = productService.createOrGetProduct(request);
+        
+        // Then
+        assertThat(result).isEqualTo(newProduct);
+        verify(productRepository, never()).findByProductNo(any()); // Should not check for productNo
+        verify(productMapper).toEntity(request);
+        verify(productRepository).save(newProduct);
+    }
+
+    @Test
+    void createOrGetProduct_WhenProductNoIsEmpty_ShouldCreateNewProduct() {
+        // Given
+        ProductRequest request = new ProductRequest();
+        request.setProductNo("");
+        request.setTitle("New Product Empty Number");
+        
+        Product newProduct = Product.builder()
+                .id(5L)
+                .title("New Product Empty Number")
+                .build();
+        
+        when(productMapper.toEntity(request)).thenReturn(newProduct);
+        when(productRepository.save(newProduct)).thenReturn(newProduct);
+        
+        // When
+        Product result = productService.createOrGetProduct(request);
+        
+        // Then
+        assertThat(result).isEqualTo(newProduct);
+        verify(productRepository, never()).findByProductNo(any()); // Should not check for productNo
+        verify(productMapper).toEntity(request);
+        verify(productRepository).save(newProduct);
+    }
+
+    @Test
+    void createOrGetProduct_WhenProductNoIsWhitespace_ShouldCreateNewProduct() {
+        // Given
+        ProductRequest request = new ProductRequest();
+        request.setProductNo("   ");
+        request.setTitle("New Product Whitespace Number");
+        
+        Product newProduct = Product.builder()
+                .id(6L)
+                .title("New Product Whitespace Number")
+                .build();
+        
+        when(productMapper.toEntity(request)).thenReturn(newProduct);
+        when(productRepository.save(newProduct)).thenReturn(newProduct);
+        
+        // When
+        Product result = productService.createOrGetProduct(request);
+        
+        // Then
+        assertThat(result).isEqualTo(newProduct);
+        verify(productRepository, never()).findByProductNo(any()); // Should not check for productNo
+        verify(productMapper).toEntity(request);
+        verify(productRepository).save(newProduct);
     }
 }
