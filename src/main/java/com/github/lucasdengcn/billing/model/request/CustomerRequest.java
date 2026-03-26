@@ -15,6 +15,7 @@ public class CustomerRequest {
   @Schema(description = "Customer's full name", example = "John Doe")
   private String name;
 
+  @NotBlank(message = "Customer number is required")
   @Schema(description = "Unique customer number", example = "CUST-2026-001")
   @Size(max = 50, message = "Customer number cannot exceed 50 characters")
   @Pattern(regexp = "^[A-Z]{2,4}-\\d{6,12}$", message = "Customer number must follow the format: XX-123456 or XXX-12345678 (2-4 letters, hyphen, 6-12 digits)")

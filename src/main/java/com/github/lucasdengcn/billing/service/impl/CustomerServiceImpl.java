@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -48,16 +49,19 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional(readOnly = true)
     public Customer findByCustomerNoOrNull(String customerNo) {
         log.debug("Finding customer by customerNo (null-safe): {}", customerNo);
-        return customerRepository.findByCustomerNo(customerNo).orElse(null);
+        Optional<Customer> optionalCustomer = customerRepository.findByCustomerNo(customerNo);
+        return optionalCustomer.orElse(null);
     }
 
     @Override
     @Transactional
     public Customer createOrGetCustomer(CustomerRequest request) {
         log.debug("Creating or getting customer with customer number: {}", request.getCustomerNo());
-        
+        if (request.getCustomerNo() == null || request.getCustomerNo().trim().isEmpty()) {
+            throw new IllegalArgumentException("Customer number is required");
+        }
         // Check if customerNo exists, if so return existing customer
-        if (request.getCustomerNo() != null && !request.getCustomerNo().trim().isEmpty()) {
+        {
             Customer existingCustomer = findByCustomerNoOrNull(request.getCustomerNo());
             if (existingCustomer != null) {
                 log.info("Customer with customerNo {} already exists, returning existing customer", request.getCustomerNo());
