@@ -42,12 +42,12 @@ public class DeviceServiceImpl implements DeviceService {
     @Transactional
     public Device registerDevice(DeviceRegisterRequest request) {
         log.info("Registering device: {} for customer info provided", request.getDeviceNo());
-        Customer customer = resolveCustomer(request.getCustomer());
         // Check if deviceNo exist, if so return existing device
         Device existingDevice = deviceRepository.findByDeviceNo(request.getDeviceNo()).orElse(null);
         if (existingDevice != null) {
             return existingDevice;
         }
+        Customer customer = resolveCustomer(request.getCustomer());
         Device device = deviceMapper.toEntity(request);
         device.setCustomer(customer);
         return deviceRepository.save(device);
@@ -56,19 +56,20 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     @Transactional
     public List<Device> registerDevices(DeviceBatchRegisterRequest request) {
-        log.info("Batch registering {} devices for customer info provided", request.getDevices().size());
+        List<DeviceUpdateRequest> requestDevices = new java.util.ArrayList<>(request.getDevices());
+        log.info("Batch registering {} devices for customer info provided", requestDevices.size());
         Customer customer = resolveCustomer(request.getCustomer());
         // check if any deviceNo exist, if so return existing devices
-        List<String> deviceNos = request.getDevices().stream().map(DeviceUpdateRequest::getDeviceNo).toList();
+        List<String> deviceNos = requestDevices.stream().map(DeviceUpdateRequest::getDeviceNo).toList();
         List<Device> existingDevices = deviceRepository.findByDeviceNoIn(deviceNos);
         // collect existing deviceNos
         List<String> existingDeviceNos = existingDevices.stream()
                 .map(Device::getDeviceNo)
                 .toList();
         // filter out existing devices from request devices
-        request.getDevices().removeIf(deviceReq -> existingDeviceNos.contains(deviceReq.getDeviceNo()));
+        requestDevices.removeIf(deviceReq -> existingDeviceNos.contains(deviceReq.getDeviceNo()));
         // register new devices
-        List<Device> devices = request.getDevices().stream()
+        List<Device> devices = requestDevices.stream()
                 .map(deviceReq -> {
                     Device device = deviceMapper.toEntity(deviceReq);
                     device.setCustomer(customer);
@@ -79,8 +80,10 @@ public class DeviceServiceImpl implements DeviceService {
             return existingDevices;
         }
         List<Device> deviceList = deviceRepository.saveAll(devices);
-        existingDevices.addAll(deviceList);
-        return existingDevices;
+        // Merge existing and new devices
+        List<Device> allDevices = new java.util.ArrayList<>(existingDevices);
+        allDevices.addAll(deviceList);
+        return allDevices;
     }
 
     @Override
