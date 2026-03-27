@@ -7,8 +7,6 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
-import org.springframework.validation.method.ParameterErrors;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -18,7 +16,6 @@ import com.github.lucasdengcn.billing.model.response.ValidationErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import com.github.lucasdengcn.billing.exception.BusinessException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @Slf4j
@@ -29,12 +26,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
         log.error("Business exception: {}", ex.getMessage(), ex);
         ErrorResponse response = ErrorResponse.builder()
-                .status(ex.getStatus().value())
+                .status(ex.getHttpStatus().value())
                 .message(ex.getMessage())
                 .timestamp(OffsetDateTime.now())
                 .path(request.getRequestURI())
                 .build();
-        return new ResponseEntity<>(response, ex.getStatus());
+        return new ResponseEntity<>(response, ex.getHttpStatus());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

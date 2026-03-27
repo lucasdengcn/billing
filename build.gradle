@@ -53,7 +53,7 @@ dependencies {
 	// Source: https://mvnrepository.com/artifact/com.github.f4b6a3/ulid-creator
 	implementation "com.github.f4b6a3:ulid-creator:5.2.4"
 	// Add Google Guava library
-	// implementation 'com.google.guava:guava:33.2.1-jre'
+	implementation 'com.google.guava:guava:33.5.0-jre'
 	//
 	compileOnly 'org.projectlombok:lombok'
 	// developmentOnly 'org.springframework.boot:spring-boot-docker-compose'

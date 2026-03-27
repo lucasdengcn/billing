@@ -82,11 +82,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public SubscriptionRenewal saveRenewal(@NonNull SubscriptionRenewal renewal) {
-        return subscriptionRenewalRepository.save(renewal);
-    }
-
-    @Override
     @Transactional
     public void createSubscriptionFeaturesFromProduct(@NonNull Subscription subscription) {
         log.info("Creating subscription features from product features for subscription: {}", subscription.getId());
@@ -320,7 +315,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     
     @Override
     @Transactional
-    public Subscription renewSubscription(SubscriptionRenewalRequest request) {
+    public Subscription renewSubscription(@NonNull SubscriptionRenewalRequest request) {
         log.info("Renewing subscription for device: {} and product: {} with {} {}", 
                  request.getDeviceNo(), request.getProductNo(), request.getRenewalPeriods(), request.getRenewalPeriodUnit());
         

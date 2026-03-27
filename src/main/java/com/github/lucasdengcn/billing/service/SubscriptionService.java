@@ -20,8 +20,6 @@ public interface SubscriptionService {
 
     List<SubscriptionFeature> findFeaturesBySubscription(@NonNull Subscription subscription);
 
-    SubscriptionRenewal saveRenewal(@NonNull SubscriptionRenewal renewal);
-    
     Subscription cancelSubscription(Long customerId, Long deviceId, Long productId);
     
     List<Subscription> findSubscriptionsByDeviceNo(String deviceNo);
@@ -32,5 +30,5 @@ public interface SubscriptionService {
 
     SubscriptionFeature findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(String deviceNo, String featureNo, String productNo);
 
-    Subscription renewSubscription(SubscriptionRenewalRequest request);
+    Subscription renewSubscription(@NonNull SubscriptionRenewalRequest request);
 }
