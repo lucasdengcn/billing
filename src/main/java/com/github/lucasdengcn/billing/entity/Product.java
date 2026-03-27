@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Description;
 @Entity
 @Table(name = "products")
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {

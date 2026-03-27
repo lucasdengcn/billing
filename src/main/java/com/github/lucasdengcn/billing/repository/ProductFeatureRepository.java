@@ -14,4 +14,6 @@ public interface ProductFeatureRepository extends JpaRepository<ProductFeature, 
     List<ProductFeature> findByProduct(Product product);
 
     Optional<ProductFeature> findByProductAndFeatureNo(Product product, String featureNo);
+    
+    int deleteByProduct_Id(Long productId);
 }

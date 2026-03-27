@@ -25,8 +25,8 @@ public interface ProductService {
     ProductFeature findFeatureById(Long id);
     List<ProductFeature> findFeaturesByProduct(Product product);
     List<ProductFeature> findFeaturesByProduct(Long productId);
-    void deleteFeatureById(Long id);
     List<ProductFeature> addFeaturesToProduct(Long productId, List<ProductFeatureRequest> requests);
     ProductFeature updateProductFeature(Long featureId, ProductFeatureRequest request);
     void deleteProductFeature(Long featureId);
+    void deleteFeaturesByProduct(Long productId);
 }

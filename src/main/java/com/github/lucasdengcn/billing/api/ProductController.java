@@ -125,4 +125,13 @@ public class ProductController {
         productService.deleteProductFeature(featureId);
         return ResponseEntity.noContent().build();
     }
+    
+    @DeleteMapping("/{productId}/features")
+    @Operation(summary = "Delete all features of a product", description = "Deletes all features associated with a specific product")
+    @ApiResponse(responseCode = "204", description = "Features deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Void> deleteProductFeatures(@PathVariable Long productId) {
+        productService.deleteFeaturesByProduct(productId);
+        return ResponseEntity.noContent().build();
+    }
 }

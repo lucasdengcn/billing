@@ -205,10 +205,15 @@ public class ProductServiceImpl implements ProductService {
         log.debug("Finding features for product: {}", product.getId());
         return productFeatureRepository.findByProduct(product);
     }
-
+    
     @Override
-    public void deleteFeatureById(Long id) {
-        log.info("Deleting feature with ID: {}", id);
-        productFeatureRepository.deleteById(id);
+    public void deleteFeaturesByProduct(Long productId) {
+        log.info("Deleting all features for product with ID: {}", productId);
+
+        // Use bulk delete with JPQL to avoid fetching all features
+        int deletedCount = productFeatureRepository.deleteByProduct_Id(productId);
+        
+        log.info("Deleted {} features for product with ID: {}", deletedCount, productId);
     }
+    
 }
