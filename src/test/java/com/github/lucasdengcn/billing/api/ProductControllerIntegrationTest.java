@@ -571,4 +571,63 @@ class ProductControllerIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Product not found with product number: NONEXISTENT_PRODUCT_001"));
     }
+    
+    @Test
+    void deleteProductFeatures_WithValidProduct_ShouldDeleteAllFeatures() throws Exception {
+        // Given - Add some features to the product first
+        ProductFeature feature1 = ProductFeature.builder()
+                .product(testProduct1)
+                .featureNo("FEAT_TO_DELETE_001")
+                .title("Feature to Delete 1")
+                .description("First feature to delete")
+                .featureType(FeatureType.API_ACCESS)
+                .quota(1000)
+                .build();
+        productFeatureRepository.save(feature1);
+        
+        ProductFeature feature2 = ProductFeature.builder()
+                .product(testProduct1)
+                .featureNo("FEAT_TO_DELETE_002")
+                .title("Feature to Delete 2")
+                .description("Second feature to delete")
+                .featureType(FeatureType.STORAGE_SPACE)
+                .quota(500)
+                .build();
+        productFeatureRepository.save(feature2);
+        
+        // Verify features exist before deletion
+        List<ProductFeature> featuresBefore = productFeatureRepository.findByProduct(testProduct1);
+        assertThat(featuresBefore).hasSize(2);
+        
+        // When & Then
+        mockMvc.perform(delete("/api/products/{productId}/features", testProduct1.getId()))
+                .andExpect(status().isNoContent());
+        
+        // Verify features are deleted
+        List<ProductFeature> featuresAfter = productFeatureRepository.findByProduct(testProduct1);
+        assertThat(featuresAfter).isEmpty();
+    }
+    
+    @Test
+    void deleteProductFeatures_WhenProductHasNoFeatures_ShouldCompleteSuccessfully() throws Exception {
+        // Verify product exists but has no features
+        List<ProductFeature> featuresBefore = productFeatureRepository.findByProduct(testProduct1);
+        assertThat(featuresBefore).isEmpty();
+        
+        // When & Then
+        mockMvc.perform(delete("/api/products/{productId}/features", testProduct1.getId()))
+                .andExpect(status().isNoContent());
+        
+        // Verify still no features
+        List<ProductFeature> featuresAfter = productFeatureRepository.findByProduct(testProduct1);
+        assertThat(featuresAfter).isEmpty();
+    }
+    
+    @Test
+    void deleteProductFeatures_WhenProductNotFound_ShouldReturnNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(delete("/api/products/{productId}/features", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Product not found with id: 999"));
+    }
 }
