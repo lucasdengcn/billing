@@ -44,7 +44,11 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
             throw new ResourceNotFoundException("Subscription feature not found for device: " + request.getDeviceNo() + ", feature: " + request.getFeatureNo() + ", product: " + request.getProductNo());
         }
         // Update balance and accessed
-        subscriptionFeatureRepository.updateBalanceAndAccessed(subscriptionFeature.getTrackId(), request.getUsageAmount());
+        int updated = subscriptionFeatureRepository.updateBalanceAndAccessed(subscriptionFeature.getTrackId(), request.getUsageAmount());
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Subscription feature not found for trackId: " + subscriptionFeature.getTrackId());
+        }
+
         // Create feature access log
         FeatureAccessLog accessLog = FeatureAccessLog.builder()
                 .subscriptionId(subscriptionFeature.getSubscription().getId())

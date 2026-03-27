@@ -11,7 +11,7 @@ import lombok.*;
 @Entity
 @Table(name = "feature_access_logs")
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeatureAccessLog {

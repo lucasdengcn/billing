@@ -14,7 +14,7 @@ import lombok.*;
 @Entity
 @Table(name = "devices")
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Device {
