@@ -15,12 +15,6 @@ public interface FeatureAccessService {
      * Track feature usage by device number, product number, and feature number
      */
     FeatureAccessLog trackFeatureUsage(FeatureUsageTrackingRequest request);
-    
-    /**
-     * Asynchronously track feature usage by device number, product number, and feature number
-     */
-    CompletableFuture<FeatureAccessLog> trackFeatureUsageAsync(FeatureUsageTrackingRequest request);
-    
     /**
      * Get feature usage logs by device number, product number, and feature number
      */
@@ -40,12 +34,6 @@ public interface FeatureAccessService {
      * Track feature usage by track ID
      */
     FeatureAccessLog trackFeatureUsageByTrackId(String trackId, FeatureUsageTrackingByTrackIdRequest request);
-    
-    /**
-     * Asynchronously track feature usage by track ID
-     */
-    CompletableFuture<FeatureAccessLog> trackFeatureUsageByTrackIdAsync(String trackId, FeatureUsageTrackingByTrackIdRequest request);
-    
     /**
      * Get feature usage logs by track ID
      */

@@ -63,19 +63,6 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
     }
 
     @Override
-    @Async
-    @Transactional
-    public CompletableFuture<FeatureAccessLog> trackFeatureUsageAsync(FeatureUsageTrackingRequest request) {
-        try {
-            FeatureAccessLog savedLog = trackFeatureUsage(request);
-            return CompletableFuture.completedFuture(savedLog);
-        } catch (Exception e) {
-            log.error("Error tracking feature usage asynchronously", e);
-            throw e;
-        }
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Page<FeatureAccessLog> getFeatureUsageLogs(String deviceNo, String productNo, String featureNo, Pageable pageable) {
         // Find the subscription feature to get the IDs needed for filtering logs
@@ -144,19 +131,6 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
 
         // Log the access
         return logRepository.save(accessLog);
-    }
-
-    @Override
-    @Async
-    @Transactional
-    public CompletableFuture<FeatureAccessLog> trackFeatureUsageByTrackIdAsync(String trackId, FeatureUsageTrackingByTrackIdRequest request) {
-        try {
-            FeatureAccessLog savedLog = trackFeatureUsageByTrackId(trackId, request);
-            return CompletableFuture.completedFuture(savedLog);
-        } catch (Exception e) {
-            log.error("Error tracking feature usage by trackId asynchronously", e);
-            throw e;
-        }
     }
 
     @Override

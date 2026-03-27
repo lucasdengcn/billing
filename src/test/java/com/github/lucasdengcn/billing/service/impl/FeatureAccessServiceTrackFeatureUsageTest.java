@@ -262,27 +262,19 @@ class FeatureAccessServiceTrackFeatureUsageTest {
     }
 
     @Test
-    void trackFeatureUsage_WhenBalanceUpdateFails_ShouldThrowResourceNotFoundException() {
+    void trackFeatureUsage_WhenBalanceUpdateFails_ShouldThrowException() {
         // Given
-        FeatureAccessLog expectedLog = FeatureAccessLog.builder()
-                .subscriptionId(10000L)
-                .productFeatureId(1000L)
-                .deviceId(10L)
-                .usageAmount(5)
-                .detailValue("Test usage tracking")
-                .build();
-
         when(subscriptionService.findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-001", "FEATURE-001", "PROD-001"))
                 .thenReturn(testSubscriptionFeature);
         when(subscriptionFeatureRepository.updateBalanceAndAccessed("TRACK-001", 5)).thenReturn(0); // Simulate failure
 
-        // When & Then - Even if balance update fails, it should still create the log
-        // Based on the code, it checks for insufficient balance after the update
-        // But if the update happens successfully (returns 1), then the log is created
-        assertThatThrownBy(() -> {
-            FeatureAccessLog result = featureAccessService.trackFeatureUsage(testRequest);
-            // The code doesn't throw an exception if updateBalanceAndAccessed returns 0
-            // So let's check if this scenario is handled differently in the actual code
-        }).isInstanceOf(ResourceNotFoundException.class);
+        // When & Then - According to the implementation, if updateBalanceAndAccessed returns 0, it throws an exception
+        assertThatThrownBy(() -> featureAccessService.trackFeatureUsage(testRequest))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Subscription feature not found for trackId: TRACK-001");
+
+        verify(subscriptionService).findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-001", "FEATURE-001", "PROD-001");
+        verify(subscriptionFeatureRepository).updateBalanceAndAccessed("TRACK-001", 5);
+        verify(logRepository, never()).save(any(FeatureAccessLog.class)); // Should not save log if balance update fails
     }
 }
