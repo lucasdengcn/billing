@@ -28,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FeatureAccessServiceGetFeatureUsageLogsTest {
@@ -225,4 +228,91 @@ class FeatureAccessServiceGetFeatureUsageLogsTest {
         assertThat(result.getPageable()).isEqualTo(customPageable);
         assertThat(result.getContent()).hasSize(1);
     }
+
+    @Test
+    void getFeatureUsageLogs_VerifyCorrectMethodCalls() {
+        // Given
+        List<FeatureAccessLog> logs = List.of(testFeatureAccessLog);
+        Page<FeatureAccessLog> expectedPage = new PageImpl<>(logs, pageable, 1);
+
+        when(subscriptionService.findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-001", "FEATURE-001", "PROD-001"))
+                .thenReturn(testSubscriptionFeature);
+        when(logRepository.findBySubscriptionIdAndProductFeatureIdOrderByAccessTimeDesc(10000L, 1000L, pageable))
+                .thenReturn(expectedPage);
+
+        // When
+        Page<FeatureAccessLog> result = featureAccessService.getFeatureUsageLogs("DEV-001", "PROD-001", "FEATURE-001", pageable);
+
+        // Then
+        assertThat(result).isEqualTo(expectedPage);
+
+        // Verify the correct methods were called with correct parameters
+        verify(subscriptionService).findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-001", "FEATURE-001", "PROD-001");
+        verify(logRepository).findBySubscriptionIdAndProductFeatureIdOrderByAccessTimeDesc(10000L, 1000L, pageable);
+        verifyNoMoreInteractions(subscriptionFeatureRepository, deviceService, subscriptionRepository);
+    }
+
+    @Test
+    void getFeatureUsageLogs_WhenExceptionOccurs_ShouldVerifyNoExtraInteractions() {
+        // Given
+        when(subscriptionService.findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-ERROR", "FEATURE-ERROR", "PROD-ERROR"))
+                .thenThrow(new ResourceNotFoundException("Test error"));
+
+        // When & Then
+        assertThatThrownBy(() -> featureAccessService.getFeatureUsageLogs("DEV-ERROR", "PROD-ERROR", "FEATURE-ERROR", pageable))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        // Verify that only the expected method was called and no others
+        verify(subscriptionService).findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-ERROR", "FEATURE-ERROR", "PROD-ERROR");
+        verifyNoMoreInteractions(logRepository, subscriptionFeatureRepository, deviceService, subscriptionRepository);
+    }
+
+    @Test
+    void getFeatureUsageLogs_WithDifferentPageSizes_ShouldReturnCorrectCounts() {
+        // Given
+        FeatureAccessLog log1 = testFeatureAccessLog.toBuilder().id(1000001L).build();
+        FeatureAccessLog log2 = testFeatureAccessLog.toBuilder().id(1000002L).build();
+        FeatureAccessLog log3 = testFeatureAccessLog.toBuilder().id(1000003L).build();
+        List<FeatureAccessLog> allLogs = List.of(log1, log2, log3);
+
+        Pageable pageSize2 = PageRequest.of(0, 2);
+        Page<FeatureAccessLog> expectedPage = new PageImpl<>(List.of(log1, log2), pageSize2, 3); // 3 total elements
+
+        when(subscriptionService.findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-PAGESIZE", "FEATURE-PAGESIZE", "PROD-PAGESIZE"))
+                .thenReturn(testSubscriptionFeature);
+        when(logRepository.findBySubscriptionIdAndProductFeatureIdOrderByAccessTimeDesc(10000L, 1000L, pageSize2))
+                .thenReturn(expectedPage);
+
+        // When
+        Page<FeatureAccessLog> result = featureAccessService.getFeatureUsageLogs("DEV-PAGESIZE", "PROD-PAGESIZE", "FEATURE-PAGESIZE", pageSize2);
+
+        // Then
+        assertThat(result.getContent()).hasSize(2); // Page size is 2
+        assertThat(result.getTotalElements()).isEqualTo(3); // Total elements is 3
+        assertThat(result.getNumber()).isEqualTo(0); // Current page number
+        assertThat(result.getNumberOfElements()).isEqualTo(2); // Elements in current page
+    }
+
+    @Test
+    void getFeatureUsageLogs_WithDifferentPageNumbers_ShouldReturnCorrectPage() {
+        // Given
+        FeatureAccessLog log1 = testFeatureAccessLog.toBuilder().id(1000001L).build();
+        List<FeatureAccessLog> logs = List.of(log1);
+        Pageable secondPage = PageRequest.of(1, 1); // Page 1 (second page), size 1
+        Page<FeatureAccessLog> expectedPage = new PageImpl<>(logs, secondPage, 10); // 10 total elements
+
+        when(subscriptionService.findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo("DEV-PAGENUM", "FEATURE-PAGENUM", "PROD-PAGENUM"))
+                .thenReturn(testSubscriptionFeature);
+        when(logRepository.findBySubscriptionIdAndProductFeatureIdOrderByAccessTimeDesc(10000L, 1000L, secondPage))
+                .thenReturn(expectedPage);
+
+        // When
+        Page<FeatureAccessLog> result = featureAccessService.getFeatureUsageLogs("DEV-PAGENUM", "PROD-PAGENUM", "FEATURE-PAGENUM", secondPage);
+
+        // Then
+        assertThat(result.getNumber()).isEqualTo(1); // Should be page 1 (second page)
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(10);
+    }
+
 }

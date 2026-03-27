@@ -40,9 +40,7 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
                 findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(request.getDeviceNo(),
                         request.getFeatureNo(),
                         request.getProductNo());
-        if (subscriptionFeature == null) {
-            throw new ResourceNotFoundException("Subscription feature not found for device: " + request.getDeviceNo() + ", feature: " + request.getFeatureNo() + ", product: " + request.getProductNo());
-        }
+
         // Update balance and accessed
         int updated = subscriptionFeatureRepository.updateBalanceAndAccessed(subscriptionFeature.getTrackId(), request.getUsageAmount());
         if (updated == 0) {
@@ -68,12 +66,7 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
         // Find the subscription feature to get the IDs needed for filtering logs
         SubscriptionFeature subscriptionFeature = subscriptionService.
                 findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(deviceNo, featureNo, productNo);
-        
-        if (subscriptionFeature == null) {
-            throw new ResourceNotFoundException("Subscription feature not found for device: " + deviceNo + 
-                    ", feature: " + featureNo + ", product: " + productNo);
-        }
-        
+
         // Query logs by the subscription ID and product feature ID, ordered by access time descending
         return logRepository.findBySubscriptionIdAndProductFeatureIdOrderByAccessTimeDesc(
                 subscriptionFeature.getSubscription().getId(), 
@@ -86,10 +79,6 @@ public class FeatureAccessServiceImpl implements FeatureAccessService {
     public Page<FeatureAccessLog> getFeatureUsageLogsByDevice(String deviceNo, Pageable pageable) {
         // Find device by device number
         Device device = deviceService.findByDeviceNo(deviceNo);
-        if (device == null) {
-            throw new ResourceNotFoundException("Device not found: " + deviceNo);
-        }
-        
         // Query logs by device, ordered by access time descending
         return logRepository.findByDeviceIdOrderByAccessTimeDesc(device.getId(), pageable);
     }
