@@ -17,8 +17,8 @@ public class CustomerRequest {
 
   @NotBlank(message = "Customer number is required")
   @Schema(description = "Unique customer number", example = "CUST-2026-001")
-  @Size(max = 50, message = "Customer number cannot exceed 50 characters")
-  @Pattern(regexp = "^[A-Z]{2,4}-\\d{6,12}$", message = "Customer number must follow the format: XX-123456 or XXX-12345678 (2-4 letters, hyphen, 6-12 digits)")
+  @Size(min = 6, max = 50, message = "Customer number must be between 6 and 50 characters")
+  @Pattern(regexp = "^[A-Z]{2,4}-\\d{3,12}$", message = "Customer number must follow the format: XX-123456 or XXX-12345678 (2-4 letters, hyphen, 3-12 digits)")
   private String customerNo;
 
   @Schema(description = "WeChat ID for communication", example = "wx_12345")
