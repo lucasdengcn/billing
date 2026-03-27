@@ -316,9 +316,10 @@ class CustomerServiceImplTest {
 
     @Test
     void deleteById_ShouldCallRepositoryDelete() {
+        // Given
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer));
         // When
         customerService.deleteById(1L);
-
         // Then
         verify(customerRepository).deleteById(1L);
     }

@@ -408,4 +408,99 @@ class FeatureAccessControllerIntegrationTest {
         mockMvc.perform(get("/api/feature/usage/trackId/{trackId}", "TRK-NONEXISTENT123456789"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void getFeatureUsageLogs_WithValidCombination_ShouldReturnLogs() throws Exception {
+        // Given - Create a log entry first
+        FeatureUsageTrackingRequest request = FeatureUsageTrackingRequest.builder()
+                .deviceNo("FA-000001")
+                .productNo("FEATURE_PLAN_001")
+                .featureNo("FEAT_0001")
+                .usageAmount(1)
+                .detailValue("Test access detail")
+                .build();
+        
+        mockMvc.perform(post("/api/feature/usage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // When & Then
+        mockMvc.perform(get("/api/feature/usage/device/{deviceNo}/product/{productNo}/feature/{featureNo}", 
+                          "FA-000001", "FEATURE_PLAN_001", "FEAT_0001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("totalElements", is(1)))
+                .andExpect(jsonPath("content[0].usageAmount", is(1)))
+                .andExpect(jsonPath("content[0].detailValue", is("Test access detail")));
+    }
+
+    @Test
+    void getFeatureUsageLogs_WithNonExistentCombination_ShouldReturnNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/feature/usage/device/{deviceNo}/product/{productNo}/feature/{featureNo}", 
+                          "NON-EXISTENT", "NON-EXISTENT", "NON-EXISTENT"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getFeatureUsageLogsByDevice_WithValidDeviceNo_ShouldReturnLogs() throws Exception {
+        // Given - Create a log entry first
+        FeatureUsageTrackingRequest request = FeatureUsageTrackingRequest.builder()
+                .deviceNo("FA-000001")
+                .productNo("FEATURE_PLAN_001")
+                .featureNo("FEAT_0001")
+                .usageAmount(2)
+                .detailValue("Device-specific access")
+                .build();
+        
+        mockMvc.perform(post("/api/feature/usage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // When & Then
+        mockMvc.perform(get("/api/feature/usage/device/{deviceNo}", "FA-000001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("totalElements", is(1)))
+                .andExpect(jsonPath("content[0].usageAmount", is(2)))
+                .andExpect(jsonPath("content[0].detailValue", is("Device-specific access")));
+    }
+
+    @Test
+    void getFeatureUsageLogsByDevice_WithNonExistentDeviceNo_ShouldReturnNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/feature/usage/device/{deviceNo}", "NON-EXISTENT-DEVICE"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getFeatureUsageLogsBySubscription_WithValidSubscriptionId_ShouldReturnLogs() throws Exception {
+        // Given - Create a log entry first
+        FeatureUsageTrackingRequest request = FeatureUsageTrackingRequest.builder()
+                .deviceNo("FA-000001")
+                .productNo("FEATURE_PLAN_001")
+                .featureNo("FEAT_0001")
+                .usageAmount(3)
+                .detailValue("Subscription-specific access")
+                .build();
+        
+        mockMvc.perform(post("/api/feature/usage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // When & Then
+        mockMvc.perform(get("/api/feature/usage/subscription/{subscriptionId}", testSubscription.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("totalElements", is(1)))
+                .andExpect(jsonPath("content[0].usageAmount", is(3)))
+                .andExpect(jsonPath("content[0].detailValue", is("Subscription-specific access")));
+    }
+
+    @Test
+    void getFeatureUsageLogsBySubscription_WithNonExistentSubscriptionId_ShouldReturnNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/feature/usage/subscription/{subscriptionId}", 999L))
+                .andExpect(status().isNotFound());
+    }
 }

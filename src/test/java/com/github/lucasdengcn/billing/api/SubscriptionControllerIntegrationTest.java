@@ -1,12 +1,9 @@
 package com.github.lucasdengcn.billing.api;
 
 import com.github.lucasdengcn.billing.entity.*;
-import com.github.lucasdengcn.billing.entity.enums.DeviceStatus;
-import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
-import com.github.lucasdengcn.billing.entity.enums.FeatureType;
-import com.github.lucasdengcn.billing.entity.enums.PriceType;
-import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
+import com.github.lucasdengcn.billing.entity.enums.*;
 import com.github.lucasdengcn.billing.model.request.CancelSubscriptionRequest;
+import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
 import com.github.lucasdengcn.billing.repository.CustomerRepository;
@@ -791,6 +788,85 @@ class SubscriptionControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(secondRequest)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Device " + testDevice.getId() + " already has an active subscription to product " + testProduct.getId()));
+    }
+
+    @Test
+    void renewSubscription_WithValidRequest_ShouldRenewSubscription() throws Exception {
+        // Given - Create a subscription first
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
+        subscriptionRequest.setCustomerId(testCustomer.getId());
+        subscriptionRequest.setDeviceId(testDevice.getId());
+        subscriptionRequest.setProductId(testProduct.getId());
+        subscriptionRequest.setStartDate(OffsetDateTime.now().plusHours(1)); // Started today
+        subscriptionRequest.setEndDate(OffsetDateTime.now().plusDays(1)); // Ends tomorrow
+
+        // Create the subscription via API
+        String response = mockMvc.perform(post("/api/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(subscriptionRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // Extract the ID from the response
+        Long subscriptionId = objectMapper.readTree(response).get("id").asLong();
+
+        // Verify initial subscription details
+        mockMvc.perform(get("/api/subscriptions/{id}", subscriptionId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(subscriptionId))
+                .andExpect(jsonPath("$.status").value(SubscriptionStatus.ACTIVE.getValue()));
+
+        // Prepare renewal request
+        SubscriptionRenewalRequest renewalRequest = 
+            new SubscriptionRenewalRequest();
+        renewalRequest.setDeviceNo(testDevice.getDeviceNo());
+        renewalRequest.setProductNo(testProduct.getProductNo());
+        renewalRequest.setRenewalPeriods(3); // Renew for 3 periods
+        renewalRequest.setRenewalPeriodUnit(PeriodUnit.MONTHS);
+
+        // When & Then - Renew the subscription
+        mockMvc.perform(post("/api/subscriptions/renew")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(renewalRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(subscriptionId))
+                .andExpect(jsonPath("$.status").value(SubscriptionStatus.ACTIVE.getValue()))
+                .andExpect(jsonPath("$.baseFee").value(59.99));
+    }
+
+    @Test
+    void renewSubscription_WithNonExistentSubscription_ShouldReturnNotFound() throws Exception {
+        // Given - Renewal request with non-existent device/product combination
+        SubscriptionRenewalRequest renewalRequest = 
+            new SubscriptionRenewalRequest();
+        renewalRequest.setDeviceNo("NONEXISTENT_DEVICE");
+        renewalRequest.setProductNo("NONEXISTENT_PRODUCT");
+        renewalRequest.setRenewalPeriods(3);
+        renewalRequest.setRenewalPeriodUnit(PeriodUnit.MONTHS);
+
+        // When & Then
+        mockMvc.perform(post("/api/subscriptions/renew")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(renewalRequest)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void renewSubscription_WithInvalidRequest_ShouldReturnBadRequest() throws Exception {
+        // Given - Renewal request with invalid data (negative periods)
+        SubscriptionRenewalRequest renewalRequest = 
+            new SubscriptionRenewalRequest();
+        renewalRequest.setDeviceNo(testDevice.getDeviceNo());
+        renewalRequest.setProductNo(testProduct.getProductNo());
+        renewalRequest.setRenewalPeriods(-1); // Invalid negative periods
+        renewalRequest.setRenewalPeriodUnit(PeriodUnit.MONTHS);
+        // When & Then
+        mockMvc.perform(post("/api/subscriptions/renew")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(renewalRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.renewalPeriods").exists());
     }
 
     @Test
