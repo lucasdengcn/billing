@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.component;
 import com.github.lucasdengcn.billing.component.impl.PricingCalculatorImpl;
 import com.github.lucasdengcn.billing.entity.Product;
 import com.github.lucasdengcn.billing.entity.Subscription;
+import com.github.lucasdengcn.billing.entity.SubscriptionRenewal;
 import com.github.lucasdengcn.billing.entity.enums.DiscountStatus;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.entity.enums.PriceType;
@@ -89,6 +90,37 @@ class PricingCalculatorTest {
     }
     
     @Test
+    @DisplayName("Calculate renewal total fee with null renewal should throw exception")
+    void calculateRenewalTotalFee_WithNullRenewal_ShouldThrowException() {
+        // Given
+        Product product = Product.builder()
+                .title("Test Plan")
+                .basePrice(new BigDecimal("100.00"))
+                .build();
+        
+        // When & Then
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pricingCalculator.calculateRenewalTotalFee(product, null))
+                .withMessage("SubscriptionRenewal and required fields cannot be null");
+    }
+    
+    @Test
+    @DisplayName("Calculate renewal total fee with null product should throw exception")
+    void calculateRenewalTotalFee_WithNullProduct_ShouldThrowException() {
+        // Given
+        SubscriptionRenewal renewal = SubscriptionRenewal.builder()
+                .baseFee(new BigDecimal("100.00"))
+                .discountRate(new BigDecimal("0.90"))
+                .renewalPeriods(2)
+                .build();
+        
+        // When & Then
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pricingCalculator.calculateRenewalTotalFee(null, renewal))
+                .withMessage("Product cannot be null");
+    }
+    
+    @Test
     @DisplayName("Calculate subscription total fee with yearly pricing")
     void calculateSubscriptionTotalFee_YearlyPricing_ShouldReturnCorrectAmount() {
         // Given
@@ -146,5 +178,28 @@ class PricingCalculatorTest {
                 .isThrownBy(() -> pricingCalculator.calculateSubscriptionTotalFee(null, null, 0))
                 .withMessage("Product Invalid");
     }
-
+    
+    @Test
+    @DisplayName("Calculate renewal total fee with valid parameters should return correct amount")
+    void calculateRenewalTotalFee_WithValidParameters_ShouldReturnCorrectAmount() {
+        // Given
+        Product product = Product.builder()
+                .title("Renewal Plan")
+                .basePrice(new BigDecimal("100.00"))
+                .priceType(PriceType.MONTHLY)
+                .discountRate(new BigDecimal("0.90"))
+                .build();
+        
+        SubscriptionRenewal renewal = SubscriptionRenewal.builder()
+                .baseFee(new BigDecimal("100.00"))
+                .discountRate(new BigDecimal("0.90"))
+                .renewalPeriods(3) // Renew for 3 periods
+                .build();
+        
+        // When
+        BigDecimal totalFee = pricingCalculator.calculateRenewalTotalFee(product, renewal);
+        
+        // Then
+        assertThat(totalFee).isEqualByComparingTo(new BigDecimal("270.00")); // 100.00 * 0.90 * 3
+    }
 }
