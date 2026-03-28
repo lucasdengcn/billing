@@ -1,5 +1,6 @@
 package com.github.lucasdengcn.billing.service.impl;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -9,9 +10,11 @@ import com.github.lucasdengcn.billing.entity.*;
 import com.github.lucasdengcn.billing.entity.enums.FeatureType;
 import com.github.lucasdengcn.billing.entity.enums.PeriodUnit;
 import com.github.lucasdengcn.billing.mapper.SubscriptionMapper;
+import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalEstimateRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionFeatureResponse;
+import com.github.lucasdengcn.billing.model.response.SubscriptionRenewalEstimateResponse;
 import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
 import com.github.lucasdengcn.billing.handler.SubscriptionHandler;
 import com.github.lucasdengcn.billing.handler.strategy.SubscriptionHandlerFactory;
@@ -32,6 +35,7 @@ import com.github.lucasdengcn.billing.repository.SubscriptionFeatureRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRenewalRepository;
 import com.github.lucasdengcn.billing.repository.SubscriptionRepository;
 import com.github.lucasdengcn.billing.repository.ProductFeatureRepository;
+import com.github.lucasdengcn.billing.component.PricingCalculator;
 import com.github.lucasdengcn.billing.service.SubscriptionService;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +56,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final DeviceService deviceService;
     private final SubscriptionMapper subscriptionMapper;
     private final SubscriptionHandlerFactory subscriptionHandlerFactory;
+    private final PricingCalculator pricingCalculator;
 
 
     @Override
@@ -379,5 +384,45 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                  updatedSubscription.getId(), request.getDeviceNo(), request.getProductNo(), subscription.getEndDate());
         
         return updatedSubscription;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public SubscriptionRenewalEstimateResponse estimateRenewalFee(@NonNull SubscriptionRenewalEstimateRequest request) {
+        log.info("Estimating renewal fee for device: {} and product: {} with {} {}", 
+                 request.getDeviceNo(), request.getProductNo(), 
+                 request.getRenewalPeriods(), request.getRenewalPeriodUnit());
+        
+        // Find device by deviceNo
+        Device device = deviceService.findByDeviceNo(request.getDeviceNo());
+        
+        // Find product by productNo
+        Product product = productService.findProductByProductNo(request.getProductNo());
+        
+        // Find existing subscription by device and product
+        Subscription subscription = subscriptionRepository.findByDeviceAndProduct(device, product)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                String.format("Subscription not found for device: %s and product: %s", 
+                            request.getDeviceNo(), request.getProductNo())));
+        
+        // Calculate estimated fee using pricing calculator
+        BigDecimal estimatedFee = pricingCalculator.calculateSubscriptionTotalFee(
+            product, subscription, request.getRenewalPeriods());
+        
+        // Build and return the response
+        SubscriptionRenewalEstimateResponse response = SubscriptionRenewalEstimateResponse.builder()
+            .estimatedFee(estimatedFee)
+            .baseFee(product.getBasePrice())
+            .discountRate(product.getDiscountRate())
+            .renewalPeriods(request.getRenewalPeriods())
+            .productTitle(product.getTitle())
+            .deviceNo(request.getDeviceNo())
+            .productNo(request.getProductNo())
+            .build();
+        
+        log.info("Estimated renewal fee: {} for device: {} and product: {}", 
+                 estimatedFee, request.getDeviceNo(), request.getProductNo());
+        
+        return response;
     }
 }

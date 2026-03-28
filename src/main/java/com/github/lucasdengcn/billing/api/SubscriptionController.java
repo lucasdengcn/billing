@@ -3,6 +3,7 @@ package com.github.lucasdengcn.billing.api;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalEstimateRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalRequest;
 import com.github.lucasdengcn.billing.model.response.*;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -133,6 +134,19 @@ public class SubscriptionController {
                 
                 Subscription renewedSubscription = subscriptionService.renewSubscription(request);
                 SubscriptionResponse response = subscriptionMapper.toResponse(renewedSubscription);
+                return ResponseEntity.ok(response);
+        }
+        
+        @PostMapping("/renew/estimate")
+        @Operation(summary = "Estimate renewal fee for subscription", 
+                  description = "Calculates the estimated fee for renewing a subscription")
+        @ApiResponse(responseCode = "200", description = "Estimated fee calculated successfully")
+        @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class)))
+        @ApiResponse(responseCode = "404", description = "Subscription not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+        public ResponseEntity<SubscriptionRenewalEstimateResponse> estimateRenewalFee(
+                        @Valid @RequestBody SubscriptionRenewalEstimateRequest request) {
+                
+                SubscriptionRenewalEstimateResponse response = subscriptionService.estimateRenewalFee(request);
                 return ResponseEntity.ok(response);
         }
 }

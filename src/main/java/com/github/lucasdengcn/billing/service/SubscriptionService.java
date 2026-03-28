@@ -6,6 +6,8 @@ import com.github.lucasdengcn.billing.entity.enums.SubscriptionStatus;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalRequest;
 import com.github.lucasdengcn.billing.model.request.SubscriptionRequest;
 import com.github.lucasdengcn.billing.model.response.SubscriptionWithFeaturesResponse;
+import com.github.lucasdengcn.billing.model.request.SubscriptionRenewalEstimateRequest;
+import com.github.lucasdengcn.billing.model.response.SubscriptionRenewalEstimateResponse;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -31,4 +33,6 @@ public interface SubscriptionService {
     SubscriptionFeature findSubscriptionFeatureByDeviceNoFeatureNoAndProductNo(String deviceNo, String featureNo, String productNo);
 
     Subscription renewSubscription(@NonNull SubscriptionRenewalRequest request);
+    
+    SubscriptionRenewalEstimateResponse estimateRenewalFee(@NonNull SubscriptionRenewalEstimateRequest request);
 }
